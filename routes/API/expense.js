@@ -3,9 +3,8 @@ const router = express.Router();
 const auth = require("../../middleware/auth");
 const { check, validationResult } = require("express-validator");
 
-const Profile = require("../../models/Profile");
 const User = require("../../models/User");
-const Apartment = require("../../models/Apartments");
+const Apartment = require("../../models/Apartment");
 const brain = require("../../middleware/brain");
 const Expense = require("../../models/Expense");
 const Building = require("../../models/Building");
@@ -14,7 +13,7 @@ const owner = require("../../middleware/owner");
 //@route    POST api/expense
 //@desc     Create an Expense
 //@access   Private
-router.expense(
+router.post(
   "/",
   [
     auth,

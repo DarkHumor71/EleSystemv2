@@ -1,5 +1,6 @@
 import axios from "axios";
 import { REGISTER_SUCCESS, REGISTER_FAIL } from "./types";
+import { setAlert } from "./alert";
 
 //Register User
 export const register =
