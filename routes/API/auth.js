@@ -1,6 +1,5 @@
 const express = require("express");
 const router = express.Router();
-const gravatar = require("gravatar");
 const bcrypt = require("bcryptjs");
 const { check, validationResult } = require("express-validator");
 const jwt = require("jsonwebtoken");
@@ -20,6 +19,10 @@ router.get("/", auth, async (req, res) => {
     res.status(500).send("Server Error");
   }
 });
+
+//@route    POST api/auth
+//@desc     authenticate user and get jwt to use in private (for login)
+//@access   Public
 router.post(
   "/",
   [

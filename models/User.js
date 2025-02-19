@@ -10,16 +10,36 @@ const UserSchema = new Schema({
     required: true,
     unique: true,
   },
-  password: {
-    type: String,
+  pin: {
+    type: Number,
     required: true,
   },
-  avatar: {
+  role: {
     type: String,
+    enum: ["owner", "moderator", "resident", "brain"],
+    default: "resident",
   },
-  date: {
+  apartment: {
+    type: Schema.Types.ObjectId,
+    ref: "Apartments",
+    default: null,
+  },
+  building: {
+    type: Schema.Types.ObjectId,
+    ref: "Buildings",
+    default: null,
+  },
+  created_at: {
     type: Date,
     default: Date.now,
+  },
+  updated_at: {
+    type: Date,
+    default: Date.now,
+  },
+  deleted_at: {
+    type: Date,
+    default: null,
   },
 });
 module.exports = User = mongoose.model("user", UserSchema);

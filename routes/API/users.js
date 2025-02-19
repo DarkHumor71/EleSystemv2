@@ -6,16 +6,20 @@ const { check, validationResult } = require("express-validator");
 const jwt = require("jsonwebtoken");
 const config = require("config");
 const User = require("../../models/User");
+const auth = require("../../middleware/auth");
+const owner = require("../../middleware/owner");
 
 //@route    POST api/users
-//@desc     Test route
+//@desc     Test route (Register user)
 //@access   Public
 router.post(
   "/",
+  auth,
+  owner,
   [
     check("name", "Name is required").not().isEmpty(),
     check("email", "Please include a valid email").isEmail(),
-    check("password", "Name is required").isLength({ min: 6 }),
+    check("pin", "PIN is required").isLength({ min: 6 }),
   ],
 
   async (req, res) => {
@@ -24,7 +28,7 @@ router.post(
       return res.status(400).json({ errors: errors.array() });
     }
 
-    const { name, email, password } = req.body;
+    const { name, email, pin } = req.body;
     try {
       //See if user exists
 
@@ -38,14 +42,14 @@ router.post(
       user = new User({
         name,
         email,
-        password,
+        pin,
       });
 
       //Encrypt password
 
       const salt = await bcrypt.genSalt(10);
 
-      user.password = await bcrypt.hash(password, salt);
+      user.pin = await bcrypt.hash(pin, salt);
 
       await user.save();
 
