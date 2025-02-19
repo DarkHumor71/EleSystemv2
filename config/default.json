@@ -1,0 +1,6 @@
+{
+  "mongoURI": "mongodb+srv://elevator:elevator@elevator.sc6gf.mongodb.net/?retryWrites=true&w=majority&appName=Elevator",
+  "jwtSecret": "mysecrettoken",
+  "githubClientId": "Ov23li47EuYtA0b6lqq1",
+  "githubSecret": "dbf213509c712d20def88e5ab90a18989a01928e"
+}
