@@ -4,6 +4,7 @@ const auth = require("../../middleware/auth");
 const owner = require("../../middleware/owner");
 const Building = require("../../models/Building");
 const Apartment = require("../../models/Apartment");
+const { check } = require("express-validator");
 
 //@route    GET api/apartment
 //@desc     GET a Apartment
@@ -77,22 +78,24 @@ router.get("/", [auth, owner], async (req, res) => {
 //@route    POST api/apartment
 //@desc     Create a Apartment
 //@access   Private
-router.post("/", [auth, owner], async (req, res) => {
-  try {
-    const building = await Building.findById(req.user.building);
-    const user = req.user;
-    const newApartment = new Apartment({
-      building: building.id,
-      number: req.number,
-    });
+router.post(
+  "/",
+  [auth, owner, check("pin", "pin is required").isLength({ min: 4, max: 4 })],
+  async (req, res) => {
+    try {
+      const newApartment = new Apartment({
+        building: body.building,
+        number: body.number,
+      });
 
-    const apartment = await newApartment.save();
-    res.json(apartment);
-  } catch (err) {
-    console.error(err.message);
-    res.status(500).send("Server Error");
+      const apartment = await newApartment.save();
+      res.json(apartment);
+    } catch (err) {
+      console.error(err.message);
+      res.status(500).send("Server Error");
+    }
   }
-});
+);
 //@route DELETE api/apartment
 //@desc DELETE a apartment
 //@access Private

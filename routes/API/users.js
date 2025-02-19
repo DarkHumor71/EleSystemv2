@@ -1,6 +1,5 @@
 const express = require("express");
 const router = express.Router();
-const gravatar = require("gravatar");
 const bcrypt = require("bcryptjs");
 const { check, validationResult } = require("express-validator");
 const jwt = require("jsonwebtoken");
@@ -14,12 +13,12 @@ const owner = require("../../middleware/owner");
 //@access   Public
 router.post(
   "/",
-  auth,
-  owner,
   [
+    auth,
+    owner,
     check("name", "Name is required").not().isEmpty(),
     check("email", "Please include a valid email").isEmail(),
-    check("pin", "PIN is required").isLength({ min: 6 }),
+    check("password", "password is required").isLength({ min: 6 }),
   ],
 
   async (req, res) => {
@@ -28,7 +27,14 @@ router.post(
       return res.status(400).json({ errors: errors.array() });
     }
 
-    const { name, email, pin } = req.body;
+    const {
+      name,
+      email,
+      password,
+      role = null,
+      building = null,
+      apartment = null,
+    } = req.body;
     try {
       //See if user exists
 
@@ -42,14 +48,17 @@ router.post(
       user = new User({
         name,
         email,
-        pin,
+        password,
+        role,
+        apartment,
+        building,
       });
 
       //Encrypt password
 
       const salt = await bcrypt.genSalt(10);
 
-      user.pin = await bcrypt.hash(pin, salt);
+      user.password = await bcrypt.hash(password, salt);
 
       await user.save();
 
@@ -57,6 +66,7 @@ router.post(
       const payload = {
         user: {
           id: user.id,
+          role: user.role,
         },
       };
       jwt.sign(

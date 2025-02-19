@@ -5,6 +5,7 @@ const User = require("../models/User");
 module.exports = function (req, res, next) {
   //Get token from header
   const user = req.user;
-  if (User.role !== "owner")
+  if (user.role !== "owner")
     return res.status(401).json({ msg: "Not authorized" });
+  next();
 };
