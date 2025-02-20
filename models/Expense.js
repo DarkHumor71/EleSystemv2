@@ -1,5 +1,4 @@
 const mongoose = require("mongoose");
-const { v4: uuidv4 } = require("uuid");
 
 const expenseSchema = new mongoose.Schema(
   {
@@ -20,11 +19,7 @@ const expenseSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.Decimal128,
       required: true,
     },
-    from_floor: {
-      type: Number,
-      required: true,
-    },
-    to_floor: {
+    floors_used: {
       type: Number,
       required: true,
     },

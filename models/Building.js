@@ -6,6 +6,11 @@ const PostSchema = new Schema(
     name: {
       type: String,
     },
+    email: {
+      type: String,
+      required: true,
+      unique: true,
+    },
     address: {
       type: String,
     },
@@ -15,12 +20,12 @@ const PostSchema = new Schema(
     city: {
       type: String,
     },
-    password: {
-      type: String,
-    },
-
     deleted_at: {
       type: Date,
+      default: null,
+    },
+    password: {
+      type: String,
       default: null,
     },
   },

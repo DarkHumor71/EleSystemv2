@@ -2,16 +2,13 @@ const { default: mongoose, mongo } = require("mongoose");
 const Schema = mongoose.Schema;
 const ProfileSchema = new Schema(
   {
-    number: {
+    pin: {
       type: String,
+      required: true,
     },
     building: {
       type: Schema.Types.ObjectId,
       ref: "building",
-    },
-    pin: {
-      type: String,
-      required: true,
     },
     deleted_at: {
       type: Date,
