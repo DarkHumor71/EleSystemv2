@@ -2,13 +2,10 @@ const express = require("express");
 const router = express.Router();
 const auth = require("../../middleware/auth");
 const { check, validationResult } = require("express-validator");
-
-const User = require("../../models/User");
 const Apartment = require("../../models/Apartment");
-const brain = require("../../middleware/brain");
 const Expense = require("../../models/Expense");
 const Building = require("../../models/Building");
-const owner = require("../../middleware/owner");
+const admin = require("../../middleware/admin");
 
 //@route    POST api/expense
 //@desc     Create an Expense
@@ -17,7 +14,6 @@ router.post(
   "/",
   [
     auth,
-    brain,
     check("time", "Time is required").not().isEmpty(),
     check("power", "Power is required").not().isEmpty(),
     check("from_floor", "From Floor is required").not().isEmpty(),
@@ -53,7 +49,7 @@ router.post(
 //@desc     get all expenses
 //@access   private
 
-router.get("/", [auth, owner], async (req, res) => {
+router.get("/", [auth, admin], async (req, res) => {
   try {
     const expenses = await Expense.find().sort({ date: -1 });
 
@@ -111,7 +107,7 @@ router.get("/building/:id", auth, async (req, res) => {
     // user check
     if (
       (user.role.toString() !== "moderator" ||
-        user.role.toString() !== "owner") &&
+        user.role.toString() !== "admin") &&
       user.building.id.toString() !== building.id.toString()
     ) {
       return res.status(401).json({ msg: "User not authorized" });
@@ -135,7 +131,7 @@ router.get("/building/:id", auth, async (req, res) => {
 //@desc     delete a expense
 //@access   private
 
-router.get("/:id", [auth, owner], async (req, res) => {
+router.get("/:id", [auth, admin], async (req, res) => {
   try {
     const expense = await Expense.findById(req.params.id);
     if (!expense) return res.status(404).json({ msg: "Expense not found" });

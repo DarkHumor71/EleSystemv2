@@ -1,26 +1,111 @@
 const express = require("express");
 const router = express.Router();
 const auth = require("../../middleware/auth");
-const owner = require("../../middleware/owner");
+const admin = require("../../middleware/admin");
 const Building = require("../../models/Building");
+const bcrypt = require("bcryptjs");
+const { check, validationResult } = require("express-validator");
+const jwt = require("jsonwebtoken");
+const config = require("config");
+const User = require("../../models/User");
 
 //@route    GET api/building
 //@desc     GET a Building
 //@access   Private
 router.get("/:id", auth, async (req, res) => {
   try {
-    const building = await Building.findById(req.params.id);
+    if (req.permissions.admin) {
+      const building = await Building.findById(req.params.id);
+      if (!building) {
+        return res.status(400).json({ msg: "Building not found" });
+      }
+    }
+    if (req.permissions.moderator) {
+      const user = await User.findById(req.user.id);
+      if (!user.building) {
+        return res.status(400).json({ msg: "Not authorized" });
+      }
+      const building = await Building.findById(req.params.id);
+      if (!building) {
+        return res.status(400).json({ msg: "Building not found" });
+      }
+    }
+
     res.json(building);
   } catch (err) {
     console.error(err.message);
     res.status(500).send("Server Error");
   }
 });
+//@route    GET api/building/login
+//@desc     login to building
+//@access   Public
+router.post(
+  "/login",
+  check("email", "email is required").exists(),
+  async (req, res) => {
+    try {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() });
+      }
+
+      const { email } = req.body;
+      let admin = false;
+      let building = await Building.findOne({ email });
+      if (!building) {
+        return res
+          .status(400)
+          .json({ errors: [{ msg: "Invalid Credentials" }] });
+      }
+      if (building.password) {
+        if (!req.body.password) {
+          return res
+            .status(400)
+            .json({ errors: [{ msg: "Admin password is required" }] });
+        }
+        const isMatch = await bcrypt.compare(
+          req.body.password,
+          building.password
+        );
+        if (!isMatch) {
+          return res
+            .status(400)
+            .json({ errors: [{ msg: "Invalid Credentials" }] });
+        }
+        admin = true;
+      }
+      //Return jsonwebtoken
+      const payload = {
+        building: {
+          id: building.id,
+        },
+        permissions: {
+          admin: admin,
+          moderator: admin,
+        },
+      };
+
+      jwt.sign(
+        payload,
+        config.get("jwtSecret"),
+        { expiresIn: 360000 },
+        (err, token) => {
+          if (err) throw err;
+          res.json({ token });
+        }
+      );
+    } catch (err) {
+      console.error(err.message);
+      res.status(500).send("Server Error");
+    }
+  }
+);
 
 //@route    GET api/building
 //@desc     GET all Buildings
 //@access   Private
-router.get("/", [auth, owner], async (req, res) => {
+router.get("/", [auth, admin], async (req, res) => {
   try {
     const buildings = await Building.find();
     res.json(buildings);
@@ -33,18 +118,25 @@ router.get("/", [auth, owner], async (req, res) => {
 //@route    POST api/building
 //@desc     Create a Building
 //@access   Private
-router.post("/", [auth, owner], async (req, res) => {
-  const { name, address, city, state, password } = req.body;
+router.post("/", async (req, res) => {
+  const { name, address, city, state, password, email } = req.body;
   try {
-    const newBuilding = new Building({
+    const building = new Building({
       name,
+      email,
       address,
       city,
       state,
       password,
     });
+    if (password) {
+      //Encrypt password
 
-    const building = await newBuilding.save();
+      const salt = await bcrypt.genSalt(10);
+
+      building.password = await bcrypt.hash(password, salt);
+    }
+    await building.save();
     res.json(building);
   } catch (err) {
     console.error(err.message);
@@ -55,7 +147,7 @@ router.post("/", [auth, owner], async (req, res) => {
 //@route    DELETE api/building
 //@desc     DELETE a Building
 //@access   Private
-router.delete("/:id", [auth, owner], async (req, res) => {
+router.delete("/:id", [auth, admin], async (req, res) => {
   try {
     await Building.findByIdAndRemove(req.params.id);
     res.json({ msg: "Building deleted" });

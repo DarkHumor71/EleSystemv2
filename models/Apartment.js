@@ -1,6 +1,6 @@
 const { default: mongoose, mongo } = require("mongoose");
 const Schema = mongoose.Schema;
-const ProfileSchema = new Schema(
+const ApartmentSchema = new Schema(
   {
     pin: {
       type: String,
@@ -13,10 +13,14 @@ const ProfileSchema = new Schema(
     deleted_at: {
       type: Date,
     },
+    is_moderator: {
+      type: Boolean,
+      default: false,
+    },
   },
   {
     timestamps: true, // Automatically adds `createdAt` and `updatedAt` fields
   }
 );
 
-module.exports = Profile = mongoose.model("profile", ProfileSchema);
+module.exports = Apartment = mongoose.model("apartment", ApartmentSchema);

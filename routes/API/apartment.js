@@ -1,10 +1,11 @@
 const express = require("express");
 const router = express.Router();
 const auth = require("../../middleware/auth");
-const owner = require("../../middleware/owner");
+const admin = require("../../middleware/admin");
 const Building = require("../../models/Building");
 const Apartment = require("../../models/Apartment");
 const { check } = require("express-validator");
+const { validationResult } = require("express-validator");
 
 //@route    GET api/apartment
 //@desc     GET a Apartment
@@ -49,7 +50,7 @@ router.get("/building/:id", auth, async (req, res) => {
     // user check
     if (
       (user.role.toString() !== "moderator" ||
-        user.role.toString() !== "owner") &&
+        user.role.toString() !== "admin") &&
       user.building.id.toString() !== building.id.toString()
     ) {
       return res.status(401).json({ msg: "User not authorized" });
@@ -65,7 +66,7 @@ router.get("/building/:id", auth, async (req, res) => {
 //@route    GET api/apartment
 //@desc     GET all Apartments
 //@access   Private
-router.get("/", [auth, owner], async (req, res) => {
+router.get("/", [auth, admin], async (req, res) => {
   try {
     const apartments = await Apartment.find();
     res.json(apartments);
@@ -80,18 +81,48 @@ router.get("/", [auth, owner], async (req, res) => {
 //@access   Private
 router.post(
   "/",
-  [auth, owner, check("pin", "pin is required").isLength({ min: 4, max: 4 })],
+  [
+    check("pin", "PIN is required and must be exactly 4 characters long")
+      .isLength({ min: 4, max: 4 })
+      .isNumeric()
+      .withMessage("PIN must be numeric"),
+    check("building", "Building ID is required").not().isEmpty(),
+  ],
   async (req, res) => {
     try {
+      // Validate request
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() });
+      }
+
+      const { building, pin, is_moderator } = req.body;
+
+      // Create the new apartment
       const newApartment = new Apartment({
-        building: body.building,
-        number: body.number,
+        building: building,
+        pin: pin,
+        is_moderator: is_moderator,
       });
 
+      // Save the apartment to the database
       const apartment = await newApartment.save();
+
+      // Return the created apartment
       res.json(apartment);
     } catch (err) {
       console.error(err.message);
+
+      // Handle duplicate key error (e.g., duplicate PIN)
+      if (err.code === 11000) {
+        return res.status(400).json({ msg: "PIN already exists" });
+      }
+
+      // Handle invalid ObjectId error
+      if (err.name === "CastError") {
+        return res.status(400).json({ msg: "Invalid Building ID" });
+      }
+
       res.status(500).send("Server Error");
     }
   }
@@ -99,7 +130,7 @@ router.post(
 //@route DELETE api/apartment
 //@desc DELETE a apartment
 //@access Private
-router.delete("/:id", [auth, owner], async (req, res) => {
+router.delete("/:id", [auth, admin], async (req, res) => {
   try {
     const apartment = await Apartment.findById(req.params.id);
     if (!apartment) return res.status(404).json({ msg: "Apartment not found" });

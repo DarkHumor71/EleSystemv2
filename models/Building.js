@@ -1,7 +1,7 @@
 const { default: mongoose, mongo } = require("mongoose");
 const Schema = mongoose.Schema;
 
-const PostSchema = new Schema(
+const BuildingSchema = new Schema(
   {
     name: {
       type: String,
@@ -34,4 +34,4 @@ const PostSchema = new Schema(
   }
 );
 
-module.exports = Post = mongoose.model("post", PostSchema);
+module.exports = Building = mongoose.model("building", BuildingSchema);

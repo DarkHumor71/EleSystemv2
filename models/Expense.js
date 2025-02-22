@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 
-const expenseSchema = new mongoose.Schema(
+const ExpenseSchema = new mongoose.Schema(
   {
     deleted_at: {
       type: Date,
@@ -29,6 +29,6 @@ const expenseSchema = new mongoose.Schema(
   }
 );
 
-const Expense = mongoose.model("Expense", expenseSchema);
+const Expense = mongoose.model("expense", ExpenseSchema);
 
 module.exports = Expense;
