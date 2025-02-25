@@ -17,6 +17,9 @@ const ApartmentSchema = new Schema(
       type: Boolean,
       default: false,
     },
+    MAC_addresses: {
+      type: [String],
+    },
   },
   {
     timestamps: true, // Automatically adds `createdAt` and `updatedAt` fields

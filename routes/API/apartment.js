@@ -13,21 +13,17 @@ const { validationResult } = require("express-validator");
 
 router.get("/:id", auth, async (req, res) => {
   try {
-    const apartment = await Expense.findById(req.params.id);
+    const apartment = await Apartment.findById(req.params.id);
     if (!apartment) return res.status(404).json({ msg: "apartment not found" });
     const building = await Building.findById(apartment.building);
-    const user = req.user;
-
+    const perm = req.decoded.permissions;
     //moderator case
-    if (
-      user.role.toString() !== "moderator" &&
-      user.building.toString() !== building.id.toString()
-    ) {
-      return res.status(401).json({ msg: "User not authorized" });
+    if (perm.moderator && req.decoded.building.id !== building.id.toString()) {
+      return res.status(401).json({ msg: "User not b authorized" });
     }
     //resident case
-    if (apartment.id.toString() !== user.apartment.id.toString())
-      return res.status(401).json({ msg: "User not authorized" });
+    if (!perm.admin && apartment.id.toString() !== req.decoded.apartment.id)
+      return res.status(401).json({ msg: "User not a authorized" });
 
     //default case
     res.json(apartment);
@@ -45,13 +41,11 @@ router.get("/:id", auth, async (req, res) => {
 //@access   Private
 router.get("/building/:id", auth, async (req, res) => {
   try {
-    const building = await Building.findById(req.user.building);
-    const user = req.user;
-    // user check
+    const building = await Building.findById(req.decoded.building.id);
+    const perm = req.decoded.permissions;
     if (
-      (user.role.toString() !== "moderator" ||
-        user.role.toString() !== "admin") &&
-      user.building.id.toString() !== building.id.toString()
+      perm.admin ||
+      (perm.moderator && req.decoded.building.id !== building.id.toString())
     ) {
       return res.status(401).json({ msg: "User not authorized" });
     }
@@ -82,6 +76,8 @@ router.get("/", [auth, admin], async (req, res) => {
 router.post(
   "/",
   [
+    auth,
+    admin,
     check("pin", "PIN is required and must be exactly 4 characters long")
       .isLength({ min: 4, max: 4 })
       .isNumeric()

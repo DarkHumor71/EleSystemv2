@@ -7,13 +7,16 @@ const config = require("config");
 const auth = require("../../middleware/auth");
 const Apartment = require("../../models/Apartment");
 const building = require("../../middleware/building");
+const c = require("config");
 
 //@route    GET api/auth
 //@desc     token to detailed Object
 //@access   Public
 router.get("/", auth, async (req, res) => {
   try {
-    const apartment = await Apartment.findById(req.apartment.id).select("-pin");
+    const apartment = await Apartment.findById(req.decoded.apartment).select(
+      "-pin"
+    );
     res.json(apartment);
   } catch (err) {
     console.error(err.message);
@@ -52,6 +55,7 @@ router.post(
           .json({ errors: [{ msg: "Invalid Credentials" }] });
       }
       req.decoded.apartment = { id: apartment.id };
+
       if (apartment.is_moderator) {
         if (!req.decoded.permissions) {
           req.decoded.permissions = {};
