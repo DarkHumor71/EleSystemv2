@@ -44,7 +44,7 @@ router.get("/building/:id", auth, async (req, res) => {
     const building = await Building.findById(req.decoded.building.id);
     const perm = req.decoded.permissions;
     if (
-      perm.admin ||
+      !perm.admin ||
       (perm.moderator && req.decoded.building.id !== building.id.toString())
     ) {
       return res.status(401).json({ msg: "User not authorized" });

@@ -61,6 +61,8 @@ router.post(
           req.decoded.permissions = {};
         }
         req.decoded.permissions.moderator = true;
+      } else {
+        req.decoded.permissions.resident = true;
       }
       const modifiedPayload = {
         ...req.decoded,

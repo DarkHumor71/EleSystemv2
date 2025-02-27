@@ -6,6 +6,7 @@ const Apartment = require("../../models/Apartment");
 const Expense = require("../../models/Expense");
 const Building = require("../../models/Building");
 const admin = require("../../middleware/admin");
+const { current } = require("@reduxjs/toolkit");
 
 //@route    POST api/expense
 //@desc     Create an Expense
@@ -14,29 +15,36 @@ router.post(
   "/",
   [
     auth,
+    check("brain", "Brain code is required").not().isEmpty(),
     check("time", "Time is required").not().isEmpty(),
-    check("power", "Power is required").not().isEmpty(),
-    check("from_floor", "From Floor is required").not().isEmpty(),
-    check("to_floor", "To Floor is required").not().isEmpty(),
-    check("apartment", "Apartment is required").not().isEmpty(),
+    check("mac", "MAC is required").not().isEmpty(),
   ],
   async (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(400).json({ errors: errors.array() });
     }
-
+    if (req.body.brain !== "1234") {
+      //password is required, it must be 1234
+      return res.status(400).json({ msg: "Invalid Credentials" });
+    }
     try {
-      const apartment = await apartment.findById(req.apartment.id);
+      const mac = req.body.mac;
+      const apartment = await Apartment.findOne({ mac });
+      let current = 1; //admin may change this value
+      let power = 24 * current;
+      let engergy = (power / 1000) * (req.body.time / 3600);
+      let unitCost = 1; //admin may change this value
+      let cost = engergy * unitCost;
 
-      const newExpemse = new Expense({
-        time: req.body.time,
+      const newExpense = new Expense({
         apartment: apartment.id,
-        power: req.body.power,
-        from_floor: req.body.from_floor,
+        time: time,
+        power: energy,
+        cost: cost,
       });
 
-      const Expense = await newExpemse.save();
+      const Expense = await newExpense.save();
       res.json(Expense);
     } catch (err) {
       console.error(err.message);
@@ -69,21 +77,17 @@ router.get("/:id", auth, async (req, res) => {
     if (!expense) return res.status(404).json({ msg: "Expense not found" });
     const apartment = await Apartment.findById(expense.apartment);
     const building = await Building.findById(apartment.building);
-    const user = req.user;
-
-    //moderator case
+    const perm = req.decoded.permissions;
     if (
-      user.role.toString() !== "moderator" &&
-      user.building.toString() !== building.id.toString()
+      perm.admin ||
+      (perm.moderator && req.decoded.building.id === building.id.toString()) ||
+      (perm.resident && req.decoded.apartment.id === apartment.id.toString())
     ) {
-      return res.status(401).json({ msg: "User not authorized" });
+      res.json(expense);
     }
-    //resident case
-    if (expense.apartment.id.toString() !== user.apartment.id.toString())
-      return res.status(401).json({ msg: "User not authorized" });
 
     //default case
-    res.json(expense);
+    return res.status(401).json({ msg: "User not authorized" });
   } catch (err) {
     console.error(err.message);
     if (err.kind === "ObjectId")
@@ -102,22 +106,17 @@ router.get("/building/:id", auth, async (req, res) => {
     const building = await Building.findById(req.params.id);
     if (!building) return res.status(404).json({ msg: "Building not found" });
 
-    const user = req.user;
-
-    // user check
     if (
-      (user.role.toString() !== "moderator" ||
-        user.role.toString() !== "admin") &&
-      user.building.id.toString() !== building.id.toString()
+      perm.admin ||
+      (perm.moderator && req.decoded.building.id === building.id.toString())
     ) {
-      return res.status(401).json({ msg: "User not authorized" });
+      const apartments = await Apartment.find({ building: req.params.id });
+      const apartmentIds = apartments.map((apartment) => apartment._id);
+      const expenses = await Expense.find({ apartment: { $in: apartmentIds } });
+
+      res.json(expenses);
     }
-
-    const apartments = await Apartment.find({ building: req.params.id });
-    const apartmentIds = apartments.map((apartment) => apartment._id);
-    const expenses = await Expense.find({ apartment: { $in: apartmentIds } });
-
-    res.json(expenses);
+    return res.status(401).json({ msg: "User not authorized" });
   } catch (err) {
     console.error(err.message);
     if (err.kind === "ObjectId")

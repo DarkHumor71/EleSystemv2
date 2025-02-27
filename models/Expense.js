@@ -11,16 +11,16 @@ const ExpenseSchema = new mongoose.Schema(
       ref: "Apartment",
       required: true,
     },
-    time_used: {
+    time: {
       type: mongoose.Schema.Types.Decimal128,
       required: true,
     },
-    power_used: {
+    power: {
       type: mongoose.Schema.Types.Decimal128,
       required: true,
     },
-    floors_used: {
-      type: Number,
+    cost: {
+      type: mongoose.Schema.Types.Decimal128,
       required: true,
     },
   },

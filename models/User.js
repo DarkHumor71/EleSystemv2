@@ -11,19 +11,9 @@ const UserSchema = new Schema(
       required: true,
       unique: true,
     },
-    role: {
-      type: String,
-      enum: ["owner", "moderator", "resident", "brain"],
-      default: "resident",
-    },
     apartment: {
       type: Schema.Types.ObjectId,
       ref: "Apartment",
-      default: null,
-    },
-    building: {
-      type: Schema.Types.ObjectId,
-      ref: "Building",
       default: null,
     },
     deleted_at: {
