@@ -6,7 +6,6 @@ const Apartment = require("../../models/Apartment");
 const Expense = require("../../models/Expense");
 const Building = require("../../models/Building");
 const admin = require("../../middleware/admin");
-const { current } = require("@reduxjs/toolkit");
 
 //@route    POST api/expense
 //@desc     Create an Expense
@@ -14,7 +13,6 @@ const { current } = require("@reduxjs/toolkit");
 router.post(
   "/",
   [
-    auth,
     check("brain", "Brain code is required").not().isEmpty(),
     check("time", "Time is required").not().isEmpty(),
     check("mac", "MAC is required").not().isEmpty(),
@@ -24,28 +22,31 @@ router.post(
     if (!errors.isEmpty()) {
       return res.status(400).json({ errors: errors.array() });
     }
-    if (req.body.brain !== "1234") {
+    if (req.body.brain != 1234) {
       //password is required, it must be 1234
       return res.status(400).json({ msg: "Invalid Credentials" });
     }
     try {
       const mac = req.body.mac;
-      const apartment = await Apartment.findOne({ mac });
+      const apartment = await Apartment.findOne({
+        MAC_addresses: { $in: [mac] },
+      });
       let current = 1; //admin may change this value
       let power = 24 * current;
-      let engergy = (power / 1000) * (req.body.time / 3600);
+      let energy = (power / 1000) * (req.body.time / 3600);
       let unitCost = 1; //admin may change this value
-      let cost = engergy * unitCost;
-
+      let cost = energy * unitCost;
+      const roundToTwo = (num) =>
+        Math.round((num + Number.EPSILON) * 100) / 100;
       const newExpense = new Expense({
         apartment: apartment.id,
-        time: time,
-        power: energy,
-        cost: cost,
+        time: req.body.time,
+        power: roundToTwo(parseFloat(energy)),
+        cost: roundToTwo(parseFloat(cost)),
       });
 
-      const Expense = await newExpense.save();
-      res.json(Expense);
+      const expense = await newExpense.save();
+      res.json(expense);
     } catch (err) {
       console.error(err.message);
       res.status(500).send("Server Error");
@@ -105,7 +106,7 @@ router.get("/building/:id", auth, async (req, res) => {
   try {
     const building = await Building.findById(req.params.id);
     if (!building) return res.status(404).json({ msg: "Building not found" });
-
+    const perm = req.decoded.permissions;
     if (
       perm.admin ||
       (perm.moderator && req.decoded.building.id === building.id.toString())

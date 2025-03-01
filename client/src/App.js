@@ -10,6 +10,7 @@ import Line from "./scenes/line";
 import Pie from "./scenes/pie";
 import FAQ from "./scenes/faq";
 import Geography from "./scenes/geography";
+import Login from "./scenes/login/login";
 import Calendar from "./scenes/calendar/calendar";
 import MainLayout from "./Layout/MainLayout";
 import { Provider } from "react-redux";
@@ -66,6 +67,7 @@ const router = createBrowserRouter([
       },
     ],
   },
+  { path: "/login", element: <Login /> },
 ]);
 
 const App = () => (

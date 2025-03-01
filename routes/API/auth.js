@@ -61,6 +61,7 @@ router.post(
           req.decoded.permissions = {};
         }
         req.decoded.permissions.moderator = true;
+        req.decoded.permissions.resident = true;
       } else {
         req.decoded.permissions.resident = true;
       }
