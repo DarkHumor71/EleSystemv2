@@ -5,6 +5,7 @@ const ApartmentSchema = new Schema(
     pin: {
       type: String,
       required: true,
+      unique: true,
     },
     building: {
       type: Schema.Types.ObjectId,
@@ -16,9 +17,6 @@ const ApartmentSchema = new Schema(
     is_moderator: {
       type: Boolean,
       default: false,
-    },
-    MAC_addresses: {
-      type: [String],
     },
   },
   {

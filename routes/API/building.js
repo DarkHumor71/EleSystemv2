@@ -37,11 +37,12 @@ router.get("/:id", auth, async (req, res) => {
     res.status(500).send("Server Error");
   }
 });
+
 //@route    GET api/building/login
 //@desc     login to building
 //@access   Public
 router.post(
-  "/login",
+  "/",
   check("email", "email is required").exists(),
   async (req, res) => {
     try {
@@ -52,18 +53,14 @@ router.post(
 
       const { email } = req.body;
       let admin = false;
+      let admin_building = null;
       let building = await Building.findOne({ email });
       if (!building) {
         return res
           .status(400)
           .json({ errors: [{ msg: "Invalid Credentials" }] });
       }
-      if (building.password) {
-        if (!req.body.password) {
-          return res
-            .status(400)
-            .json({ errors: [{ msg: "Admin password is required" }] });
-        }
+      if (building.password && req.body.password) {
         const isMatch = await bcrypt.compare(
           req.body.password,
           building.password
@@ -74,6 +71,12 @@ router.post(
             .json({ errors: [{ msg: "Invalid Credentials" }] });
         }
         admin = true;
+      } else if (building.password) {
+        admin_building = true;
+      } else if (!building.password && req.body.password) {
+        return res
+          .status(400)
+          .json({ errors: [{ msg: "Invalid Credentials" }] });
       }
       //Return jsonwebtoken
       const payload = {
@@ -92,7 +95,8 @@ router.post(
         { expiresIn: 360000 },
         (err, token) => {
           if (err) throw err;
-          res.json({ token });
+          if (admin_building) res.json({ token, admin_building });
+          else res.json({ token });
         }
       );
     } catch (err) {
@@ -118,7 +122,7 @@ router.get("/", [auth, admin], async (req, res) => {
 //@route    POST api/building
 //@desc     Create a Building
 //@access   Private
-router.post("/", async (req, res) => {
+router.post("/create", async (req, res) => {
   const { name, address, city, state, password, email } = req.body;
   try {
     const building = new Building({
