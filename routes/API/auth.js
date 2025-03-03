@@ -14,10 +14,17 @@ const c = require("config");
 //@access   Public
 router.get("/", auth, async (req, res) => {
   try {
-    const apartment = await Apartment.findById(req.decoded.apartment).select(
-      "-pin"
-    );
-    res.json(apartment);
+    if (!req.decoded.apartment && req.decoded.building) {
+      const building = await Building.findById(req.decoded.building.id).select(
+        "-password"
+      );
+      res.json(building);
+    } else {
+      const apartment = await Apartment.findById(
+        req.decoded.apartment.id
+      ).select("-pin");
+      res.json(apartment);
+    }
   } catch (err) {
     console.error(err.message);
     res.status(500).send("Server Error");

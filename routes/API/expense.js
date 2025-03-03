@@ -15,7 +15,7 @@ router.post(
   [
     check("brain", "Brain code is required").not().isEmpty(),
     check("time", "Time is required").not().isEmpty(),
-    check("mac", "MAC is required").not().isEmpty(),
+    check("qr_code", "qr is required").not().isEmpty(),
   ],
   async (req, res) => {
     const errors = validationResult(req);

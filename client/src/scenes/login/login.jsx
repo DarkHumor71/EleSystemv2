@@ -1,20 +1,56 @@
-import React, { useState } from "react";
-import { Link, Navigate } from "react-router-dom";
+import React, { useState, useEffect } from "react";
 import PropTypes from "prop-types";
-
-const Login = () => {
-  const [formData, setFormData] = useState({
-    email: "",
-    password: "",
-  });
-
-  const { email, password } = formData;
-
-  const onChange = (e) =>
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-
-  const onSubmit = (e) => {
+import { connect } from "react-redux";
+import { setAlert } from "../../actions/alert";
+import { loginApartment, loginBuilding } from "../../actions/auth";
+import { useNavigate } from "react-router-dom";
+const Login = ({
+  setAlert,
+  loginBuilding,
+  loginApartment,
+  isAuthenticated,
+}) => {
+  const [pin, setPin] = useState("");
+  const [email, setEmail] = useState("");
+  const [showPinField, setShowPinField] = useState(false);
+  const navigate = useNavigate();
+  // Handle email submission
+  const handleEmailSubmit = async (e) => {
     e.preventDefault();
+    if (!email) {
+      setAlert("Please enter an email address", "danger");
+      return;
+    }
+
+    try {
+      const response = await loginBuilding(email);
+      if (response && response.exists) {
+        setShowPinField(true); // Show the PIN field if the email exists
+      }
+    } catch (error) {
+      console.log("error");
+    }
+  };
+
+  // Handle PIN submission
+  const handlePinSubmit = async (e) => {
+    e.preventDefault();
+    if (!pin) {
+      setAlert("Please enter a PIN", "danger");
+      return;
+    }
+
+    try {
+      if (await loginApartment(pin, email)) {
+        console.log("success");
+        navigate("/dash"); // Redirect
+      } else {
+        setShowPinField(false);
+        setPin("");
+      }
+    } catch (error) {
+      console.log("error");
+    }
   };
 
   return (
@@ -23,42 +59,50 @@ const Login = () => {
       <p className="lead">
         <i className="fas fa-user" /> Sign Into Your Account
       </p>
-      <form className="form" onSubmit={onSubmit}>
+      <form className="form" onSubmit={handleEmailSubmit}>
         <div className="form-group">
           <input
             type="email"
             placeholder="Email Address"
             name="email"
             value={email}
-            onChange={onChange}
+            onChange={(e) => setEmail(e.target.value)}
           />
         </div>
-        <div className="form-group">
-          <input
-            type="password"
-            placeholder="Password"
-            name="password"
-            value={password}
-            onChange={onChange}
-            minLength="6"
-          />
-        </div>
-        <input type="submit" className="btn btn-primary" value="Login" />
+        <input type="submit" className="btn btn-primary" value="Check" />
       </form>
-      <p className="my-1">
-        Don't have an account? <Link to="/register">Sign Up</Link>
-      </p>
+
+      {showPinField && (
+        <form className="form" onSubmit={handlePinSubmit}>
+          <div className="form-group">
+            <input
+              type="password" // Use type="password" for PIN input
+              placeholder="PIN"
+              name="pin"
+              value={pin}
+              onChange={(e) => setPin(e.target.value)}
+            />
+          </div>
+          <input type="submit" className="btn btn-primary" value="Login" />
+        </form>
+      )}
     </section>
   );
 };
 
 Login.propTypes = {
-  login: PropTypes.func.isRequired,
+  setAlert: PropTypes.func.isRequired,
+  loginBuilding: PropTypes.func.isRequired,
+  loginApartment: PropTypes.func.isRequired,
   isAuthenticated: PropTypes.bool,
 };
 
-const mapStateToProps = (state) => ({
-  isAuthenticated: state.auth.isAuthenticated,
-});
+// const mapStateToProps = (state) => ({
+//   isAuthenticated: state.auth.isAuthenticated,
+// });
 
-export default Login;
+export default connect(null, {
+  setAlert,
+  loginBuilding,
+  loginApartment,
+})(Login);
