@@ -27,9 +27,9 @@ router.post(
       return res.status(400).json({ msg: "Invalid Credentials" });
     }
     try {
-      const mac = req.body.mac;
+      const qr_code = req.body.qr_code;
       const apartment = await Apartment.findOne({
-        MAC_addresses: { $in: [mac] },
+        qr_code.payload}), 
       });
       let current = 1; //admin may change this value
       let power = 24 * current;
