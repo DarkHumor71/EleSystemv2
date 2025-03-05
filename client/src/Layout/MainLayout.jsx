@@ -12,12 +12,12 @@ const MainLayout = () => {
   return (
     <ColorModeContext.Provider value={colorMode}>
       <ThemeProvider theme={theme}>
-        <CssBaseline /> {/* Normalize CSS and apply baseline styles */}
+        <CssBaseline />
         <div className="app">
-          <Sidebar isSidebar={isSidebar} /> {/* Pass sidebar state */}
+          <Sidebar isSidebar={isSidebar} />
           <main className="content">
-            <Topbar setIsSidebar={setIsSidebar} /> {/* Pass setter for sidebar state */}
-            <Outlet /> {/* Render nested routes */}
+            <Topbar setIsSidebar={setIsSidebar} /> <Outlet />
+            {""}
           </main>
         </div>
       </ThemeProvider>

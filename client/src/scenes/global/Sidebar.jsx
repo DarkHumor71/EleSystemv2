@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Sidebar, Menu, MenuItem } from "react-pro-sidebar";
+import { ProSidebar, Menu, MenuItem } from "react-pro-sidebar";
 import { Box, IconButton, Typography, useTheme } from "@mui/material";
 import { Link } from "react-router-dom";
 import { tokens } from "../../theme";
@@ -57,7 +57,7 @@ const SidebarComponent = () => {
         },
       }}
     >
-      <Sidebar collapsed={isCollapsed}>
+      <ProSidebar collapsed={isCollapsed}>
         <Menu iconShape="square">
           {/* LOGO AND MENU ICON */}
           <MenuItem
@@ -181,7 +181,7 @@ const SidebarComponent = () => {
             />
           </Box>
         </Menu>
-      </Sidebar>
+      </ProSidebar>
     </Box>
   );
 };

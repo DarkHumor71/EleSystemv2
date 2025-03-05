@@ -13,12 +13,16 @@ import store from "./store";
 import Landing from "./components/Landing";
 import Alert from "./Layout/Alert";
 import BuildingRegister from "./scenes/form/building";
-
+import SidebarComponent from "./scenes/global/Sidebar";
 const router = createBrowserRouter([
   {
     path: "/", // Apply MainLayout for the root
     element: <MainLayout />,
     children: [
+      {
+        path: "/side",
+        element: <SidebarComponent />,
+      },
       {
         path: "/building",
         element: <BuildingRegister />,
