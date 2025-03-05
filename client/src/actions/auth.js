@@ -104,7 +104,7 @@ export const loginApartment =
       } else if (email && pin) {
         const password = pin;
         try {
-          const res = await axios.post("/api/building/", { email, password });
+          const res = await axios.post("/api/building", { email, password });
           localStorage.setItem("token", res.data.token);
           dispatch({ type: APARTMENT_LOGIN_SUCCESS, payload: res.data });
           return true;
@@ -121,7 +121,9 @@ export const loginApartment =
 //building login
 export const loginBuilding = (email) => async (dispatch) => {
   try {
-    const res = await axios.post("api/building/", { email });
+    const a = axios.defaults.baseURL;
+    console.log(a);
+    const res = await axios.post("/api/building", { email });
     if (res.data.token) {
       dispatch({ type: BUILDING_LOGIN_SUCCESS, payload: res.data });
       localStorage.setItem("token", res.data.token);

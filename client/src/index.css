@@ -33,6 +33,7 @@ body,
 ::-webkit-scrollbar-thumb:hover {
   background: #555;
 }
+
 /* Global Styles */
 :root {
   --primary-color: #17a2b8;
@@ -113,24 +114,31 @@ img {
 .p {
   padding: 0.5rem;
 }
+
 .p-1 {
   padding: 1rem;
 }
+
 .p-2 {
   padding: 2rem;
 }
+
 .p-3 {
   padding: 3rem;
 }
+
 .py {
   padding: 0.5rem 0;
 }
+
 .py-1 {
   padding: 1rem 0;
 }
+
 .py-2 {
   padding: 2rem 0;
 }
+
 .py-3 {
   padding: 3rem 0;
 }
@@ -139,24 +147,31 @@ img {
 .m {
   margin: 0.5rem;
 }
+
 .m-1 {
   margin: 1rem;
 }
+
 .m-2 {
   margin: 2rem;
 }
+
 .m-3 {
   margin: 3rem;
 }
+
 .my {
   margin: 0.5rem 0;
 }
+
 .my-1 {
   margin: 1rem 0;
 }
+
 .my-2 {
   margin: 2rem 0;
 }
+
 .my-3 {
   margin: 3rem 0;
 }
@@ -310,15 +325,19 @@ button {
 .form .social-input i.fa-twitter {
   color: #38a1f3;
 }
+
 .form .social-input i.fa-facebook {
   color: #3b5998;
 }
+
 .form .social-input i.fa-instagram {
   color: #3f729b;
 }
+
 .form .social-input i.fa-youtube {
   color: #c4302b;
 }
+
 .form .social-input i.fa-linkedin {
   color: #0077b5;
 }
@@ -448,15 +467,15 @@ button {
   margin-bottom: 1rem;
 }
 
-.profile-exp > div,
-.profile-edu > div {
+.profile-exp>div,
+.profile-edu>div {
   margin-bottom: 1rem;
   padding-bottom: 1rem;
   border-bottom: #ccc 1px dotted;
 }
 
-.profile-exp > div:last-child,
-.profile-edu > div:last-child {
+.profile-exp>div:last-child,
+.profile-edu>div:last-child {
   border: 0;
 }
 
@@ -473,12 +492,12 @@ button {
   display: flex;
 }
 
-.profile-github .repo > div:first-child {
+.profile-github .repo>div:first-child {
   flex: 7;
   flex-basis: 70%;
 }
 
-.profile-github > div:last-child {
+.profile-github>div:last-child {
   flex: 3;
   flex-basis: 20%;
 }
@@ -496,7 +515,7 @@ button {
   align-items: center;
 }
 
-.post > div:first-child {
+.post>div:first-child {
   text-align: center;
 }
 
@@ -600,6 +619,7 @@ button {
   .post {
     grid-template-columns: 1fr;
   }
+
   .post a,
   .post button {
     padding: 0.3rem 0.4rem;
@@ -612,6 +632,7 @@ button {
   right: 2rem;
   display: inline-block;
 }
+
 .welbody {
   font-family: Arial, sans-serif;
   background-color: #f4f4f4;
@@ -621,6 +642,7 @@ button {
   height: 100vh;
   margin: 0;
 }
+
 .welcome-button {
   background-color: #007bff;
   color: white;
@@ -634,6 +656,7 @@ button {
 .welcome-button:hover {
   background-color: #0056b3;
 }
+
 .welcome-container {
   text-align: center;
   background-color: #fff;
