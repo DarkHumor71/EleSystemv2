@@ -1,19 +1,25 @@
-import { Box, Button, TextField } from "@mui/material";
+import { Box, Button, Menu, MenuItem, Select, TextField } from "@mui/material";
 import { Formik } from "formik";
 import * as yup from "yup";
 import useMediaQuery from "@mui/material/useMediaQuery";
 import Header from "../../components/Header";
-
-const Form = () => {
+import { useEffect, useState } from "react";
+import { fetchBuildings } from "../../actions/building";
+import { setAlert } from "../../actions/alert";
+import { connect } from "mongoose";
+const Form = ({ setAlert, fetchBuildings }) => {
   const isNonMobile = useMediaQuery("(min-width:600px)");
-
+  const [buildings, setBuildings] = useState([]);
+  useEffect((fetchBuildings) => {
+    setBuildings(fetchBuildings()); // Fetch data when the component mounts
+  }, []);
   const handleFormSubmit = (values) => {
     console.log(values);
   };
 
   return (
     <Box m="20px">
-      <Header title="CREATE USER" subtitle="Create a New User Profile" />
+      <Header title="CREATE APARTMENT" subtitle="Create a New Apartment" />
 
       <Formik
         onSubmit={handleFormSubmit}
@@ -76,17 +82,36 @@ const Form = () => {
                 helperText={touched.email && errors.email}
                 sx={{ gridColumn: "span 4" }}
               />
+              <Select
+                labelId="building-type-label"
+                id="building"
+                name="building"
+                value={values.building}
+                label="Building Type"
+                onChange={handleChange}
+                onBlur={handleBlur}
+                error={!!touched.building && !!errors.building}
+              >
+                <MenuItem value="" disabled>
+                  Select Building
+                </MenuItem>
+                {buildings.map((building) => (
+                  <MenuItem key={building.id} value={building.id}>
+                    {building.name}
+                  </MenuItem>
+                ))}
+              </Select>
               <TextField
                 fullWidth
                 variant="filled"
                 type="text"
-                label="Contact Number"
+                label="Building"
                 onBlur={handleBlur}
                 onChange={handleChange}
-                value={values.contact}
-                name="contact"
-                error={!!touched.contact && !!errors.contact}
-                helperText={touched.contact && errors.contact}
+                value={values.building}
+                name="building"
+                error={!!touched.building && !!errors.building}
+                helperText={touched.building && errors.building}
                 sx={{ gridColumn: "span 4" }}
               />
               <TextField
@@ -128,16 +153,13 @@ const Form = () => {
   );
 };
 
-const phoneRegExp =
-  /^((\+[1-9]{1,4}[ -]?)|(\([0-9]{2,3}\)[ -]?)|([0-9]{2,4})[ -]?)*?[0-9]{3,4}[ -]?[0-9]{3,4}$/;
-
 const checkoutSchema = yup.object().shape({
   firstName: yup.string().required("required"),
   lastName: yup.string().required("required"),
   email: yup.string().email("invalid email").required("required"),
-  contact: yup
+  building: yup
     .string()
-    .matches(phoneRegExp, "Phone number is not valid")
+
     .required("required"),
   address1: yup.string().required("required"),
   address2: yup.string().required("required"),
@@ -146,9 +168,9 @@ const initialValues = {
   firstName: "",
   lastName: "",
   email: "",
-  contact: "",
+  building: "",
   address1: "",
   address2: "",
 };
 
-export default Form;
+export default connect(null, { setAlert, fetchBuildings })(Form);

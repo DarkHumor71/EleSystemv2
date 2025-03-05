@@ -10,7 +10,7 @@ import Header from "../../components/Header";
 import LineChart from "../../components/LineChart";
 import StatBox from "../../components/StatBox";
 
-const Dashboard = () => {
+const AdminDashboard = () => {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
 
@@ -217,4 +217,4 @@ const Dashboard = () => {
   );
 };
 
-export default adminDashboard;
+export default AdminDashboard;

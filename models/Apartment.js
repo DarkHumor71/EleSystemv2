@@ -6,6 +6,7 @@ const ApartmentSchema = new Schema(
       type: String,
       required: true,
       unique: true,
+      AutoIncrement: true,
     },
     building: {
       type: Schema.Types.ObjectId,
