@@ -27,10 +27,8 @@ router.post(
       return res.status(400).json({ msg: "Invalid Credentials" });
     }
     try {
-      const qr_code = req.body.qr_code;
-      const apartment = await Apartment.findOne({
-        qr_code.payload}), 
-      });
+      const qr_code = req.body.qr_code.payload;
+      const apartment = await Apartment.findOne({ qr_code });
       let current = 1; //admin may change this value
       let power = 24 * current;
       let energy = (power / 1000) * (req.body.time / 3600);
