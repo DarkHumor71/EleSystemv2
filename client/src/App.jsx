@@ -1,9 +1,9 @@
 import React from "react";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
-import Dashboard from "./scenes/dashboard";
+import AdminDashboard from "./scenes/dashboard";
 import Invoices from "./scenes/invoices";
 import Contacts from "./scenes/contacts";
-import Form from "./scenes/form";
+import Apartment from "./scenes/form/index";
 import Line from "./scenes/line";
 import FAQ from "./scenes/faq";
 import Login from "./scenes/login/login";
@@ -25,7 +25,7 @@ const router = createBrowserRouter([
       },
       {
         path: "/dash",
-        element: <Dashboard />,
+        element: <AdminDashboard />,
       },
       {
         path: "/contacts",
@@ -37,7 +37,7 @@ const router = createBrowserRouter([
       },
       {
         path: "/form",
-        element: <Form />,
+        element: <Apartment />,
       },
       {
         path: "/line",

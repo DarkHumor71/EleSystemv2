@@ -6,8 +6,8 @@ import Header from "../../components/Header";
 import { useEffect, useState } from "react";
 import { fetchBuildings } from "../../actions/building";
 import { setAlert } from "../../actions/alert";
-import { connect } from "mongoose";
-const Form = ({ setAlert, fetchBuildings }) => {
+import { connect } from "react-redux";
+const Apartment = ({ setAlert, fetchBuildings }) => {
   const isNonMobile = useMediaQuery("(min-width:600px)");
   const [buildings, setBuildings] = useState([]);
   useEffect((fetchBuildings) => {
@@ -173,4 +173,4 @@ const initialValues = {
   address2: "",
 };
 
-export default connect(null, { setAlert, fetchBuildings })(Form);
+export default connect(null, { setAlert, fetchBuildings })(Apartment);
