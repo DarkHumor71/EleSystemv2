@@ -23,10 +23,9 @@ const Item = ({ title, to, icon, selected, setSelected }) => {
       }}
       onClick={() => setSelected(title)}
       icon={icon}
+      component={<Link to={to} />} // Use the `component` prop to render a `Link`
     >
-      <Link to={to} style={{ textDecoration: "none", color: "inherit" }}>
-        <Typography>{title}</Typography>
-      </Link>
+      <Typography>{title}</Typography>
     </MenuItem>
   );
 };
@@ -38,26 +37,28 @@ const SidebarComponent = () => {
   const [selected, setSelected] = useState("Dashboard");
 
   return (
-    <Box
-      sx={{
-        "& .pro-sidebar-inner": {
-          background: `${colors.primary[400]} !important`,
-        },
-        "& .pro-icon-wrapper": {
-          backgroundColor: "transparent !important",
-        },
-        "& .pro-inner-item": {
-          padding: "5px 35px 5px 20px !important",
-        },
-        "& .pro-inner-item:hover": {
-          color: "#868dfb !important",
-        },
-        "& .pro-menu-item.active": {
-          color: "#6870fa !important",
-        },
-      }}
-    >
-      <Sidebar collapsed={isCollapsed}>
+    <Box>
+      <Sidebar
+        collapsed={isCollapsed}
+        rootStyles={{
+          background: colors.primary[400], // Sidebar background color
+          "& .pro-sidebar-inner": {
+            backgroundColor: colors.primary[400], // Inner background color
+          },
+          "& .pro-icon-wrapper": {
+            backgroundColor: "transparent", // Icon wrapper background
+          },
+          "& .pro-inner-item": {
+            padding: "5px 35px 5px 20px", // Padding for menu items
+          },
+          "& .pro-inner-item:hover": {
+            color: "#868dfb", // Hover color
+          },
+          "& .pro-menu-item.active": {
+            color: "#6870fa", // Active menu item color
+          },
+        }}
+      >
         <Menu iconShape="square">
           {/* LOGO AND MENU ICON */}
           <MenuItem
