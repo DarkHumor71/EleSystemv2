@@ -1,8 +1,9 @@
 import React from "react";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import AdminDashboard from "./scenes/dashboard";
+import Test from "./scenes/dashboard";
 import Invoices from "./scenes/invoices";
-import Contacts from "./scenes/contacts";
+import Buildings from "./scenes/contacts";
 import Apartment from "./scenes/form/index";
 import Line from "./scenes/line";
 import FAQ from "./scenes/faq";
@@ -32,8 +33,12 @@ const router = createBrowserRouter([
         element: <AdminDashboard />,
       },
       {
-        path: "/contacts",
-        element: <Contacts />,
+        path: "/tes",
+        element: <Test />,
+      },
+      {
+        path: "/buildings",
+        element: <Buildings />,
       },
       {
         path: "/invoices",

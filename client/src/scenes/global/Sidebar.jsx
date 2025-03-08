@@ -122,7 +122,7 @@ const SidebarComponent = () => {
             </Typography>
             <Item
               title="Contacts Information"
-              to="/contacts"
+              to="/buildings"
               icon={<ContactsOutlinedIcon />}
               selected={selected}
               setSelected={setSelected}
