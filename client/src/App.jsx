@@ -4,6 +4,7 @@ import AdminDashboard from "./scenes/dashboard";
 import Test from "./scenes/dashboard/test";
 import Mod from "./scenes/dashboard/mod";
 import Apr from "./scenes/dashboard/apart";
+import Profile from "./scenes/profile/profile";
 import Expensess from "./scenes/expensess";
 import Buildings from "./scenes/contacts";
 import Apartment from "./scenes/form/index";
@@ -25,14 +26,7 @@ const router = createBrowserRouter([
         path: "/side",
         element: <SidebarComponent />,
       },
-      {
-        path: "/building",
-        element: <BuildingRegister />,
-      },
-      {
-        path: "/dash",
-        element: <AdminDashboard />,
-      },
+
       {
         path: "/tes",
         element: <Test />,
@@ -55,6 +49,10 @@ const router = createBrowserRouter([
         element: <Expensess />,
       },
       {
+        path: "/profile",
+        element: <Profile />
+      },
+      {
         path: "/form",
         element: <Apartment />,
       },
@@ -62,6 +60,7 @@ const router = createBrowserRouter([
         path: "/line",
         element: <Line />,
       },
+
     ],
   },
   {
@@ -72,6 +71,14 @@ const router = createBrowserRouter([
         <Login />
       </>
     ),
+  },
+  {
+    path: "/dash",
+    element: <AdminDashboard />,
+  },
+  {
+    path: "/building",
+    element: <BuildingRegister />,
   },
   { index: true, element: <Landing /> },
 ]);

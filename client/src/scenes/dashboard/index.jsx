@@ -86,7 +86,7 @@ const AdminDashboard = () => {
           </Box>
         </Box>
         <Box
-          gridColumn="span 8"
+          gridColumn="span 9"
           gridRow="span 2"
         >
           <Buldings />

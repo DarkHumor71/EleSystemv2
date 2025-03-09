@@ -5,7 +5,7 @@ import { CssBaseline, ThemeProvider } from "@mui/material";
 import { ColorModeContext, useMode } from "../theme";
 import { Outlet } from "react-router-dom";
 
-const MainLayout = () => {
+const MainLayout = ({ top }) => {
   const [isSidebar, setIsSidebar] = useState(true);
   const [theme, colorMode] = useMode(); // Ensure useMode is implemented correctly
 
@@ -14,7 +14,10 @@ const MainLayout = () => {
       <ThemeProvider theme={theme}>
         <CssBaseline />
         <div className="app">
-          <Sidebar isSidebar={isSidebar} />
+          if (top) {
+            <Sidebar isSidebar={isSidebar} />
+          }
+
           <main className="content">
             <Topbar setIsSidebar={setIsSidebar} /> <Outlet />
             {""}
