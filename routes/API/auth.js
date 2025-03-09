@@ -8,6 +8,7 @@ const auth = require("../../middleware/auth");
 const Apartment = require("../../models/Apartment");
 const building = require("../../middleware/building");
 const c = require("config");
+const Building = require("../../models/Building");
 
 //@route    GET api/auth
 //@desc     token to detailed Object
@@ -53,9 +54,22 @@ router.post(
 
     const { pin } = req.body;
     try {
+      //check building
+      let bt = req.decoded.building.id;
+      let building = await Building.findById(bt);
       //See if apartment exists
+      if (!building) {
+        return res
+          .status(400)
+          .json({ errors: [{ msg: "Invalid Credentials" }] });
+      }
 
       let apartment = await Apartment.findOne({ pin });
+      if (building != apartment.building) {
+        return res
+          .status(400)
+          .json({ errors: [{ msg: "Invalid Credentials" }] });
+      }
       if (!apartment) {
         return res
           .status(400)

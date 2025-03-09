@@ -11,6 +11,7 @@ import HelpOutlineOutlinedIcon from "@mui/icons-material/HelpOutlineOutlined";
 import TimelineOutlinedIcon from "@mui/icons-material/TimelineOutlined";
 import MenuOutlinedIcon from "@mui/icons-material/MenuOutlined";
 import DomainAddIcon from "@mui/icons-material/DomainAdd";
+import { color } from "@mui/system";
 
 const Item = ({ title, to, icon, selected, setSelected }) => {
   const theme = useTheme();
@@ -35,30 +36,10 @@ const SidebarComponent = () => {
   const colors = tokens(theme.palette.mode);
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [selected, setSelected] = useState("Dashboard");
-
+  console.log(colors.primary[900]);
   return (
     <Box>
-      <Sidebar
-        collapsed={isCollapsed}
-        rootStyles={{
-          background: colors.primary[400], // Sidebar background color
-          "& .pro-sidebar-inner": {
-            backgroundColor: colors.primary[400], // Inner background color
-          },
-          "& .pro-icon-wrapper": {
-            backgroundColor: "transparent", // Icon wrapper background
-          },
-          "& .pro-inner-item": {
-            padding: "5px 35px 5px 20px", // Padding for menu items
-          },
-          "& .pro-inner-item:hover": {
-            color: "#868dfb", // Hover color
-          },
-          "& .pro-menu-item.active": {
-            color: "#6870fa", // Active menu item color
-          },
-        }}
-      >
+      <Sidebar collapsed={isCollapsed}>
         <Menu iconShape="square">
           {/* LOGO AND MENU ICON */}
           <MenuItem
@@ -107,7 +88,7 @@ const SidebarComponent = () => {
           <Box paddingLeft={isCollapsed ? undefined : "10%"}>
             <Item
               title="Dashboard"
-              to="/"
+              to="/dash"
               icon={<HomeOutlinedIcon />}
               selected={selected}
               setSelected={setSelected}

@@ -17,7 +17,7 @@ import SidebarComponent from "./scenes/global/Sidebar";
 const router = createBrowserRouter([
   {
     path: "/", // Apply MainLayout for the root
-    element: <MainLayout />,
+    element: <MainLayout side={true} />,
     children: [
       {
         path: "/side",
