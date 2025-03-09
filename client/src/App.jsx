@@ -1,11 +1,13 @@
 import React from "react";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import AdminDashboard from "./scenes/dashboard";
-import Invoices from "./scenes/invoices";
-import Contacts from "./scenes/contacts";
+import Test from "./scenes/dashboard/test";
+import Mod from "./scenes/dashboard/mod";
+import Apr from "./scenes/dashboard/apart";
+import Expensess from "./scenes/expensess";
+import Buildings from "./scenes/contacts";
 import Apartment from "./scenes/form/index";
 import Line from "./scenes/line";
-import FAQ from "./scenes/faq";
 import Login from "./scenes/login/login";
 import MainLayout from "./Layout/MainLayout";
 import { Provider } from "react-redux";
@@ -32,12 +34,24 @@ const router = createBrowserRouter([
         element: <AdminDashboard />,
       },
       {
-        path: "/contacts",
-        element: <Contacts />,
+        path: "/tes",
+        element: <Test />,
       },
       {
-        path: "/invoices",
-        element: <Invoices />,
+        path: "/mod",
+        element: <Mod />,
+      },
+      {
+        path: "/apr",
+        element: <Apr />,
+      },
+      {
+        path: "/buildings",
+        element: <Buildings />,
+      },
+      {
+        path: "/expensess",
+        element: <Expensess />,
       },
       {
         path: "/form",
