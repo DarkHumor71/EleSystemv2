@@ -1,16 +1,12 @@
-import { Box, Button, IconButton, Typography, useTheme } from "@mui/material";
+import { Box, IconButton, Typography, useTheme, Button } from "@mui/material";
 import { tokens } from "../../theme";
 import { mockTransactions } from "../../data/mockData";
 import DownloadOutlinedIcon from "@mui/icons-material/DownloadOutlined";
-import EmailIcon from "@mui/icons-material/Email";
-import PointOfSaleIcon from "@mui/icons-material/PointOfSale";
-import PersonAddIcon from "@mui/icons-material/PersonAdd";
-import TrafficIcon from "@mui/icons-material/Traffic";
 import Header from "../../components/Header";
 import LineChart from "../../components/LineChart";
 import StatBox from "../../components/StatBox";
 import ApartmentIcon from '@mui/icons-material/Apartment';
-import CorporateFareIcon from '@mui/icons-material/CorporateFare';
+import PaidIcon from '@mui/icons-material/Paid';
 
 const Mod = () => {
   const theme = useTheme();
@@ -40,29 +36,10 @@ const Mod = () => {
           justifyContent="center"
         >
           <StatBox
-            title="12,361"
-            subtitle="Emails Sent"
-            progress="0.75"
-            increase="+14%"
-            icon={
-              <EmailIcon
-                sx={{ color: colors.greenAccent[600], fontSize: "26px" }}
-              />
-            }
-          />
-        </Box>
-        <Box
-          gridColumn="span 3"
-          backgroundColor={colors.primary[400]}
-          display="flex"
-          alignItems="center"
-          justifyContent="center"
-        >
-          <StatBox
             title="6"
-            subtitle="Apartment"
+            subtitle="Apatartments"
             icon={
-              <PointOfSaleIcon
+              <ApartmentIcon
                 sx={{ color: colors.greenAccent[600], fontSize: "26px" }}
               />
             }
@@ -76,12 +53,10 @@ const Mod = () => {
           justifyContent="center"
         >
           <StatBox
-            title="32,441"
-            subtitle="New Clients"
-            progress="0.30"
-            increase="+5%"
+            title="98"
+            subtitle="Total Building Spent"
             icon={
-              <PersonAddIcon
+              <PaidIcon
                 sx={{ color: colors.greenAccent[600], fontSize: "26px" }}
               />
             }
@@ -95,16 +70,28 @@ const Mod = () => {
           justifyContent="center"
         >
           <StatBox
-            title="1,325,134"
-            subtitle="Traffic Received"
-            progress="0.80"
-            increase="+43%"
+            title="18$"
+            subtitle="My Spent"
             icon={
-              <TrafficIcon
+              <PaidIcon
                 sx={{ color: colors.greenAccent[600], fontSize: "26px" }}
               />
             }
           />
+        </Box>
+        <Box
+          gridColumn="span 2"
+          backgroundColor={colors.primary[400]}
+          display="flex"
+          gridTemplateRows="repeat(3, 1fr)"
+          alignItems="center"
+          justifyContent="center">
+          <Box>
+            <Button variant="contained" color="primary">Create</Button>
+          </Box>
+          <Box>
+            <Button variant="contained" color="secondary">Delete</Button>
+          </Box>
         </Box>
 
         {/* ROW 2 */}
@@ -126,14 +113,14 @@ const Mod = () => {
                 fontWeight="600"
                 color={colors.grey[100]}
               >
-                Revenue Generated
+                Yearly Total Spent on Elevators
               </Typography>
               <Typography
                 variant="h3"
                 fontWeight="bold"
                 color={colors.greenAccent[500]}
               >
-                $59,342.32
+                $190
               </Typography>
             </Box>
             <Box>
@@ -163,7 +150,7 @@ const Mod = () => {
             p="15px"
           >
             <Typography color={colors.grey[100]} variant="h5" fontWeight="600">
-              Recent Transactions
+              Recent Expensess
             </Typography>
           </Box>
           {mockTransactions.map((transaction, i) => (
