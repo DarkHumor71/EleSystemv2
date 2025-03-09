@@ -4,22 +4,31 @@ import Topbar from "../scenes/global/Topbar";
 import { CssBaseline, ThemeProvider } from "@mui/material";
 import { ColorModeContext, useMode } from "../theme";
 import { Outlet } from "react-router-dom";
+<<<<<<< HEAD
 
 const MainLayout = ({ top }) => {
+=======
+import PropTypes from "prop-types";
+const MainLayout = ({ side }) => {
+>>>>>>> aae398c4dc00d1b189f48d913edc24fc59580afd
   const [isSidebar, setIsSidebar] = useState(true);
   const [theme, colorMode] = useMode(); // Ensure useMode is implemented correctly
-
   return (
     <ColorModeContext.Provider value={colorMode}>
       <ThemeProvider theme={theme}>
         <CssBaseline />
         <div className="app">
+<<<<<<< HEAD
           if (top) {
             <Sidebar isSidebar={isSidebar} />
           }
+=======
+          {side && <Sidebar isSidebar={isSidebar} />}
+>>>>>>> aae398c4dc00d1b189f48d913edc24fc59580afd
 
           <main className="content">
-            <Topbar setIsSidebar={setIsSidebar} /> <Outlet />
+            <Topbar setIsSidebar={setIsSidebar} />
+            <Outlet />
             {""}
           </main>
         </div>
@@ -28,4 +37,7 @@ const MainLayout = ({ top }) => {
   );
 };
 
+MainLayout.Proptype = {
+  side: PropTypes.bool,
+};
 export default MainLayout;

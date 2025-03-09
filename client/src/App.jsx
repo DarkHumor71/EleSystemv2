@@ -1,14 +1,20 @@
 import React from "react";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import AdminDashboard from "./scenes/dashboard";
+<<<<<<< HEAD
 import Test from "./scenes/dashboard/test";
 import Mod from "./scenes/dashboard/mod";
 import Apr from "./scenes/dashboard/apart";
 import Profile from "./scenes/profile/profile";
 import Expensess from "./scenes/expensess";
 import Buildings from "./scenes/contacts";
+=======
+import Invoices from "./scenes/invoices";
+import Contacts from "./scenes/contacts";
+>>>>>>> aae398c4dc00d1b189f48d913edc24fc59580afd
 import Apartment from "./scenes/form/index";
 import Line from "./scenes/line";
+import FAQ from "./scenes/faq";
 import Login from "./scenes/login/login";
 import MainLayout from "./Layout/MainLayout";
 import { Provider } from "react-redux";
@@ -20,7 +26,7 @@ import SidebarComponent from "./scenes/global/Sidebar";
 const router = createBrowserRouter([
   {
     path: "/", // Apply MainLayout for the root
-    element: <MainLayout />,
+    element: <MainLayout side={true} />,
     children: [
       {
         path: "/side",
@@ -28,25 +34,12 @@ const router = createBrowserRouter([
       },
 
       {
-        path: "/tes",
-        element: <Test />,
+        path: "/contacts",
+        element: <Contacts />,
       },
       {
-        path: "/mod",
-        element: <Mod />
-
-      },
-      {
-        path: "/apr",
-        element: <Apr />,
-      },
-      {
-        path: "/buildings",
-        element: <Buildings />,
-      },
-      {
-        path: "/expensess",
-        element: <Expensess />,
+        path: "/invoices",
+        element: <Invoices />,
       },
       {
         path: "/profile",
