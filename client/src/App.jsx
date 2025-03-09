@@ -1,25 +1,17 @@
 import React from "react";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import AdminDashboard from "./scenes/dashboard";
-<<<<<<< HEAD
-<<<<<<< HEAD
 import Test from "./scenes/dashboard/test";
 import Mod from "./scenes/dashboard/mod";
 import Apr from "./scenes/dashboard/apart";
 import Profile from "./scenes/profile/profile";
 import Expensess from "./scenes/expensess";
 import Buildings from "./scenes/contacts";
-=======
-import Invoices from "./scenes/invoices";
-import Contacts from "./scenes/contacts";
->>>>>>> aae398c4dc00d1b189f48d913edc24fc59580afd
-=======
 import Test from "./scenes/dashboard/test";
 import Mod from "./scenes/dashboard/mod";
 import Apr from "./scenes/dashboard/apart";
 import Expensess from "./scenes/expensess";
 import Buildings from "./scenes/contacts";
->>>>>>> ff61c25a168df5177490991b72c81571dc9d17e5
 import Apartment from "./scenes/form/index";
 import Line from "./scenes/line";
 import Login from "./scenes/login/login";
