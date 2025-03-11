@@ -1,17 +1,12 @@
 import React from "react";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
-import AdminDashboard from "./scenes/dashboard";
-import Test from "./scenes/dashboard/test";
-import Mod from "./scenes/dashboard/mod";
-import Apr from "./scenes/dashboard/apart";
 import Profile from "./scenes/profile/profile";
 import Expensess from "./scenes/expensess";
 import Buildings from "./scenes/contacts";
 import Test from "./scenes/dashboard/test";
 import Mod from "./scenes/dashboard/mod";
 import Apr from "./scenes/dashboard/apart";
-import Expensess from "./scenes/expensess";
-import Buildings from "./scenes/contacts";
+import AdminDashboard from "./scenes/dashboard/index";
 import Apartment from "./scenes/form/index";
 import Line from "./scenes/line";
 import Login from "./scenes/login/login";
@@ -25,7 +20,7 @@ import SidebarComponent from "./scenes/global/Sidebar";
 const router = createBrowserRouter([
   {
     path: "/", // Apply MainLayout for the root
-    element: <MainLayout side={true} />,
+    element: <MainLayout />,
     children: [
       {
         path: "/side",
@@ -78,12 +73,24 @@ const router = createBrowserRouter([
   },
   {
     path: "/dash",
-    element: <AdminDashboard />,
+    element:
+      <MainLayout side={false} profile={false} />,
+    children: [{
+      path: "/dash",
+      element: <AdminDashboard />
+    },
+    ]
   },
   {
     path: "/building",
-    element: <BuildingRegister />,
+    element: <MainLayout side={false} profile={false} />,
+    children: [{
+      path: "/building",
+      element: <BuildingRegister />
+    }]
   },
+
+
   { index: true, element: <Landing /> },
 ]);
 

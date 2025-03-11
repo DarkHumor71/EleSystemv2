@@ -4,11 +4,11 @@ import { tokens } from "../../theme";
 import { mockDataContacts } from "../../data/mockData";
 import Header from "../../components/Header";
 import { useTheme } from "@mui/material";
-
-const Buildings = () => {
+import PropTypes from "prop-types"
+const Buildings = ({ head }) => {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
-
+  if (head == null) head = true;
   const columns = [
     { field: "id", headerName: "ID", flex: 0.5 },
     { field: "registrarId", headerName: "Registrar ID" },
@@ -37,10 +37,10 @@ const Buildings = () => {
 
   return (
     <Box m="20px">
-      <Header
+      {head && <Header
         title="Buildings"
         subtitle="List of Buildings"
-      />
+      />}
       <Box
         m="40px 0 0 0"
         height="75vh"
@@ -82,5 +82,7 @@ const Buildings = () => {
     </Box>
   );
 };
-
+Buildings.prototype = {
+  head: PropTypes.bool
+}
 export default Buildings;

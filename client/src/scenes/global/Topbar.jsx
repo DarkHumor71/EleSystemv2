@@ -5,8 +5,10 @@ import { Link } from 'react-router-dom';
 import LightModeOutlinedIcon from "@mui/icons-material/LightModeOutlined";
 import DarkModeOutlinedIcon from "@mui/icons-material/DarkModeOutlined";
 import PersonOutlinedIcon from "@mui/icons-material/PersonOutlined";
+import PropTypes from "prop-types";
+import profile from "../profile/profile";
 
-const Topbar = () => {
+const Topbar = ({ profile }) => {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
   const colorMode = useContext(ColorModeContext);
@@ -27,12 +29,15 @@ const Topbar = () => {
             <LightModeOutlinedIcon />
           )}
         </IconButton>
-        <IconButton component={Link} to="/profile">
-          <PersonOutlinedIcon />
-        </IconButton>
+        {profile &&
+          <IconButton component={Link} to="/profile">
+            <PersonOutlinedIcon />
+          </IconButton>}
       </Box>
     </Box>
   );
 };
-
+Topbar.PropType = {
+  profile: PropTypes.bool
+}
 export default Topbar;

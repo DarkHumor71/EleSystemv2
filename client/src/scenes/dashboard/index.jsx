@@ -89,7 +89,7 @@ const AdminDashboard = () => {
           gridColumn="span 9"
           gridRow="span 2"
         >
-          <Buldings />
+          <Buldings head={false} />
         </Box>
       </Box>
     </Box>
