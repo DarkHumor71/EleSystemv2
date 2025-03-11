@@ -23,7 +23,7 @@ export default function (state = initialState, action) {
       state.showPinField = true;
       return {
         ...state,
-        isAuthenticated: true,
+        isAuthenticated: false,
         loading: false,
         building: payload,
       };

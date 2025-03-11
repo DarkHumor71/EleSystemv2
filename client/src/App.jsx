@@ -6,7 +6,7 @@ import Buildings from "./scenes/contacts";
 import Test from "./scenes/dashboard/test";
 import Mod from "./scenes/dashboard/mod";
 import Apr from "./scenes/dashboard/apart";
-import AdminDashboard from "./scenes/dashboard/index";
+import AdminDashboard from "./scenes/dashboard/admin";
 import Apartment from "./scenes/form/index";
 import Line from "./scenes/line";
 import Login from "./scenes/login/login";
@@ -17,6 +17,10 @@ import Landing from "./components/Landing";
 import Alert from "./Layout/Alert";
 import BuildingRegister from "./scenes/form/building";
 import SidebarComponent from "./scenes/global/Sidebar";
+import setAuthToken from "./utils/setAuthToken";
+import { loadApartment } from "./actions/auth";
+import { useEffect } from "react";
+
 const router = createBrowserRouter([
   {
     path: "/", // Apply MainLayout for the root
@@ -49,7 +53,7 @@ const router = createBrowserRouter([
       },
       {
         path: "/profile",
-        element: <Profile />
+        element: <Profile />,
       },
       {
         path: "/form",
@@ -59,7 +63,6 @@ const router = createBrowserRouter([
         path: "/line",
         element: <Line />,
       },
-
     ],
   },
   {
@@ -73,31 +76,39 @@ const router = createBrowserRouter([
   },
   {
     path: "/dash",
-    element:
-      <MainLayout side={false} profile={false} />,
-    children: [{
-      path: "/dash",
-      element: <AdminDashboard />
-    },
-    ]
+    element: <MainLayout side={false} profile={false} />,
+    children: [
+      {
+        path: "/dash",
+        element: <AdminDashboard />,
+      },
+    ],
   },
   {
     path: "/building",
     element: <MainLayout side={false} profile={false} />,
-    children: [{
-      path: "/building",
-      element: <BuildingRegister />
-    }]
+    children: [
+      {
+        path: "/building",
+        element: <BuildingRegister />,
+      },
+    ],
   },
-
 
   { index: true, element: <Landing /> },
 ]);
-
-const App = () => (
-  <Provider store={store}>
-    <RouterProvider router={router} />
-  </Provider>
-);
+if (localStorage.token) {
+  setAuthToken(localStorage.token);
+}
+const App = () => {
+  useEffect(() => {
+    store.dispatch(loadApartment());
+  }, []);
+  return (
+    <Provider store={store}>
+      <RouterProvider router={router} />
+    </Provider>
+  );
+};
 
 export default App;

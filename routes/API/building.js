@@ -111,7 +111,9 @@ router.post(
 //@access   Private
 router.get("/", [auth, admin], async (req, res) => {
   try {
-    const buildings = await Building.find();
+    const buildings = await Building.find({ deleted_at: null }).select(
+      "-password -__v -createdAt -updatedAt"
+    );
     res.json(buildings);
   } catch (err) {
     console.error(err.message);
@@ -151,13 +153,26 @@ router.post("/create", async (req, res) => {
 //@route    DELETE api/building
 //@desc     DELETE a Building
 //@access   Private
-router.delete("/:id", [auth, admin], async (req, res) => {
+router.delete("/:email", [auth, admin], async (req, res) => {
   try {
-    await Building.findByIdAndRemove(req.params.id);
-    res.json({ msg: "Building deleted" });
+    const email = req.params.email;
+
+    // Find and update the building
+    const building = await Building.findOneAndUpdate(
+      { email },
+      { deleted_at: new Date() }, // Set the deletion timestamp
+      { new: true } // Return the updated document
+    );
+
+    if (!building) {
+      return res.status(404).json({ msg: "Building not found" });
+    }
+
+    res.json({ msg: "Building deleted", building });
   } catch (err) {
     console.error(err.message);
     res.status(500).send("Server Error");
   }
 });
+
 module.exports = router;

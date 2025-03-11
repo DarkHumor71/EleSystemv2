@@ -1,21 +1,18 @@
-import { Box, useTheme, Button, } from "@mui/material";
+import { Box, useTheme, Button, TextField } from "@mui/material";
 import { tokens } from "../../theme";
-import ApartmentIcon from '@mui/icons-material/Apartment';
-import CorporateFareIcon from '@mui/icons-material/CorporateFare';
+import ApartmentIcon from "@mui/icons-material/Apartment";
+import CorporateFareIcon from "@mui/icons-material/CorporateFare";
 import Header from "../../components/Header";
 import StatBox from "../../components/StatBox";
-import Buldings from "../../scenes/contacts";
-
-
-
+import Buldings from "../contacts";
+import { useNavigate } from "react-router-dom";
+import { useState } from "react";
 
 const AdminDashboard = () => {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
-
-  const handleCreateClick = () => {
-    window.location.href = "/building";
-  };
+  const navigate = useNavigate();
+  const [showTextField, setShowTextField] = useState(false);
 
   return (
     <Box m="20px">
@@ -71,24 +68,39 @@ const AdminDashboard = () => {
           />
         </Box>
         <Box
-          gridColumn="span 2"
+          gridColumn="span 4"
           backgroundColor={colors.primary[400]}
           display="flex"
-          gridTemplateRows="repeat(3, 1fr)"
+          flexDirection="column" // Stack elements vertically
           alignItems="center"
           justifyContent="center"
+          gap={2} // Spacing between elements
+          p={2} // Padding for a better layout
         >
-          <Box>
-            <Button variant="contained" color="primary" onClick={handleCreateClick}>Create</Button>
+          {/* Button Row (Create & Delete on the same line) */}
+          <Box display="flex" justifyContent="center" width="100%">
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={() => navigate("/buildings")}
+            >
+              Create
+            </Button>
+            <Button
+              variant="contained"
+              color="secondary"
+              onClick={() => setShowTextField(true)}
+            >
+              Delete
+            </Button>
           </Box>
-          <Box>
-            <Button variant="contained" color="secondary">Delete</Button>
-          </Box>
+
+          {/* TextField Below */}
+          {showTextField && (
+            <TextField label="Enter value" variant="outlined" fullWidth />
+          )}
         </Box>
-        <Box
-          gridColumn="span 9"
-          gridRow="span 2"
-        >
+        <Box gridColumn="span 9" gridRow="span 2">
           <Buldings head={false} />
         </Box>
       </Box>

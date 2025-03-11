@@ -9,3 +9,22 @@ export const fetchBuildings = () => async (dispatch) => {
     dispatch(setAlert({ type: REGISTER_FAIL }));
   }
 };
+//TODO check
+// Delete building
+// export const deleteBuilding = (email) => async (dispatch) => {
+//   try {
+//     await axios.delete(`/building/${email}`);
+
+//     dispatch({
+//       type: DELETE_BUILDING,
+//       payload: email,
+//     });
+
+//     dispatch(setAlert("Building Removed", "success"));
+//   } catch (err) {
+//     dispatch({
+//       type: BUILDING_ERROR,
+//       payload: { msg: err.response.statusText, status: err.response.status },
+//     });
+//   }
+// };

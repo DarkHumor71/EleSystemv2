@@ -3,7 +3,8 @@ import PropTypes from "prop-types";
 import { connect } from "react-redux";
 import { setAlert } from "../../actions/alert";
 import { loginApartment, loginBuilding } from "../../actions/auth";
-import { useNavigate } from "react-router-dom";
+import { Navigate } from "react-router-dom";
+
 const Login = ({
   setAlert,
   loginBuilding,
@@ -13,7 +14,7 @@ const Login = ({
   const [pin, setPin] = useState("");
   const [email, setEmail] = useState("");
   const [showPinField, setShowPinField] = useState(false);
-  const navigate = useNavigate();
+
   // Handle email submission
   const handleEmailSubmit = async (e) => {
     e.preventDefault();
@@ -43,7 +44,7 @@ const Login = ({
     try {
       if (await loginApartment(pin, email)) {
         console.log("success");
-        navigate("/dash"); // Redirect
+        return <Navigate to="/dash" replace />;
       } else {
         setShowPinField(false);
         setPin("");
@@ -52,7 +53,9 @@ const Login = ({
       console.log("error");
     }
   };
-
+  if (isAuthenticated) {
+    return <Navigate to="/dash" replace />;
+  }
   return (
     <section className="container">
       <h1 className="large text-primary">Sign In</h1>
@@ -97,11 +100,11 @@ Login.propTypes = {
   isAuthenticated: PropTypes.bool,
 };
 
-// const mapStateToProps = (state) => ({
-//   isAuthenticated: state.auth.isAuthenticated,
-// });
+const mapStateToProps = (state) => ({
+  isAuthenticated: state.auth.isAuthenticated,
+});
 
-export default connect(null, {
+export default connect(mapStateToProps, {
   setAlert,
   loginBuilding,
   loginApartment,

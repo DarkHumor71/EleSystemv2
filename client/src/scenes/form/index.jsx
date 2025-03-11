@@ -10,9 +10,9 @@ import { connect } from "react-redux";
 const Apartment = ({ setAlert, fetchBuildings }) => {
   const isNonMobile = useMediaQuery("(min-width:600px)");
   const [buildings, setBuildings] = useState([]);
-  useEffect((fetchBuildings) => {
-    setBuildings(fetchBuildings()); // Fetch data when the component mounts
-  }, []);
+  // useEffect((fetchBuildings) => {
+  //   setBuildings(fetchBuildings()); // Fetch data when the component mounts
+  // }, []);
   const handleFormSubmit = (values) => {
     console.log(values);
   };
@@ -82,7 +82,7 @@ const Apartment = ({ setAlert, fetchBuildings }) => {
                 helperText={touched.email && errors.email}
                 sx={{ gridColumn: "span 4" }}
               />
-              <Select
+              {/* <Select
                 labelId="building-type-label"
                 id="building"
                 name="building"
@@ -100,7 +100,7 @@ const Apartment = ({ setAlert, fetchBuildings }) => {
                     {building.name}
                   </MenuItem>
                 ))}
-              </Select>
+              </Select> */}
               <TextField
                 fullWidth
                 variant="filled"

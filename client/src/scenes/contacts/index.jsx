@@ -1,46 +1,53 @@
 import { Box } from "@mui/material";
 import { DataGrid, GridToolbar } from "@mui/x-data-grid";
+import { useEffect, useState } from "react";
 import { tokens } from "../../theme";
-import { mockDataContacts } from "../../data/mockData";
 import Header from "../../components/Header";
 import { useTheme } from "@mui/material";
-import PropTypes from "prop-types"
+import PropTypes from "prop-types";
+import axios from "axios";
 const Buildings = ({ head }) => {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
+  const [rows, setRows] = useState([]);
+  const [columns, setColumns] = useState([]);
   if (head == null) head = true;
-  const columns = [
-    { field: "id", headerName: "ID", flex: 0.5 },
-    { field: "registrarId", headerName: "Registrar ID" },
-    {
-      field: "name",
-      headerName: "Name",
-      flex: 1,
-      cellClassName: "name-column--cell",
-    },
-    {
-      field: "email",
-      headerName: "Email",
-      flex: 1,
-    },
-    {
-      field: "address",
-      headerName: "Address",
-      flex: 1,
-    },
-    {
-      field: "city",
-      headerName: "City",
-      flex: 1,
-    },
-  ];
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const config = {
+          headers: {
+            "x-auth-token": localStorage.token,
+          },
+        };
+        const response = await axios.get("/api/building", config);
 
+        if (response.data) {
+          const cleanedData = response.data.map(
+            ({ _id, deleted_at, ...rest }) => rest
+          );
+          setRows(cleanedData);
+
+          // Assuming response.data contains an array of objects, dynamically generate columns
+          if (cleanedData.length > 0) {
+            const sampleRow = cleanedData[0];
+            const generatedColumns = Object.keys(sampleRow).map((key) => ({
+              field: key,
+              headerName: key.toUpperCase(),
+              flex: 1,
+            }));
+            setColumns(generatedColumns);
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
+    };
+    fetchData();
+  }, []);
   return (
     <Box m="20px">
-      {head && <Header
-        title="Buildings"
-        subtitle="List of Buildings"
-      />}
+      {head && <Header title="Buildings" subtitle="List of Buildings" />}
       <Box
         m="40px 0 0 0"
         height="75vh"
@@ -74,15 +81,16 @@ const Buildings = ({ head }) => {
         }}
       >
         <DataGrid
-          rows={mockDataContacts}
+          rows={rows}
           columns={columns}
           components={{ Toolbar: GridToolbar }}
+          getRowId={(row) => row.id || row.email} // Ensure there's a unique ID
         />
       </Box>
     </Box>
   );
 };
 Buildings.prototype = {
-  head: PropTypes.bool
-}
+  head: PropTypes.bool,
+};
 export default Buildings;
