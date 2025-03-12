@@ -7,7 +7,7 @@ const bcrypt = require("bcryptjs");
 const { check, validationResult } = require("express-validator");
 const jwt = require("jsonwebtoken");
 const config = require("config");
-const User = require("../../models/User");
+const Apartment = require("../../models/Apartment");
 
 //@route    GET api/building
 //@desc     GET a Building
@@ -21,8 +21,8 @@ router.get("/:id", auth, async (req, res) => {
       }
     }
     if (req.permissions.moderator) {
-      const user = await User.findById(req.user.id);
-      if (!user.building) {
+      const apartment = await Apartment.findById(req.apartment.id);
+      if (!apartment.building) {
         return res.status(400).json({ msg: "Not authorized" });
       }
       const building = await Building.findById(req.params.id);

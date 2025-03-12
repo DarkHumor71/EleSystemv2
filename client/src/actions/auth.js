@@ -8,6 +8,7 @@ import {
   LOGIN_FAIL,
   APARTMENT_LOGIN_SUCCESS,
   BUILDING_LOGIN_SUCCESS,
+  LOGOUT,
 } from "./types";
 import { setAlert } from "./alert";
 import setAuthToken from "../utils/setAuthToken";
@@ -135,4 +136,8 @@ export const loginBuilding = (email) => async (dispatch) => {
     dispatch(setAlert("Error checking email", "danger"));
     throw err;
   }
+};
+//logout
+export const logout = () => (dispatch) => {
+  dispatch({ type: LOGOUT });
 };

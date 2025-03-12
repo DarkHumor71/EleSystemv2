@@ -10,7 +10,6 @@ app.get("/", (req, res) => res.send("Hello World!"));
 app.use(express.json({ extended: false })); // to use req.body
 app.use(cors());
 //Define Routes
-app.use("/api/users", require("./routes/API/users"));
 app.use("/api/auth", require("./routes/API/auth"));
 app.use("/api/building", require("./routes/API/building"));
 app.use("/api/apartment", require("./routes/API/apartment"));

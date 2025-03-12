@@ -1,14 +1,15 @@
 import { Box, IconButton, useTheme } from "@mui/material";
 import { useContext } from "react";
 import { ColorModeContext, tokens } from "../../theme";
-import { Link } from 'react-router-dom';
+import { Link } from "react-router-dom";
 import LightModeOutlinedIcon from "@mui/icons-material/LightModeOutlined";
 import DarkModeOutlinedIcon from "@mui/icons-material/DarkModeOutlined";
 import PersonOutlinedIcon from "@mui/icons-material/PersonOutlined";
+import LogoutIcon from "@mui/icons-material/Logout";
 import PropTypes from "prop-types";
-import profile from "../profile/profile";
-
-const Topbar = ({ profile }) => {
+import { connect } from "react-redux";
+import { logout } from "../../actions/auth";
+const Topbar = ({ profile, logout, auth: { isAuthenticated, loading } }) => {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
   const colorMode = useContext(ColorModeContext);
@@ -29,15 +30,22 @@ const Topbar = ({ profile }) => {
             <LightModeOutlinedIcon />
           )}
         </IconButton>
-        {profile &&
+        {profile && (
           <IconButton component={Link} to="/profile">
             <PersonOutlinedIcon />
-          </IconButton>}
+          </IconButton>
+        )}
+        <IconButton onClick={logout}>
+          <LogoutIcon />
+        </IconButton>
       </Box>
     </Box>
   );
 };
 Topbar.PropType = {
-  profile: PropTypes.bool
-}
-export default Topbar;
+  profile: PropTypes.bool,
+  logout: PropTypes.func.isRequired,
+  auth: PropTypes.object.isRequired,
+};
+const mapStatetoProps = (state) => ({ auth: state.auth });
+export default connect(mapStatetoProps, { logout })(Topbar);

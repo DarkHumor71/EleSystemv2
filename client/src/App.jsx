@@ -20,6 +20,7 @@ import SidebarComponent from "./scenes/global/Sidebar";
 import setAuthToken from "./utils/setAuthToken";
 import { loadApartment } from "./actions/auth";
 import { useEffect } from "react";
+import PrivateRoute from "./components/routing/privateroute";
 
 const router = createBrowserRouter([
   {
@@ -80,7 +81,7 @@ const router = createBrowserRouter([
     children: [
       {
         path: "/dash",
-        element: <AdminDashboard />,
+        element: <PrivateRoute children={<AdminDashboard />} />,
       },
     ],
   },

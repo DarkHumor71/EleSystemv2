@@ -4,10 +4,7 @@ import Topbar from "../scenes/global/Topbar";
 import { CssBaseline, ThemeProvider } from "@mui/material";
 import { ColorModeContext, useMode } from "../theme";
 import { Outlet } from "react-router-dom";
-
-
 import PropTypes from "prop-types";
-import profile from "../scenes/profile/profile";
 const MainLayout = ({ side, profile }) => {
   if (side == null) side = true;
   if (profile == null) profile = true;
@@ -18,9 +15,7 @@ const MainLayout = ({ side, profile }) => {
       <ThemeProvider theme={theme}>
         <CssBaseline />
         <div className="app">
-
           {side && <Sidebar isSidebar={isSidebar} />}
-
 
           <main className="content">
             <Topbar setIsSidebar={setIsSidebar} profile={profile} />
@@ -35,6 +30,6 @@ const MainLayout = ({ side, profile }) => {
 
 MainLayout.Proptype = {
   side: PropTypes.bool,
-  profile: PropTypes.bool
+  profile: PropTypes.bool,
 };
 export default MainLayout;

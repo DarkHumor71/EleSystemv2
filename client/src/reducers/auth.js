@@ -8,6 +8,7 @@ import {
   BUILDING_LOGIN_SUCCESS,
   APARTMENT_LOGIN_SUCCESS,
   LOGIN_FAIL,
+  LOGOUT,
 } from "../actions/types";
 
 const initialState = {
@@ -20,9 +21,9 @@ export default function (state = initialState, action) {
   const { type, payload } = action;
   switch (type) {
     case BUILDING_LOGIN_SUCCESS:
-      state.showPinField = true;
       return {
         ...state,
+        showPinField: true,
         isAuthenticated: false,
         loading: false,
         building: payload,
@@ -30,6 +31,7 @@ export default function (state = initialState, action) {
     case APARTMENT_LOGIN_SUCCESS:
       return {
         ...state,
+        token: localStorage.getItem("token"),
         isAuthenticated: true,
         loading: false,
         apartment: payload,
@@ -37,6 +39,7 @@ export default function (state = initialState, action) {
     case APARTMENT_LOADED:
       return {
         ...state,
+        token: localStorage.getItem("token"),
         isAuthenticated: true,
         loading: false,
         apartment: payload,
@@ -57,9 +60,9 @@ export default function (state = initialState, action) {
       };
     case REGISTER_FAIL:
     case AUTH_ERROR:
+    case LOGOUT:
     case LOGIN_FAIL:
       localStorage.removeItem("token");
-      console.log("login fail");
       return {
         ...state,
         token: null,
