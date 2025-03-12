@@ -2,7 +2,7 @@ import React from "react";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import Profile from "./scenes/profile/profile";
 import Expensess from "./scenes/expensess";
-import Buildings from "./scenes/contacts";
+import Buildings from "./scenes/building/building";
 import Test from "./scenes/dashboard/test";
 import Mod from "./scenes/dashboard/mod";
 import Apr from "./scenes/dashboard/apart";

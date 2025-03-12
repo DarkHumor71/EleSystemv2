@@ -4,7 +4,7 @@ import ApartmentIcon from "@mui/icons-material/Apartment";
 import CorporateFareIcon from "@mui/icons-material/CorporateFare";
 import Header from "../../components/Header";
 import StatBox from "../../components/StatBox";
-import Buldings from "../contacts";
+import Buldings from "../building/building";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 
