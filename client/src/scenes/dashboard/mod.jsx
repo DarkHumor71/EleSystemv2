@@ -7,11 +7,13 @@ import LineChart from "../../components/LineChart";
 import StatBox from "../../components/StatBox";
 import ApartmentIcon from '@mui/icons-material/Apartment';
 import PaidIcon from '@mui/icons-material/Paid';
+import { useNavigate } from "react-router-dom";
+
 
 const Mod = () => {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
-
+  const navigate = useNavigate();
   return (
     <Box m="20px">
       {/* HEADER */}
@@ -152,6 +154,9 @@ const Mod = () => {
             <Typography color={colors.grey[100]} variant="h5" fontWeight="600">
               Recent Expensess
             </Typography>
+            <Button variant="contained"
+              color="primary"
+              onClick={() => navigate("/expensess")}> Show More</Button>
           </Box>
           {mockTransactions.map((transaction, i) => (
             <Box

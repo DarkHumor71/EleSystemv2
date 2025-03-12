@@ -1,23 +1,34 @@
-import { Box, Typography, useTheme } from "@mui/material";
+import { Box } from "@mui/material";
 import { DataGrid, GridToolbar } from "@mui/x-data-grid";
+import { useEffect, useState } from "react";
 import { tokens } from "../../theme";
 import Header from "../../components/Header";
-import { useEffect, useState } from "react";
+import { useTheme } from "@mui/material";
+import PropTypes from "prop-types";
 import axios from "axios";
-const Expensess = () => {
+const Buildings = ({ head }) => {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
   const [rows, setRows] = useState([]);
   const [columns, setColumns] = useState([]);
+  if (head == null) head = true;
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await axios.get("/api/building/expense/60f3b3b3b3b3f40015f1f4b4");
+        const config = {
+          headers: {
+            "x-auth-token": localStorage.token,
+          },
+        };
+        const response = await axios.get("/api/building", config);
+
         if (response.data) {
           const cleanedData = response.data.map(
             ({ _id, deleted_at, ...rest }) => rest
           );
           setRows(cleanedData);
+
+          // Assuming response.data contains an array of objects, dynamically generate columns
           if (cleanedData.length > 0) {
             const sampleRow = cleanedData[0];
             const generatedColumns = Object.keys(sampleRow).map((key) => ({
@@ -34,11 +45,9 @@ const Expensess = () => {
     };
     fetchData();
   }, []);
-
-
   return (
     <Box m="20px">
-      <Header title="Expenses" subtitle="List of Expenses" />
+      {head && <Header title="Buildings" subtitle="List of Buildings" />}
       <Box
         m="40px 0 0 0"
         height="75vh"
@@ -66,6 +75,9 @@ const Expensess = () => {
           "& .MuiCheckbox-root": {
             color: `${colors.greenAccent[200]} !important`,
           },
+          "& .MuiDataGrid-toolbarContainer .MuiButton-text": {
+            color: `${colors.grey[100]} !important`,
+          },
         }}
       >
         <DataGrid
@@ -78,5 +90,7 @@ const Expensess = () => {
     </Box>
   );
 };
-
-export default Expensess;
+Buildings.prototype = {
+  head: PropTypes.bool,
+};
+export default Buildings;
