@@ -14,6 +14,7 @@ const Login = ({
   const [pin, setPin] = useState("");
   const [email, setEmail] = useState("");
   const [showPinField, setShowPinField] = useState(false);
+  const [showCheck, setShowCheck] = useState(true);
 
   // Handle email submission
   const handleEmailSubmit = async (e) => {
@@ -27,6 +28,7 @@ const Login = ({
       const response = await loginBuilding(email);
       if (response && response.exists) {
         setShowPinField(true); // Show the PIN field if the email exists
+        setShowCheck(false);
       }
     } catch (error) {
       console.log("error");
@@ -47,6 +49,7 @@ const Login = ({
         return <Navigate to="/dash" replace />;
       } else {
         setShowPinField(false);
+        setShowCheck(true);
         setPin("");
       }
     } catch (error) {
@@ -72,7 +75,9 @@ const Login = ({
             onChange={(e) => setEmail(e.target.value)}
           />
         </div>
-        <input type="submit" className="btn btn-primary" value="Check" />
+        {showCheck && (
+          <input type="submit" className="btn btn-primary" value="Check" />
+        )}
       </form>
 
       {showPinField && (
