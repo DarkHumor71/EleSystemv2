@@ -9,7 +9,8 @@ import ReceiptOutlinedIcon from "@mui/icons-material/ReceiptOutlined";
 import PersonOutlinedIcon from "@mui/icons-material/PersonOutlined";
 import TimelineOutlinedIcon from "@mui/icons-material/TimelineOutlined";
 import MenuOutlinedIcon from "@mui/icons-material/MenuOutlined";
-import DomainAddIcon from "@mui/icons-material/DomainAdd";
+import ApartmentIcon from '@mui/icons-material/Apartment';
+import MonetizationOnIcon from '@mui/icons-material/MonetizationOn';
 
 const Item = ({ title, to, icon, selected, setSelected }) => {
   const theme = useTheme();
@@ -106,7 +107,7 @@ const SidebarComponent = () => {
           <Box paddingLeft={isCollapsed ? undefined : "10%"}>
             <Item
               title="Dashboard"
-              to="/"
+              to="/mod"
               icon={<HomeOutlinedIcon />}
               selected={selected}
               setSelected={setSelected}
@@ -120,16 +121,16 @@ const SidebarComponent = () => {
               Data
             </Typography>
             <Item
-              title="Contacts Information"
-              to="/buildings"
-              icon={<ContactsOutlinedIcon />}
+              title="Apartments"
+              to="/apartments"
+              icon={<ApartmentIcon />}
               selected={selected}
               setSelected={setSelected}
             />
             <Item
               title="Expensess"
               to="/expensess"
-              icon={<ReceiptOutlinedIcon />}
+              icon={<MonetizationOnIcon />}
               selected={selected}
               setSelected={setSelected}
             />
@@ -143,19 +144,11 @@ const SidebarComponent = () => {
             </Typography>
             <Item
               title="Add Apartment"
-              to="/form"
+              to="/create_apartment"
               icon={<PersonOutlinedIcon />}
               selected={selected}
               setSelected={setSelected}
             />
-            <Item
-              title="Add Building"
-              to="/building"
-              icon={<DomainAddIcon />}
-              selected={selected}
-              setSelected={setSelected}
-            />
-
 
             <Typography
               variant="h6"

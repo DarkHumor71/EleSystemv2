@@ -1,45 +1,44 @@
 import { Box, Typography, useTheme } from "@mui/material";
-import { DataGrid } from "@mui/x-data-grid";
+import { DataGrid, GridToolbar } from "@mui/x-data-grid";
 import { tokens } from "../../theme";
-import { mockDataInvoices } from "../../data/mockData";
 import Header from "../../components/Header";
-
+import { useEffect, useState } from "react";
+import axios from "axios";
 const Expensess = () => {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
-  const columns = [
-    { field: "id", headerName: "ID" },
-    {
-      field: "name",
-      headerName: "Name",
-      flex: 1,
-      cellClassName: "name-column--cell",
-    },
-    {
-      field: "email",
-      headerName: "Email",
-      flex: 1,
-    },
-    {
-      field: "cost",
-      headerName: "Cost",
-      flex: 1,
-      renderCell: (params) => (
-        <Typography color={colors.greenAccent[500]}>
-          ${params.row.cost}
-        </Typography>
-      ),
-    },
-    {
-      field: "date",
-      headerName: "Date",
-      flex: 1,
-    },
-  ];
+  const [rows, setRows] = useState([]);
+  const [columns, setColumns] = useState([]);
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await axios.get("/api/building/expense/60f3b3b3b3b3f40015f1f4b4");
+        if (response.data) {
+          const cleanedData = response.data.map(
+            ({ _id, deleted_at, ...rest }) => rest
+          );
+          setRows(cleanedData);
+          if (cleanedData.length > 0) {
+            const sampleRow = cleanedData[0];
+            const generatedColumns = Object.keys(sampleRow).map((key) => ({
+              field: key,
+              headerName: key.toUpperCase(),
+              flex: 1,
+            }));
+            setColumns(generatedColumns);
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
+    };
+    fetchData();
+  }, []);
+
 
   return (
     <Box m="20px">
-      <Header title="INVOICES" subtitle="List of Invoice Balances" />
+      <Header title="Expenses" subtitle="List of Expenses" />
       <Box
         m="40px 0 0 0"
         height="75vh"
@@ -69,7 +68,12 @@ const Expensess = () => {
           },
         }}
       >
-        <DataGrid checkboxSelection rows={mockDataInvoices} columns={columns} />
+        <DataGrid
+          rows={rows}
+          columns={columns}
+          components={{ Toolbar: GridToolbar }}
+          getRowId={(row) => row.id || row.email} // Ensure there's a unique ID
+        />
       </Box>
     </Box>
   );

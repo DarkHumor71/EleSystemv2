@@ -62,7 +62,8 @@ router.get("/building/:id", auth, async (req, res) => {
 //@access   Private
 router.get("/", [auth, admin], async (req, res) => {
   try {
-    const apartments = await Apartment.find();
+    const apartments = await Apartment.find({ deleted_at: null }).select(
+      "-pin -__v -createdAt -updatedAt");
     res.json(apartments);
   } catch (err) {
     console.error(err.message);

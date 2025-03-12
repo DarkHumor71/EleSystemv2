@@ -1,4 +1,4 @@
-import { Box, Button, Menu, MenuItem, Select, TextField } from "@mui/material";
+import { Box, Button, Menu, MenuItem, Select, TextField, FormControl, InputLabel } from "@mui/material";
 import { Formik } from "formik";
 import * as yup from "yup";
 import useMediaQuery from "@mui/material/useMediaQuery";
@@ -7,9 +7,11 @@ import { useEffect, useState } from "react";
 import { fetchBuildings } from "../../actions/building";
 import { setAlert } from "../../actions/alert";
 import { connect } from "react-redux";
+import { useNavigate } from "react-router-dom";
 const Apartment = ({ setAlert, fetchBuildings }) => {
   const isNonMobile = useMediaQuery("(min-width:600px)");
   const [buildings, setBuildings] = useState([]);
+  const navigate = useNavigate();
   // useEffect((fetchBuildings) => {
   //   setBuildings(fetchBuildings()); // Fetch data when the component mounts
   // }, []);
@@ -105,44 +107,45 @@ const Apartment = ({ setAlert, fetchBuildings }) => {
                 fullWidth
                 variant="filled"
                 type="text"
-                label="Building"
+                label="Apartment Number"
                 onBlur={handleBlur}
                 onChange={handleChange}
                 value={values.building}
-                name="building"
-                error={!!touched.building && !!errors.building}
-                helperText={touched.building && errors.building}
-                sx={{ gridColumn: "span 4" }}
+                name="apartmentnumber"
+                error={!!touched.apartmentnumber && !!errors.apartmentnumber}
+                helperText={touched.apartmentnumber && errors.apartmentnumber}
+                sx={{ gridColumn: "span 2" }}
               />
               <TextField
                 fullWidth
                 variant="filled"
                 type="text"
-                label="Address 1"
+                label="Floor"
                 onBlur={handleBlur}
                 onChange={handleChange}
                 value={values.address1}
-                name="address1"
-                error={!!touched.address1 && !!errors.address1}
-                helperText={touched.address1 && errors.address1}
-                sx={{ gridColumn: "span 4" }}
+                name="floor"
+                error={!!touched.floor && !!errors.floor}
+                helperText={touched.floor && errors.floor}
+                sx={{ gridColumn: "span 2" }}
               />
-              <TextField
-                fullWidth
-                variant="filled"
-                type="text"
-                label="Address 2"
-                onBlur={handleBlur}
-                onChange={handleChange}
-                value={values.address2}
-                name="address2"
-                error={!!touched.address2 && !!errors.address2}
-                helperText={touched.address2 && errors.address2}
-                sx={{ gridColumn: "span 4" }}
-              />
+              <FormControl fullWidth variant="filled" sx={{ gridColumn: "span 4" }}>
+                <InputLabel>Building</InputLabel>
+                <Select
+                  name="address2"
+                  value={values.address2}
+                  onChange={handleChange}
+                  onBlur={handleBlur}
+                  error={!!touched.address2 && !!errors.address2}
+                >
+                  <MenuItem value="Building A">Building A</MenuItem>
+                  <MenuItem value="Building B">Building B</MenuItem>
+                  <MenuItem value="Building C">Building C</MenuItem>
+                </Select>
+              </FormControl>
             </Box>
             <Box display="flex" justifyContent="end" mt="20px">
-              <Button type="submit" color="secondary" variant="contained">
+              <Button type="submit" color="secondary" variant="contained" onClick={() => navigate("/qrcode")}>
                 Create New User
               </Button>
             </Box>

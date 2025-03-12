@@ -12,6 +12,10 @@ const ApartmentSchema = new Schema(
       type: Schema.Types.ObjectId,
       ref: "building",
     },
+    apartment_number: {
+      type: Number,
+      required: true,
+    },
     deleted_at: {
       type: Date,
     },
@@ -24,5 +28,5 @@ const ApartmentSchema = new Schema(
     timestamps: true, // Automatically adds `createdAt` and `updatedAt` fields
   }
 );
-
+ApartmentSchema.index({ building: 1, apartment_number: 1 }, { unique: true });
 module.exports = Apartment = mongoose.model("apartment", ApartmentSchema);
