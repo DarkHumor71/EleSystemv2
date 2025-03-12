@@ -28,7 +28,7 @@ router.post(
     }
     try {
       const qr_code = req.body.qr_code.payload;
-      const apartment = await Apartment.findOne({ qr_code });
+      const apartment = await Apartment.findById(qr_code);
       let current = 1; //admin may change this value
       let power = 24 * current;
       let energy = (power / 1000) * (req.body.time / 3600);
@@ -70,19 +70,19 @@ router.get("/", [auth, admin], async (req, res) => {
 //@route    GET api/expense/:id
 //@desc     get expense by id
 //@access   private
-router.get("/:id", auth, async (req, res) => {
+router.get("/apartment/:id", auth, async (req, res) => {
   try {
-    const expense = await Expense.findById(req.params.id);
-    if (!expense) return res.status(404).json({ msg: "Expense not found" });
     const apartment = await Apartment.findById(expense.apartment);
     const building = await Building.findById(apartment.building);
     const perm = req.decoded.permissions;
     if (
-      perm.admin ||
       (perm.moderator && req.decoded.building.id === building.id.toString()) ||
       (perm.resident && req.decoded.apartment.id === apartment.id.toString())
     ) {
-      res.json(expense);
+      const aptid = apartment.id;
+      const expenses = await Expense.find({ aptid });
+      if (!expenses) return res.status(404).json({ msg: "Expense not found" });
+      res.json(expenses);
     }
 
     //default case

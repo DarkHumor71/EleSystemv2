@@ -9,13 +9,16 @@ const Expensess = () => {
   const colors = tokens(theme.palette.mode);
   const [rows, setRows] = useState([]);
   const [columns, setColumns] = useState([]);
+  //TODO resolve conflict
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await axios.get("/api/building/expense/60f3b3b3b3b3f40015f1f4b4");
+        const response = await axios.get(
+          "/api/expense/building/67b9e0625fa31dca724d1712"
+        );
         if (response.data) {
           const cleanedData = response.data.map(
-            ({ _id, deleted_at, ...rest }) => rest
+            ({ deleted_at, ...rest }) => rest
           );
           setRows(cleanedData);
           if (cleanedData.length > 0) {
@@ -34,7 +37,6 @@ const Expensess = () => {
     };
     fetchData();
   }, []);
-
 
   return (
     <Box m="20px">
@@ -72,7 +74,7 @@ const Expensess = () => {
           rows={rows}
           columns={columns}
           components={{ Toolbar: GridToolbar }}
-          getRowId={(row) => row.id || row.email} // Ensure there's a unique ID
+          getRowId={(row) => row.id || row._id} // Ensure there's a unique ID
         />
       </Box>
     </Box>

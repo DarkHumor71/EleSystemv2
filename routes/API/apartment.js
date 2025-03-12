@@ -6,7 +6,7 @@ const Building = require("../../models/Building");
 const Apartment = require("../../models/Apartment");
 const { check } = require("express-validator");
 const { validationResult } = require("express-validator");
-
+const mod = require("../../middleware/moderator");
 //@route    GET api/apartment
 //@desc     GET a Apartment
 //@access   Private
@@ -35,16 +35,15 @@ router.get("/:id", auth, async (req, res) => {
     res.status(500).send("Server Error");
   }
 });
-
 //@route    GET api/apartment
 //@desc     GET all Apartments in a building
 //@access   Private
-router.get("/building/:id", auth, async (req, res) => {
+router.get("/building/:id", [auth], async (req, res) => {
   try {
     const building = await Building.findById(req.decoded.building.id);
     const perm = req.decoded.permissions;
     if (
-      !perm.admin ||
+      perm.admin ||
       (perm.moderator && req.decoded.building.id !== building.id.toString())
     ) {
       return res.status(401).json({ msg: "User not authorized" });
@@ -63,7 +62,8 @@ router.get("/building/:id", auth, async (req, res) => {
 router.get("/", [auth, admin], async (req, res) => {
   try {
     const apartments = await Apartment.find({ deleted_at: null }).select(
-      "-pin -__v -createdAt -updatedAt");
+      "-pin -__v -createdAt -updatedAt"
+    );
     res.json(apartments);
   } catch (err) {
     console.error(err.message);
@@ -78,11 +78,14 @@ router.post(
   "/",
   [
     auth,
-    admin,
+    mod,
     check("pin", "PIN is required and must be exactly 4 characters long")
       .isLength({ min: 4, max: 4 })
       .isNumeric()
       .withMessage("PIN must be numeric"),
+    check("apartment_number", "number is required")
+      .isNumeric()
+      .withMessage("number must be numeric"),
     check("building", "Building ID is required").not().isEmpty(),
   ],
   async (req, res) => {
@@ -93,13 +96,17 @@ router.post(
         return res.status(400).json({ errors: errors.array() });
       }
 
-      const { building, pin, is_moderator } = req.body;
+      const { building, pin, first_name, last_name, apartment_number, email } =
+        req.body;
 
       // Create the new apartment
       const newApartment = new Apartment({
         building: building,
         pin: pin,
-        is_moderator: is_moderator,
+        first_name: first_name,
+        last_name: last_name,
+        apartment_number: apartment_number,
+        email: email,
       });
 
       // Save the apartment to the database

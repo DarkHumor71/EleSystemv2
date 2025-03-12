@@ -6,7 +6,6 @@ const ApartmentSchema = new Schema(
       type: String,
       required: true,
       unique: true,
-      AutoIncrement: true,
     },
     building: {
       type: Schema.Types.ObjectId,
@@ -23,7 +22,11 @@ const ApartmentSchema = new Schema(
       type: Boolean,
       default: false,
     },
-    name: {
+    first_name: {
+      type: String,
+      required: true,
+    },
+    last_name: {
       type: String,
       required: true,
     },
