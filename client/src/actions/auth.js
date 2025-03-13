@@ -93,7 +93,8 @@ export const loginApartment =
         const res = await axios.post("/api/auth", body, config);
         localStorage.setItem("token", res.data.token);
         dispatch({ type: APARTMENT_LOGIN_SUCCESS, payload: res.data });
-        return true;
+
+        return { work: true, mod: res.data.mod };
       } catch (err) {
         const errors = err.response.data.errors;
         if (errors) {

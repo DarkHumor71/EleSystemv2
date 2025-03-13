@@ -3,14 +3,17 @@ import PropTypes from "prop-types";
 import { connect } from "react-redux";
 import { setAlert } from "../../actions/alert";
 import { loginApartment, loginBuilding } from "../../actions/auth";
-import { Navigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 const Login = ({
   setAlert,
   loginBuilding,
   loginApartment,
   isAuthenticated,
+  isModerator,
 }) => {
+  const navigate = useNavigate();
+
   const [pin, setPin] = useState("");
   const [email, setEmail] = useState("");
   const [showPinField, setShowPinField] = useState(false);
@@ -34,7 +37,6 @@ const Login = ({
       console.log("error");
     }
   };
-
   // Handle PIN submission
   const handlePinSubmit = async (e) => {
     e.preventDefault();
@@ -44,9 +46,22 @@ const Login = ({
     }
 
     try {
-      if (await loginApartment(pin, email)) {
-        console.log("success");
-        return <Navigate to="/dash" replace />;
+      const req = await loginApartment(pin, email);
+      if (req.work) {
+        console.log(req);
+        /*if (req.resident){
+        return navigate(/aprt);} */
+        if (req.mod) {
+          /*
+          if(popup){
+          mod
+          resident
+          }
+          */
+          return navigate("/mod");
+        } else {
+          return navigate("/dash");
+        }
       } else {
         setShowPinField(false);
         setShowCheck(true);
@@ -56,9 +71,10 @@ const Login = ({
       console.log("error");
     }
   };
-  if (isAuthenticated) {
-    return <Navigate to="/dash" replace />;
-  }
+  //TODO setup redux store
+  // if (isAuthenticated) {
+  //   return <Navigate to="/dash" replace />;
+  // }
   return (
     <section className="container">
       <h1 className="large text-primary">Sign In</h1>
@@ -103,10 +119,12 @@ Login.propTypes = {
   loginBuilding: PropTypes.func.isRequired,
   loginApartment: PropTypes.func.isRequired,
   isAuthenticated: PropTypes.bool,
+  isModerator: PropTypes.bool,
 };
 
 const mapStateToProps = (state) => ({
   isAuthenticated: state.auth.isAuthenticated,
+  isModerator: state.auth.isModerator,
 });
 
 export default connect(mapStateToProps, {
