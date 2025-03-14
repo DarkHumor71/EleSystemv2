@@ -129,7 +129,7 @@ const SidebarComponent = () => {
             />
             <Item
               title="Expensess"
-              to="/expensess"
+              to="/expenses"
               icon={<MonetizationOnIcon />}
               selected={selected}
               setSelected={setSelected}

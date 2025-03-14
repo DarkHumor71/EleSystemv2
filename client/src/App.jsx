@@ -1,7 +1,8 @@
 import React from "react";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import Profile from "./scenes/profile/profile";
-import Expensess from "./scenes/expensess";
+import Expensess from "./scenes/expensess/building_expenses";
+import Aprexpensess from "./scenes/expensess/apr_expenses";
 import Buildings from "./scenes/buildings/list_of_building";
 import Test from "./scenes/dashboard/test";
 import Mod from "./scenes/dashboard/mod";
@@ -55,7 +56,7 @@ const router = createBrowserRouter([
         element: <Buildings />,
       },
       {
-        path: "/expensess",
+        path: "/expenses",
         element: <Expensess />,
       },
       {
@@ -103,6 +104,10 @@ const router = createBrowserRouter([
       {
         path: "/apr",
         element: <Apr />,
+      },
+      {
+        path: "/apr_expenses",
+        element: <Aprexpensess />,
       },
 
     ],

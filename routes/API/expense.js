@@ -113,7 +113,7 @@ router.get("/building/:id", auth, async (req, res) => {
       const apartmentIds = apartments.map((apartment) => apartment._id);
       const expenses = await Expense.find({ apartment: { $in: apartmentIds } });
 
-      res.json(expenses);
+      return res.json(expenses);
     }
     return res.status(401).json({ msg: "User not authorized" });
   } catch (err) {
