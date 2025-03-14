@@ -73,6 +73,7 @@ router.get("/", [auth, admin], async (req, res) => {
 //@route    POST api/apartment
 //@desc     Create a Apartment
 //@access   Private
+//TODO change admin to mod
 router.post(
   "/",
   [
