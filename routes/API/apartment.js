@@ -127,6 +127,7 @@ router.post(
 //@route DELETE api/apartment
 //@desc DELETE a apartment
 //@access Private
+//TODO change admin or mod
 router.delete("/:id", [auth, admin], async (req, res) => {
   try {
     const apartment = await Apartment.findById(req.params.id);
