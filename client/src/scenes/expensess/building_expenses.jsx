@@ -18,9 +18,15 @@ const Expensess = () => {
         );
         if (response.data) {
           const cleanedData = response.data.map(
-            ({ __v, deleted_at, time, ...rest }) => ({
+            ({ __v, _id, apartment, deleted_at, time, power, cost, updatedAt, createdAt, ...rest }) => ({
               ...rest,
-              time: time ? time.$numberDecimal : null, // Ensure time exists before calling toString()
+              time: time ? `${time.$numberDecimal} s` : null, // Ensure time exists before calling toString()
+              power: power ? `${power.$numberDecimal} KW` : null,
+              cost: cost ? `${cost.$numberDecimal} $` : null,
+              "At Time": createdAt ? new Date(createdAt).toLocaleTimeString('en-US', {
+                year: 'numeric', month: 'short', day: 'numeric',
+                hour: '2-digit', minute: '2-digit'
+              }) : null
             })
           );
 
@@ -79,7 +85,7 @@ const Expensess = () => {
           rows={rows}
           columns={columns}
           components={{ Toolbar: GridToolbar }}
-          getRowId={(row) => row.id || row._id} // Ensure there's a unique ID
+          getRowId={(row) => row.id || row.apartment_number} // Ensure there's a unique ID
         />
       </Box>
     </Box>

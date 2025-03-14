@@ -67,7 +67,7 @@ router.get("/", [auth, admin], async (req, res) => {
   }
 });
 
-//@route    GET api/expense/:id
+//@route    GET api/apartment/expense/:id
 //@desc     get expense by id
 //@access   private
 router.get("/apartment/:id", auth, async (req, res) => {

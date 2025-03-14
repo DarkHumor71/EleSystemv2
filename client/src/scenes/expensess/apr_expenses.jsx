@@ -15,12 +15,22 @@ const Apr_expenses = () => {
         const fetchData = async () => {
             try {
                 const response = await axios.get(
-                    "/api/expense/building/67b9e0625fa31dca724d1712"
+                    "api/apartment/expense/:id"
                 );
                 if (response.data) {
                     const cleanedData = response.data.map(
-                        ({ deleted_at, ...rest }) => rest
+                        ({ __v, _id, apartment, deleted_at, time, power, cost, updatedAt, createdAt, ...rest }) => ({
+                            ...rest,
+                            time: time ? `${time.$numberDecimal} s` : null, // Ensure time exists before calling toString()
+                            power: power ? `${power.$numberDecimal} KW` : null,
+                            cost: cost ? `${cost.$numberDecimal} $` : null,
+                            "At Time": createdAt ? new Date(createdAt).toLocaleTimeString('en-US', {
+                                year: 'numeric', month: 'short', day: 'numeric',
+                                hour: '2-digit', minute: '2-digit'
+                            }) : null
+                        })
                     );
+
                     setRows(cleanedData);
                     if (cleanedData.length > 0) {
                         const sampleRow = cleanedData[0];

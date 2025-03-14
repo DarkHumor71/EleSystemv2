@@ -1,3 +1,4 @@
+import React, { useEffect, useState } from "react";
 import { Box, IconButton, Typography, useTheme, Button } from "@mui/material";
 import { tokens } from "../../theme";
 import { mockTransactions } from "../../data/mockData";
@@ -8,18 +9,49 @@ import StatBox from "../../components/StatBox";
 import ApartmentIcon from '@mui/icons-material/Apartment';
 import PaidIcon from '@mui/icons-material/Paid';
 import { useNavigate } from "react-router-dom";
-
+import axios from "axios";
 
 const Mod = () => {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
   const navigate = useNavigate();
+  const [data, setData] = useState([]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await axios.get(
+          "/api/expense/building/67b9e0625fa31dca724d1712");
+        if (response.data) {
+          const cleanedData = response.data.map(
+            ({ __v, _id, apartment, deleted_at, time, power, cost, updatedAt, createdAt, ...rest }) => ({
+              ...rest,
+
+              time: time ? `${time.$numberDecimal} s` : null,
+              power: power ? `${power.$numberDecimal} KW` : null,
+              cost: cost ? `${cost.$numberDecimal} $` : null,
+              createdAt: createdAt ? new Date(createdAt).toLocaleTimeString('en-US', {
+                year: 'numeric', month: 'short', day: 'numeric',
+                hour: '2-digit', minute: '2-digit'
+              }) : null
+            })
+          );
+          setData(cleanedData);
+
+
+        }
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
+    };
+    fetchData();
+  }, []);
+
   return (
     <Box m="20px">
       {/* HEADER */}
       <Box display="flex" justifyContent="space-between" alignItems="center">
         <Header title="DASHBOARD" subtitle="Welcome to your dashboard" />
-
       </Box>
 
       {/* GRID & CHARTS */}
@@ -39,7 +71,7 @@ const Mod = () => {
         >
           <StatBox
             title="6"
-            subtitle="Apatartments"
+            subtitle="Apartments"
             icon={
               <ApartmentIcon
                 sx={{ color: colors.greenAccent[600], fontSize: "26px" }}
@@ -85,15 +117,14 @@ const Mod = () => {
           gridColumn="span 2"
           backgroundColor={colors.primary[400]}
           display="flex"
-          gridTemplateRows="repeat(3, 1fr)"
+          flexDirection="row"
           alignItems="center"
-          justifyContent="center">
-          <Box>
-            <Button variant="contained" color="primary">Create</Button>
-          </Box>
-          <Box>
-            <Button variant="contained" color="secondary">Delete</Button>
-          </Box>
+          justifyContent="center"
+          gap="1px"
+
+        >
+          <Button variant="contained" color="primary">Create</Button>
+          <Button variant="contained" color="secondary">Delete</Button>
         </Box>
 
         {/* ROW 2 */}
@@ -105,7 +136,7 @@ const Mod = () => {
           <Box
             mt="25px"
             p="0 30px"
-            display="flex "
+            display="flex"
             justifyContent="space-between"
             alignItems="center"
           >
@@ -152,15 +183,15 @@ const Mod = () => {
             p="15px"
           >
             <Typography color={colors.grey[100]} variant="h5" fontWeight="600">
-              Recent Expensess
+              Recent Expenses
             </Typography>
             <Button variant="contained"
               color="primary"
               onClick={() => navigate("/expenses")}> Show More</Button>
           </Box>
-          {mockTransactions.map((transaction, i) => (
+          {data.map((transaction, i) => (
             <Box
-              key={`${transaction.txId}-${i}`}
+              key={`${transaction.apartment_number}-${i}`}
               display="flex"
               justifyContent="space-between"
               alignItems="center"
@@ -168,23 +199,15 @@ const Mod = () => {
               p="15px"
             >
               <Box>
-                <Typography
-                  color={colors.greenAccent[500]}
-                  variant="h5"
-                  fontWeight="600"
-                >
-                  {transaction.txId}
+                <Typography color={colors.greenAccent[500]} variant="h5" fontWeight="600">
+                  {transaction.createdAt}
                 </Typography>
                 <Typography color={colors.grey[100]}>
-                  {transaction.user}
+                  {transaction.time}
                 </Typography>
               </Box>
               <Box color={colors.grey[100]}>{transaction.date}</Box>
-              <Box
-                backgroundColor={colors.greenAccent[500]}
-                p="5px 10px"
-                borderRadius="4px"
-              >
+              <Box backgroundColor={colors.greenAccent[500]} p="5px 10px" borderRadius="4px">
                 ${transaction.cost}
               </Box>
             </Box>
@@ -194,4 +217,5 @@ const Mod = () => {
     </Box>
   );
 };
+
 export default Mod;
