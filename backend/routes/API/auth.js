@@ -77,14 +77,15 @@ router.post(
       const modifiedPayload = {
         ...req.decoded,
       };
-      const mod = req.decoded.permissions.moderator;
+      const moderator = req.decoded.permissions.moderator;
+      const resident = req.decoded.permissions.resident;
       jwt.sign(
         modifiedPayload,
         config.get("jwtSecret"),
 
         (err, token) => {
           if (err) throw err;
-          res.json({ token, mod });
+          res.json({ token, moderator, resident });
         }
       );
     } catch (err) {

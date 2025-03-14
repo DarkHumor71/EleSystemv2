@@ -9,8 +9,8 @@ import ReceiptOutlinedIcon from "@mui/icons-material/ReceiptOutlined";
 import PersonOutlinedIcon from "@mui/icons-material/PersonOutlined";
 import TimelineOutlinedIcon from "@mui/icons-material/TimelineOutlined";
 import MenuOutlinedIcon from "@mui/icons-material/MenuOutlined";
-import ApartmentIcon from '@mui/icons-material/Apartment';
-import MonetizationOnIcon from '@mui/icons-material/MonetizationOn';
+import ApartmentIcon from "@mui/icons-material/Apartment";
+import MonetizationOnIcon from "@mui/icons-material/MonetizationOn";
 
 const Item = ({ title, to, icon, selected, setSelected }) => {
   const theme = useTheme();
@@ -38,27 +38,7 @@ const SidebarComponent = () => {
 
   return (
     <Box>
-      <Sidebar
-        collapsed={isCollapsed}
-        rootStyles={{
-          background: colors.primary[400], // Sidebar background color
-          "& .pro-sidebar-inner": {
-            backgroundColor: colors.primary[400], // Inner background color
-          },
-          "& .pro-icon-wrapper": {
-            backgroundColor: "transparent", // Icon wrapper background
-          },
-          "& .pro-inner-item": {
-            padding: "5px 35px 5px 20px", // Padding for menu items
-          },
-          "& .pro-inner-item:hover": {
-            color: "#868dfb", // Hover color
-          },
-          "& .pro-menu-item.active": {
-            color: "#6870fa", // Active menu item color
-          },
-        }}
-      >
+      <Sidebar collapsed={isCollapsed}>
         <Menu iconShape="square">
           {/* LOGO AND MENU ICON */}
           <MenuItem
@@ -85,24 +65,6 @@ const SidebarComponent = () => {
               </Box>
             )}
           </MenuItem>
-
-          {!isCollapsed && (
-            <Box mb="25px">
-              <Box textAlign="center">
-                <Typography
-                  variant="h2"
-                  color={colors.grey[100]}
-                  fontWeight="bold"
-                  sx={{ m: "10px 0 0 0" }}
-                >
-                  Ed Roh
-                </Typography>
-                <Typography variant="h5" color={colors.greenAccent[500]}>
-                  VP Fancy Admin
-                </Typography>
-              </Box>
-            </Box>
-          )}
 
           <Box paddingLeft={isCollapsed ? undefined : "10%"}>
             <Item

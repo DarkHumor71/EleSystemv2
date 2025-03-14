@@ -12,3 +12,4 @@ export const LOGIN_FAIL = "LOGIN_FAIL";
 export const DELETE_BUILDING = "DELETE_BUILDING";
 export const BUILDING_ERROR = "BUILDING_ERROR";
 export const LOGOUT = "LOGOUT";
+export const ADMIN_LOGIN_SUCCESS = "ADMIN_LOGIN_SUCCESS";
