@@ -48,7 +48,7 @@ router.get("/building/:id", [auth], async (req, res) => {
     ) {
       return res.status(401).json({ msg: "User not authorized" });
     }
-    const apartments = await Apartment.find({ building: building.id });
+    const apartments = await Apartment.find({ building: building.id }).select("-pin -__v -createdAt -updatedAt -is_moderator");
     res.json(apartments);
   } catch (err) {
     console.error(err.message);

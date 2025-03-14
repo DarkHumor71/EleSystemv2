@@ -42,10 +42,6 @@ const router = createBrowserRouter([
         path: "/tes",
         element: <Test />,
       },
-      {
-        path: "/apartments",
-        element: <Apartments />,
-      },
 
       {
         path: "/buildings",
@@ -55,10 +51,7 @@ const router = createBrowserRouter([
         path: "/expenses",
         element: <Expensess />,
       },
-      {
-        path: "/profile",
-        element: <Profile />,
-      },
+
       {
         path: "/create_apartment",
         element: <Apartment />,
@@ -83,6 +76,18 @@ const router = createBrowserRouter([
     ),
   },
   {
+    path: "/profile",
+    element: <MainLayout side={false} profile={false} />,
+    children: [
+      {
+        path: "/profile",
+        element: <PrivateRoute children={<Profile />} />,
+      },
+
+    ],
+  },
+
+  {
     path: "/dash",
     element: <MainLayout side={false} profile={false} />,
     children: [
@@ -100,6 +105,17 @@ const router = createBrowserRouter([
       {
         path: "/create_apartment",
         element: <PrivateRoute children={<Apartment />} />,
+      },
+
+    ],
+  },
+  {
+    path: "/apartments",
+    element: <MainLayout side={true} profile={false} />,
+    children: [
+      {
+        path: "/apartments",
+        element: <PrivateRoute children={<Apartments />} />,
       },
 
     ],
