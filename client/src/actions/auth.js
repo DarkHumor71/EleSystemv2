@@ -8,6 +8,7 @@ import {
   LOGIN_FAIL,
   APARTMENT_LOGIN_SUCCESS,
   BUILDING_LOGIN_SUCCESS,
+  ADMIN_LOGIN_SUCCESS,
   LOGOUT,
 } from "./types";
 import { setAlert } from "./alert";
@@ -77,49 +78,53 @@ export const registerBuilding =
   };
 //Login apartment
 export const loginApartment =
-  (pin, email = null) =>
-  async (dispatch) => {
-    console.log(email);
-    if (!isNaN(pin) && pin.length === 4) {
-      console.log("pin");
-      const config = {
-        headers: {
-          "Content-Type": "application/json",
-          "x-auth-token": localStorage.token,
-        },
-      };
-      const body = JSON.stringify({ pin });
-      try {
-        const res = await axios.post("/api/auth", body, config);
-        localStorage.setItem("token", res.data.token);
-        dispatch({ type: APARTMENT_LOGIN_SUCCESS, payload: res.data });
+  //resident
 
-        return { work: true, mod: res.data.mod };
-      } catch (err) {
-        const errors = err.response.data.errors;
-        if (errors) {
-          errors.forEach((error) => dispatch(setAlert(error.msg, "danger")));
+
+    (pin, email = null) =>
+    async (dispatch) => {
+      console.log(email);
+      if (!isNaN(pin) && pin.length === 4) {
+        console.log("pin");
+        const config = {
+          headers: {
+            "Content-Type": "application/json",
+            "x-auth-token": localStorage.token,
+          },
+        };
+        const body = JSON.stringify({ pin });
+        try {
+          const res = await axios.post("/api/auth", body, config);
+          localStorage.setItem("token", res.data.token);
+          dispatch({ type: APARTMENT_LOGIN_SUCCESS, payload: res.data });
+
+          return { work: true, mod: res.data.moderator };
+        } catch (err) {
+          const errors = err.response.data.errors;
+          if (errors) {
+            errors.forEach((error) => dispatch(setAlert(error.msg, "danger")));
+          }
+          dispatch({ type: LOGIN_FAIL });
+          return false;
         }
-        dispatch({ type: LOGIN_FAIL });
-        return false;
-      }
-    } else if (email && pin) {
-      const password = pin;
-      try {
-        const res = await axios.post("/api/building", { email, password });
-        localStorage.setItem("token", res.data.token);
-        dispatch({ type: APARTMENT_LOGIN_SUCCESS, payload: res.data });
-        return true;
-      } catch (err) {
-        const errors = err.response.data.errors;
-        if (errors) {
-          errors.forEach((error) => dispatch(setAlert(error.msg, "danger")));
+      } else if (email && pin) {
+        //admin
+        const password = pin;
+        try {
+          const res = await axios.post("/api/building", { email, password });
+          localStorage.setItem("token", res.data.token);
+          dispatch({ type: ADMIN_LOGIN_SUCCESS, payload: res.data });
+          return true;
+        } catch (err) {
+          const errors = err.response.data.errors;
+          if (errors) {
+            errors.forEach((error) => dispatch(setAlert(error.msg, "danger")));
+          }
+          dispatch({ type: LOGIN_FAIL });
+          return false;
         }
-        dispatch({ type: LOGIN_FAIL });
-        return false;
       }
-    }
-  };
+    };
 //building login
 export const loginBuilding = (email) => async (dispatch) => {
   try {

@@ -5,7 +5,14 @@ import { setAlert } from "../../actions/alert";
 import { loginApartment, loginBuilding } from "../../actions/auth";
 import { useNavigate } from "react-router-dom";
 
-const Login = ({ setAlert, loginBuilding, loginApartment }) => {
+const Login = ({
+  setAlert,
+  loginBuilding,
+  loginApartment,
+  isAuthenticated,
+  isModerator,
+  isResident,
+}) => {
   const navigate = useNavigate();
 
   const [pin, setPin] = useState("");
@@ -58,7 +65,35 @@ const Login = ({ setAlert, loginBuilding, loginApartment }) => {
       console.log("error");
     }
   };
-
+  if (isAuthenticated) {
+    if (isModerator) {
+      return (
+        <div className="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50">
+          <div className="bg-white p-6 rounded-lg shadow-lg">
+            <p className="text-lg font-bold mb-4">LOGIN AS</p>
+            <div className="flex gap-4">
+              <button
+                className="btn btn-success"
+                onClick={() => navigate("/mod")}
+              >
+                Moderator
+              </button>
+              <button
+                className="btn btn-secondary"
+                onClick={() => navigate("/apr")}
+              >
+                Apartment
+              </button>
+            </div>
+          </div>
+        </div>
+      );
+    } else if (isResident) {
+      return navigate("apr");
+    } else {
+      return navigate("dash");
+    }
+  }
   return (
     <section className="container">
       <h1 className="large text-primary">Sign In</h1>
@@ -126,6 +161,18 @@ Login.propTypes = {
   setAlert: PropTypes.func.isRequired,
   loginBuilding: PropTypes.func.isRequired,
   loginApartment: PropTypes.func.isRequired,
+  isAuthenticated: PropTypes.bool,
+  isModerator: PropTypes.bool,
+  isResident: PropTypes.bool,
 };
+const mapStateToProps = (state) => ({
+  isAuthenticated: state.auth.isAuthenticated,
+  isModerator: state.auth.isModerator,
+  isResident: state.auth.isResident,
+});
 
-export default connect(null, { setAlert, loginBuilding, loginApartment })(Login);
+export default connect(mapStateToProps, {
+  setAlert,
+  loginBuilding,
+  loginApartment,
+})(Login);
