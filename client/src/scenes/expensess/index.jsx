@@ -18,8 +18,13 @@ const Expensess = () => {
         );
         if (response.data) {
           const cleanedData = response.data.map(
-            ({ deleted_at, ...rest }) => rest
+            ({ __v, deleted_at, time, ...rest }) => ({
+              ...rest,
+              time: time ? time.$numberDecimal : null, // Ensure time exists before calling toString()
+            })
           );
+
+          console.log(cleanedData);
           setRows(cleanedData);
           if (cleanedData.length > 0) {
             const sampleRow = cleanedData[0];

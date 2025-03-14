@@ -6,7 +6,7 @@
   "scripts": {
     "start": "node server",
     "server": "nodemon --env-file .env server",
-    "client": "npm start --prefix client",
+    "client": "npm start --prefix ../client",
     "dev": "concurrently \"npm run server\" \"npm run client\""
   },
   "author": "Mohammad Youssef",
@@ -30,6 +30,7 @@
     "http-proxy-middleware": "^3.0.3",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.10.1",
+    "mysql": "^2.18.1",
     "qrcode.react": "^4.2.0",
     "react-router-dom": "^7.1.1",
     "request": "^2.88.2"

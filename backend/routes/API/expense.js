@@ -102,26 +102,53 @@ router.get("/apartment/:id", auth, async (req, res) => {
 
 router.get("/building/:id", auth, async (req, res) => {
   try {
+    // Check if the building exists
     const building = await Building.findById(req.params.id);
-    if (!building) return res.status(404).json({ msg: "Building not found" });
-    const perm = req.decoded.permissions;
-    if (
-      perm.admin ||
-      (perm.moderator && req.decoded.building.id === building.id.toString())
-    ) {
-      const apartments = await Apartment.find({ building: req.params.id });
-      const apartmentIds = apartments.map((apartment) => apartment._id);
-      const expenses = await Expense.find({ apartment: { $in: apartmentIds } });
-
-      res.json(expenses);
+    if (!building) {
+      return res.status(404).json({ msg: "Building not found" });
     }
-    return res.status(401).json({ msg: "User not authorized" });
+
+    // Check user permissions
+    const perm = req.decoded.permissions;
+    const isAuthorized =
+      perm.admin ||
+      (perm.moderator && req.decoded.building.id === building.id.toString());
+
+    if (!isAuthorized) {
+      return res.status(401).json({ msg: "User not authorized" });
+    }
+
+    // Find all apartments in the building
+    const apartments = await Apartment.find({ building: req.params.id });
+    const apartmentIds = apartments.map((apartment) => apartment._id);
+
+    // Find all expenses for the apartments
+    const expenses = await Expense.find({ apartment: { $in: apartmentIds } });
+
+    // Map apartment_number to each expense
+    const expensesWithApartmentNumber = expenses.map((expense) => {
+      const apartment = apartments.find((apt) =>
+        apt._id.equals(expense.apartment)
+      );
+      return {
+        apartment_number: apartment ? apartment.apartment_number : null, // Add apartment_number
+
+        ...expense.toObject(), // Convert Mongoose document to plain object
+      };
+    });
+
+    // Return the expenses with apartment numbers
+    return res.json(expensesWithApartmentNumber);
   } catch (err) {
     console.error(err.message);
-    if (err.kind === "ObjectId")
-      return res.status(404).json({ msg: "Building not found" });
 
-    res.status(500).send("Server Error");
+    // Handle specific errors
+    if (err.kind === "ObjectId") {
+      return res.status(404).json({ msg: "Building not found" });
+    }
+
+    // Handle all other errors
+    return res.status(500).json({ msg: "Server Error" });
   }
 });
 
