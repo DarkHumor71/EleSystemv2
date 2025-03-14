@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
-import { Box, IconButton, Typography, useTheme, Button } from "@mui/material";
+import { Box, IconButton, Typography, useTheme, Button, TextField } from "@mui/material";
 import { tokens } from "../../theme";
-import { mockTransactions } from "../../data/mockData";
 import DownloadOutlinedIcon from "@mui/icons-material/DownloadOutlined";
 import Header from "../../components/Header";
 import LineChart from "../../components/LineChart";
@@ -16,6 +15,7 @@ const Mod = () => {
   const colors = tokens(theme.palette.mode);
   const navigate = useNavigate();
   const [data, setData] = useState([]);
+  const [showPinField, setShowPinField] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -26,7 +26,6 @@ const Mod = () => {
           const cleanedData = response.data.map(
             ({ __v, _id, apartment, deleted_at, time, power, cost, updatedAt, createdAt, ...rest }) => ({
               ...rest,
-
               time: time ? `${time.$numberDecimal} s` : null,
               power: power ? `${power.$numberDecimal} KW` : null,
               cost: cost ? `${cost.$numberDecimal} $` : null,
@@ -37,8 +36,6 @@ const Mod = () => {
             })
           );
           setData(cleanedData);
-
-
         }
       } catch (error) {
         console.error("Error fetching data:", error);
@@ -117,14 +114,26 @@ const Mod = () => {
           gridColumn="span 2"
           backgroundColor={colors.primary[400]}
           display="flex"
-          flexDirection="row"
+          flexDirection="column"
           alignItems="center"
           justifyContent="center"
-          gap="1px"
-
+          gap="10px"
         >
-          <Button variant="contained" color="primary">Create</Button>
-          <Button variant="contained" color="secondary">Delete</Button>
+          <Box display="flex" gap="10px">
+            <Button variant="contained" color="primary" onClick={() => navigate("/create_apartment")}>Create</Button>
+            <Button variant="contained" color="secondary" onClick={() => setShowPinField(!showPinField)}>Delete</Button>
+          </Box>
+
+          {/* TextField Below */}
+          {showPinField && (
+            <TextField
+              type="password"
+              label="Enter PIN"
+              variant="outlined"
+              fullWidth
+              sx={{ mt: 2 }}
+            />
+          )}
         </Box>
 
         {/* ROW 2 */}

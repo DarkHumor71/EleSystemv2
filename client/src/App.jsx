@@ -94,6 +94,17 @@ const router = createBrowserRouter([
     ],
   },
   {
+    path: "/create_apartment",
+    element: <MainLayout side={true} profile={false} />,
+    children: [
+      {
+        path: "/create_apartment",
+        element: <PrivateRoute children={<Apartment />} />,
+      },
+
+    ],
+  },
+  {
     path: "/mod",
     element: <MainLayout side={true} profile={false} />,
     children: [
