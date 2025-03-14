@@ -156,7 +156,7 @@ const Mod = () => {
             </Typography>
             <Button variant="contained"
               color="primary"
-              onClick={() => navigate("/expensess")}> Show More</Button>
+              onClick={() => navigate("/expenses")}> Show More</Button>
           </Box>
           {mockTransactions.map((transaction, i) => (
             <Box
