@@ -35,7 +35,7 @@ const Topbar = ({ profile, logout, auth: { isAuthenticated, loading } }) => {
             <PersonOutlinedIcon />
           </IconButton>
         )}
-        <IconButton onClick={logout}>
+        <IconButton onClick={logout} to="/">
           <LogoutIcon />
         </IconButton>
       </Box>

@@ -43,10 +43,6 @@ const router = createBrowserRouter([
         element: <Test />,
       },
       {
-        path: "/mod",
-        element: <Mod />,
-      },
-      {
         path: "/apartments",
         element: <Apartments />,
       },
@@ -93,6 +89,28 @@ const router = createBrowserRouter([
       {
         path: "/dash",
         element: <PrivateRoute children={<AdminDashboard />} />,
+      },
+
+    ],
+  },
+  {
+    path: "/create_apartment",
+    element: <MainLayout side={true} profile={false} />,
+    children: [
+      {
+        path: "/create_apartment",
+        element: <PrivateRoute children={<Apartment />} />,
+      },
+
+    ],
+  },
+  {
+    path: "/mod",
+    element: <MainLayout side={true} profile={false} />,
+    children: [
+      {
+        path: "/mod",
+        element: <PrivateRoute children={<Mod />} />,
       },
 
     ],
