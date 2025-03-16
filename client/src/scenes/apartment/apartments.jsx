@@ -27,10 +27,25 @@ const Apartments = () => {
 
         if (response.data) {
           const cleanedData = response.data.map(
-            ({ deleted_at, ...rest }) => rest
+            ({ deleted_at, _id, building, ...rest }) => ({
+              ...rest,
+
+            })
           );
           setRows(cleanedData);
-
+          /*   if (response.data) {
+                    const cleanedData = response.data.map(
+                      ({ __v, _id, apartment, deleted_at, time, power, cost, updatedAt, createdAt, ...rest }) => ({
+                        ...rest,
+                        time: time ? `${time.$numberDecimal} s` : null, // Ensure time exists before calling toString()
+                        power: power ? `${power.$numberDecimal} KW` : null,
+                        cost: cost ? `${cost.$numberDecimal} $` : null,
+                        "At Time": createdAt ? new Date(createdAt).toLocaleTimeString('en-US', {
+                          year: 'numeric', month: 'short', day: 'numeric',
+                          hour: '2-digit', minute: '2-digit'
+                        }) : null
+                      })
+                    );*/
           // Assuming response.data contains an array of objects, dynamically generate columns
           if (cleanedData.length > 0) {
             const sampleRow = cleanedData[0];
@@ -87,7 +102,7 @@ const Apartments = () => {
           rows={rows}
           columns={columns}
           components={{ Toolbar: GridToolbar }}
-          getRowId={(row) => row.id || row._id} // Ensure there's a unique ID
+          getRowId={(row) => row.id || row.apartment_number} // Ensure there's a unique ID
         />
       </Box>
     </Box>
