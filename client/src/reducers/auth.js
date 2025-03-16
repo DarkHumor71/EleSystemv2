@@ -59,6 +59,10 @@ export default function (state = initialState, action) {
         loading: false,
         building: payload,
       };
+    case APARTMENT_REGISTER_SUCCESS:
+      return {
+        ...state,
+      };
     case REGISTER_FAIL:
     case AUTH_ERROR:
     case LOGOUT:

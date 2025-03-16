@@ -36,7 +36,7 @@ const Login = ({
         setShowCheck(false);
       }
     } catch (error) {
-      console.log("error");
+      console.error(error);
     }
   };
 
@@ -62,7 +62,7 @@ const Login = ({
         setPin("");
       }
     } catch (error) {
-      console.log("error");
+      console.error(error);
     }
   };
   if (isAuthenticated) {

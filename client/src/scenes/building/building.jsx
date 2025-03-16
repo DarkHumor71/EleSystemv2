@@ -15,12 +15,9 @@ const Buildings = ({ head }) => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const config = {
-          headers: {
-            "x-auth-token": localStorage.token,
-          },
-        };
-        const response = await axios.get("/api/building", config);
+        setAuthToken(localStorage.token);
+
+        const response = await axios.get("/api/building");
 
         if (response.data) {
           const cleanedData = response.data.map(
@@ -84,7 +81,11 @@ const Buildings = ({ head }) => {
           rows={rows}
           columns={columns}
           components={{ Toolbar: GridToolbar }}
-          getRowId={(row) => row.id || row.email} // Ensure there's a unique ID
+          getRowId={(row) => row.id || row.apartment_number}
+          loading={loading}
+          localeText={{
+            noRowsLabel: loading ? "Loading data..." : "No expenses found",
+          }}
         />
       </Box>
     </Box>

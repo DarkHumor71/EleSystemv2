@@ -1,4 +1,4 @@
-import { Box, Typography, useTheme } from "@mui/material";
+import { Box, useTheme } from "@mui/material";
 import { DataGrid, GridToolbar } from "@mui/x-data-grid";
 import { tokens } from "../../theme";
 import Header from "../../components/Header";
@@ -6,21 +6,30 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import PropTypes from "prop-types";
 import { connect } from "react-redux";
-const baseURL = process.env.REACT_APP_API_BASE_URL;
-const Expenses = ({ building_id }) => {
+const Expenses = ({ building_id, isloading }) => {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
   const [rows, setRows] = useState([]);
   const [columns, setColumns] = useState([]);
-  axios.defaults.baseURL = baseURL;
-  //TODO resolve conflict
+  const [gcolumns, setGroupColumns] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [group, setGroupRows] = useState([]);
   useEffect(() => {
     const fetchData = async () => {
+      if (isloading || !building_id) {
+        setLoading(true);
+        return;
+      }
+
+      setLoading(true);
+
       try {
         const response = await axios.get(
-          `/api//expense/building/${building_id}`
+          `/api/expense/building/${building_id}`
         );
+
         if (response.data) {
+          // ✅ Clean and format data
           const cleanedData = response.data.map(
             ({
               __v,
@@ -46,28 +55,77 @@ const Expenses = ({ building_id }) => {
                     hour: "2-digit",
                     minute: "2-digit",
                   })
-                : null,
+                : "Unknown",
             })
           );
 
-          console.log(cleanedData);
           setRows(cleanedData);
+
           if (cleanedData.length > 0) {
-            const sampleRow = cleanedData[0];
-            const generatedColumns = Object.keys(sampleRow).map((key) => ({
+            const generatedColumns = Object.keys(cleanedData[0]).map((key) => ({
               field: key,
-              headerName: key.toUpperCase(),
+              headerName: key.replace(/_/g, " ").toUpperCase(),
               flex: 1,
             }));
             setColumns(generatedColumns);
           }
+
+          // ✅ Group expenses by apartment_number
+          const groupedData = cleanedData.reduce((acc, item) => {
+            const aptNum = item.apartment_number;
+
+            if (!acc[aptNum]) {
+              acc[aptNum] = {
+                id: aptNum,
+                apartment_number: aptNum,
+                total_cost: 0,
+                total_power: 0,
+                total_time: 0,
+                count: 0,
+              };
+            }
+
+            acc[aptNum].total_cost += parseFloat(item.cost);
+            acc[aptNum].total_power += parseFloat(item.power);
+            acc[aptNum].total_time += parseFloat(item.time);
+            acc[aptNum].count += 1;
+
+            return acc;
+          }, {});
+
+          // ✅ Convert grouped object to array
+          const cleanedGroupData = Object.values(groupedData).map((entry) => ({
+            ...entry,
+            total_cost: `${entry.total_cost.toFixed(2)} $`,
+            total_power: `${entry.total_power.toFixed(2)} KW`,
+            total_time: `${entry.total_time.toFixed(2)} s`,
+            count: `${entry.count} records`,
+          }));
+
+          setGroupRows(cleanedGroupData);
+
+          if (cleanedGroupData.length > 0) {
+            setGroupColumns([
+              {
+                field: "apartment_number",
+                headerName: "Apartment Number",
+                flex: 1,
+              },
+              { field: "total_cost", headerName: "Total Cost", flex: 1 },
+              { field: "total_power", headerName: "Total Power", flex: 1 },
+              { field: "total_time", headerName: "Total Time", flex: 1 },
+              { field: "count", headerName: "Records", flex: 1 },
+            ]);
+          }
         }
       } catch (error) {
         console.error("Error fetching data:", error);
+      } finally {
+        setLoading(false);
       }
     };
     fetchData();
-  }, []);
+  }, [building_id, isloading]);
 
   return (
     <Box m="20px">
@@ -102,20 +160,38 @@ const Expenses = ({ building_id }) => {
         }}
       >
         <DataGrid
+          rows={group}
+          columns={gcolumns}
+          components={{ Toolbar: GridToolbar }}
+          getRowId={(row) => row.id || row.apartment_number}
+          loading={loading}
+          localeText={{
+            noRowsLabel: loading ? "Loading data..." : "No expenses found",
+          }}
+        />
+        <DataGrid
           rows={rows}
           columns={columns}
           components={{ Toolbar: GridToolbar }}
-          getRowId={(row) => row.id || row.apartment_number} // Ensure there's a unique ID
+          getRowId={(row) => row.id || row.apartment_number}
+          loading={loading}
+          localeText={{
+            noRowsLabel: loading ? "Loading data..." : "No expenses found",
+          }}
         />
       </Box>
     </Box>
   );
 };
 Expenses.propTypes = {
-  building_id: PropTypes.number.isRequired,
+  building_id: PropTypes.string,
+  isloading: PropTypes.bool.isRequired,
 };
-const mapStateToProps = (state) => ({
-  building_id: state.auth.apartment.building,
-});
+const mapStateToProps = (state) => {
+  return {
+    isloading: state.auth.loading,
+    building_id: state.auth.apartment?.building || null,
+  };
+};
 
 export default connect(mapStateToProps)(Expenses);

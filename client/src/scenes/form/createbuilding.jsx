@@ -10,7 +10,6 @@ const BuildingRegister = ({ setAlert, registerBuilding }) => {
   const isNonMobile = useMediaQuery("(min-width:600px)");
 
   const handleFormSubmit = (values) => {
-    console.log(values);
     try {
       registerBuilding(values);
     } catch (error) {

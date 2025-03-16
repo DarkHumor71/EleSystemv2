@@ -2,7 +2,6 @@ import React from "react";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import Profile from "./scenes/profile/profile";
 import Expensess from "./scenes/expensess/building_expenses";
-import Aprexpensess from "./scenes/expensess/apr_expenses";
 import Buildings from "./scenes/buildings/list_of_building";
 import Test from "./scenes/dashboard/test";
 import Mod from "./scenes/dashboard/mod";
@@ -11,6 +10,8 @@ import Apartments from "./scenes/apartment/apartments";
 import AdminDashboard from "./scenes/dashboard/admin";
 import Apartment from "./scenes/form/createapartment";
 import Line from "./scenes/line";
+import Qrcode from "./scenes/form/qrcode";
+import PrivateRoute from "./components/routing/privateroute";
 import Login from "./scenes/login/login";
 import MainLayout from "./Layout/MainLayout";
 import { Provider } from "react-redux";
@@ -22,10 +23,6 @@ import SidebarComponent from "./scenes/global/Sidebar";
 import setAuthToken from "./utils/setAuthToken";
 import { loadApartment } from "./actions/auth";
 import { useEffect } from "react";
-
-import Qrcode from "./scenes/form/qrcode";
-
-import PrivateRoute from "./components/routing/privateroute";
 
 const router = createBrowserRouter([
   {
@@ -82,7 +79,6 @@ const router = createBrowserRouter([
         path: "/profile",
         element: <PrivateRoute children={<Profile />} />,
       },
-
     ],
   },
 
@@ -92,7 +88,12 @@ const router = createBrowserRouter([
     children: [
       {
         path: "/dash",
-        element: <PrivateRoute children={<AdminDashboard />} />,
+        element: (
+          <>
+            <Alert />
+            <PrivateRoute children={<AdminDashboard />} />
+          </>
+        ),
       },
     ],
   },
@@ -102,7 +103,12 @@ const router = createBrowserRouter([
     children: [
       {
         path: "/create_apartment",
-        element: <PrivateRoute children={<Apartment />} />,
+        element: (
+          <>
+            <Alert />
+            <PrivateRoute children={<Apartment />} />
+          </>
+        ),
       },
     ],
   },
@@ -114,7 +120,6 @@ const router = createBrowserRouter([
         path: "/apartments",
         element: <PrivateRoute children={<Apartments />} />,
       },
-
     ],
   },
   {
@@ -134,10 +139,6 @@ const router = createBrowserRouter([
       {
         path: "/apr",
         element: <Apr />,
-      },
-      {
-        path: "/apr/apr_expenses",
-        element: <Aprexpensess />,
       },
     ],
   },

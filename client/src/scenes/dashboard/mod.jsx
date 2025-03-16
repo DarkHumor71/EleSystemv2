@@ -1,48 +1,82 @@
 import React, { useEffect, useState } from "react";
-import { Box, IconButton, Typography, useTheme, Button, TextField } from "@mui/material";
+import {
+  Box,
+  IconButton,
+  Typography,
+  useTheme,
+  Button,
+  TextField,
+} from "@mui/material";
 import { tokens } from "../../theme";
 import DownloadOutlinedIcon from "@mui/icons-material/DownloadOutlined";
 import Header from "../../components/Header";
 import LineChart from "../../components/LineChart";
 import StatBox from "../../components/StatBox";
-import ApartmentIcon from '@mui/icons-material/Apartment';
-import PaidIcon from '@mui/icons-material/Paid';
+import ApartmentIcon from "@mui/icons-material/Apartment";
+import PaidIcon from "@mui/icons-material/Paid";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-
-const Mod = () => {
+import { connect } from "react-redux";
+import PropTypes from "prop-types";
+import setAuthToken from "../../utils/setAuthToken";
+const Mod = ({ isloading, building_id }) => {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
   const navigate = useNavigate();
   const [data, setData] = useState([]);
   const [showPinField, setShowPinField] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchData = async () => {
+      if (isloading || !building_id) {
+        setLoading(true);
+        return;
+      }
       try {
+        setAuthToken(localStorage.token);
         const response = await axios.get(
-          "/api/expense/building/67b9e0625fa31dca724d1712");
+          `/api/expense/building/${building_id}`
+        );
         if (response.data) {
           const cleanedData = response.data.map(
-            ({ __v, _id, apartment, deleted_at, time, power, cost, updatedAt, createdAt, ...rest }) => ({
+            ({
+              __v,
+              _id,
+              apartment,
+              deleted_at,
+              time,
+              power,
+              cost,
+              updatedAt,
+              createdAt,
+              ...rest
+            }) => ({
               ...rest,
               time: time ? `${time.$numberDecimal} s` : null,
               power: power ? `${power.$numberDecimal} KW` : null,
               cost: cost ? `${cost.$numberDecimal} $` : null,
-              createdAt: createdAt ? new Date(createdAt).toLocaleTimeString('en-US', {
-                year: 'numeric', month: 'short', day: 'numeric',
-                hour: '2-digit', minute: '2-digit'
-              }) : null
+              createdAt: createdAt
+                ? new Date(createdAt).toLocaleTimeString("en-US", {
+                    year: "numeric",
+                    month: "short",
+                    day: "numeric",
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })
+                : null,
             })
           );
           setData(cleanedData);
         }
       } catch (error) {
         console.error("Error fetching data:", error);
+      } finally {
+        setLoading(false);
       }
     };
     fetchData();
-  }, []);
+  }, [isloading, building_id]);
 
   return (
     <Box m="20px">
@@ -120,8 +154,20 @@ const Mod = () => {
           gap="10px"
         >
           <Box display="flex" gap="10px">
-            <Button variant="contained" color="primary" onClick={() => navigate("/create_apartment")}>Create</Button>
-            <Button variant="contained" color="secondary" onClick={() => setShowPinField(!showPinField)}>Delete</Button>
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={() => navigate("/create_apartment")}
+            >
+              Create
+            </Button>
+            <Button
+              variant="contained"
+              color="secondary"
+              onClick={() => setShowPinField(!showPinField)}
+            >
+              Delete
+            </Button>
           </Box>
 
           {/* TextField Below */}
@@ -194,10 +240,16 @@ const Mod = () => {
             <Typography color={colors.grey[100]} variant="h5" fontWeight="600">
               Recent Expenses
             </Typography>
-            <Button variant="contained"
+            <Button
+              variant="contained"
               color="primary"
-              onClick={() => navigate("/expenses")}> Show More</Button>
+              onClick={() => navigate("/expenses")}
+            >
+              {" "}
+              Show More
+            </Button>
           </Box>
+
           {data.map((transaction, i) => (
             <Box
               key={`${transaction.apartment_number}-${i}`}
@@ -206,9 +258,14 @@ const Mod = () => {
               alignItems="center"
               borderBottom={`4px solid ${colors.primary[500]}`}
               p="15px"
+              loading={loading}
             >
               <Box>
-                <Typography color={colors.greenAccent[500]} variant="h5" fontWeight="600">
+                <Typography
+                  color={colors.greenAccent[500]}
+                  variant="h5"
+                  fontWeight="600"
+                >
                   {transaction.createdAt}
                 </Typography>
                 <Typography color={colors.grey[100]}>
@@ -216,7 +273,11 @@ const Mod = () => {
                 </Typography>
               </Box>
               <Box color={colors.grey[100]}>{transaction.date}</Box>
-              <Box backgroundColor={colors.greenAccent[500]} p="5px 10px" borderRadius="4px">
+              <Box
+                backgroundColor={colors.greenAccent[500]}
+                p="5px 10px"
+                borderRadius="4px"
+              >
                 ${transaction.cost}
               </Box>
             </Box>
@@ -226,5 +287,12 @@ const Mod = () => {
     </Box>
   );
 };
-
-export default Mod;
+Mod.prototype = {
+  building_id: PropTypes.string,
+  isloading: PropTypes.bool,
+};
+const mapStateToProps = (state) => ({
+  building_id: state.auth.apartment?.building || null,
+  isloading: state.auth.loading,
+});
+export default connect(mapStateToProps)(Mod);

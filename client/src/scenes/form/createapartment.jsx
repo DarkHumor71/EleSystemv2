@@ -1,28 +1,61 @@
-import { Box, Button, Menu, MenuItem, Select, TextField, FormControl, InputLabel } from "@mui/material";
+import {
+  Box,
+  Button,
+  FormControlLabel,
+  Checkbox,
+  TextField,
+  FormHelperText,
+} from "@mui/material";
 import { Formik } from "formik";
 import * as yup from "yup";
 import useMediaQuery from "@mui/material/useMediaQuery";
 import Header from "../../components/Header";
 import { useEffect, useState } from "react";
-import { fetchBuildings } from "../../actions/building";
 import { setAlert } from "../../actions/alert";
 import { connect } from "react-redux";
 import { useNavigate } from "react-router-dom";
-const Apartment = ({ setAlert, fetchBuildings }) => {
+import PropTypes from "prop-types";
+import setAuthtoken from "../../utils/setAuthToken";
+import { registerApartment } from "../../actions/apartment";
+const CreateApartment = ({
+  setAlert,
+  building_id,
+  isloading,
+  registerApartment,
+}) => {
   const isNonMobile = useMediaQuery("(min-width:600px)");
-  const [buildings, setBuildings] = useState([]);
   const navigate = useNavigate();
-  // useEffect((fetchBuildings) => {
-  //   setBuildings(fetchBuildings()); // Fetch data when the component mounts
-  // }, []);
-  const handleFormSubmit = (values) => {
-    console.log(values);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (isloading || !building_id) {
+      setLoading(true);
+      return;
+    }
+    setLoading(false);
+  }, [building_id, isloading]);
+
+  const handleFormSubmit = async (values) => {
+    try {
+      setLoading(true);
+      setAuthtoken(localStorage.token);
+      const payload = {
+        ...values,
+        building: building_id,
+      };
+      const res = await registerApartment(payload);
+      if (res.work) navigate("/qrcode", { state: res.id });
+    } catch (error) {
+      console.error("Error creating apartment:", error);
+      setAlert("Failed to create apartment. Please try again.", "error");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <Box m="20px">
       <Header title="CREATE APARTMENT" subtitle="Create a New Apartment" />
-
       <Formik
         onSubmit={handleFormSubmit}
         initialValues={initialValues}
@@ -53,7 +86,7 @@ const Apartment = ({ setAlert, fetchBuildings }) => {
                 onBlur={handleBlur}
                 onChange={handleChange}
                 value={values.firstName}
-                name="firstName"
+                name="first_name"
                 error={!!touched.firstName && !!errors.firstName}
                 helperText={touched.firstName && errors.firstName}
                 sx={{ gridColumn: "span 2" }}
@@ -66,7 +99,7 @@ const Apartment = ({ setAlert, fetchBuildings }) => {
                 onBlur={handleBlur}
                 onChange={handleChange}
                 value={values.lastName}
-                name="lastName"
+                name="last_name"
                 error={!!touched.lastName && !!errors.lastName}
                 helperText={touched.lastName && errors.lastName}
                 sx={{ gridColumn: "span 2" }}
@@ -74,7 +107,7 @@ const Apartment = ({ setAlert, fetchBuildings }) => {
               <TextField
                 fullWidth
                 variant="filled"
-                type="text"
+                type="email"
                 label="Email"
                 onBlur={handleBlur}
                 onChange={handleChange}
@@ -84,69 +117,57 @@ const Apartment = ({ setAlert, fetchBuildings }) => {
                 helperText={touched.email && errors.email}
                 sx={{ gridColumn: "span 4" }}
               />
-              {/* <Select
-                labelId="building-type-label"
-                id="building"
-                name="building"
-                value={values.building}
-                label="Building Type"
-                onChange={handleChange}
-                onBlur={handleBlur}
-                error={!!touched.building && !!errors.building}
-              >
-                <MenuItem value="" disabled>
-                  Select Building
-                </MenuItem>
-                {buildings.map((building) => (
-                  <MenuItem key={building.id} value={building.id}>
-                    {building.name}
-                  </MenuItem>
-                ))}
-              </Select> */}
               <TextField
                 fullWidth
                 variant="filled"
-                type="text"
+                type="number"
                 label="Apartment Number"
                 onBlur={handleBlur}
                 onChange={handleChange}
-                value={values.building}
-                name="apartmentnumber"
-                error={!!touched.apartmentnumber && !!errors.apartmentnumber}
-                helperText={touched.apartmentnumber && errors.apartmentnumber}
+                value={values.apartment_number}
+                name="apartment_number"
+                error={!!touched.apartment_number && !!errors.apartment_number}
+                helperText={touched.apartment_number && errors.apartment_number}
                 sx={{ gridColumn: "span 2" }}
               />
               <TextField
                 fullWidth
                 variant="filled"
                 type="text"
-                label="Floor"
+                label="PIN"
                 onBlur={handleBlur}
                 onChange={handleChange}
-                value={values.address1}
-                name="floor"
-                error={!!touched.floor && !!errors.floor}
-                helperText={touched.floor && errors.floor}
+                value={values.pin}
+                name="pin"
+                error={!!touched.pin && !!errors.pin}
+                helperText={touched.pin && errors.pin}
                 sx={{ gridColumn: "span 2" }}
               />
-              <FormControl fullWidth variant="filled" sx={{ gridColumn: "span 4" }}>
-                <InputLabel>Building</InputLabel>
-                <Select
-                  name="address2"
-                  value={values.address2}
-                  onChange={handleChange}
-                  onBlur={handleBlur}
-                  error={!!touched.address2 && !!errors.address2}
-                >
-                  <MenuItem value="Building A">Building A</MenuItem>
-                  <MenuItem value="Building B">Building B</MenuItem>
-                  <MenuItem value="Building C">Building C</MenuItem>
-                </Select>
-              </FormControl>
+
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    name="is_moderator"
+                    checked={Boolean(values.is_moderator)}
+                    onBlur={handleBlur}
+                    onChange={handleChange}
+                    color="green"
+                  />
+                }
+                label="Moderator permissions"
+              />
+              {touched.is_moderator && errors.is_moderator && (
+                <FormHelperText error>{errors.is_moderator}</FormHelperText>
+              )}
             </Box>
             <Box display="flex" justifyContent="end" mt="20px">
-              <Button type="submit" color="secondary" variant="contained" onClick={() => navigate("/qrcode")}>
-                Create New User
+              <Button
+                type="submit"
+                color="secondary"
+                variant="contained"
+                disabled={loading}
+              >
+                {loading ? "Creating..." : "Create Apartment"}
               </Button>
             </Box>
           </form>
@@ -157,23 +178,34 @@ const Apartment = ({ setAlert, fetchBuildings }) => {
 };
 
 const checkoutSchema = yup.object().shape({
-  firstName: yup.string().required("required"),
-  lastName: yup.string().required("required"),
-  email: yup.string().email("invalid email").required("required"),
-  building: yup
-    .string()
-
-    .required("required"),
-  address1: yup.string().required("required"),
-  address2: yup.string().required("required"),
+  first_name: yup.string().required("Required"),
+  last_name: yup.string().required("Required"),
+  email: yup.string().email("Invalid email").required("Required"),
+  apartment_number: yup.string().required("Required"),
+  is_moderator: yup.boolean(),
 });
+
 const initialValues = {
-  firstName: "",
-  lastName: "",
+  first_name: "",
+  last_name: "",
   email: "",
-  building: "",
-  address1: "",
-  address2: "",
+  apartment_number: 0,
+  pin: "",
+  is_moderator: false,
 };
 
-export default connect(null, { setAlert, fetchBuildings })(Apartment);
+CreateApartment.propTypes = {
+  setAlert: PropTypes.func.isRequired,
+  building_id: PropTypes.string,
+  isloading: PropTypes.bool.isRequired,
+  registerApartment: PropTypes.func.isRequired,
+};
+
+const mapStateToProps = (state) => ({
+  building_id: state.auth.apartment?.building || null,
+  isloading: state.auth.loading,
+});
+
+export default connect(mapStateToProps, { setAlert, registerApartment })(
+  CreateApartment
+);

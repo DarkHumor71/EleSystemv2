@@ -6,47 +6,36 @@ import Header from "../../components/Header";
 import { useTheme } from "@mui/material";
 import PropTypes from "prop-types";
 import axios from "axios";
-const Apartments = () => {
+import { connect } from "react-redux";
+import setAuthToken from "../../utils/setAuthToken";
+const Apartments = ({ building_id, isloading }) => {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
   const [rows, setRows] = useState([]);
+  const [loading, setLoading] = useState(true); // Local loading state
   const [columns, setColumns] = useState([]);
+
   useEffect(() => {
     const fetchData = async () => {
+      if (isloading || !building_id) {
+        setLoading(true);
+        return;
+      }
       try {
-        const config = {
-          headers: {
-            "x-auth-token": localStorage.token,
-          },
-        };
-        const id = 90;
+        setLoading(true);
+        setAuthToken(localStorage.token);
+
         const response = await axios.get(
-          `/api/apartment/building/${id}`,
-          config
+          `/api/apartment/building/${building_id}`
         );
 
         if (response.data) {
           const cleanedData = response.data.map(
             ({ deleted_at, _id, building, ...rest }) => ({
               ...rest,
-
             })
           );
           setRows(cleanedData);
-          /*   if (response.data) {
-                    const cleanedData = response.data.map(
-                      ({ __v, _id, apartment, deleted_at, time, power, cost, updatedAt, createdAt, ...rest }) => ({
-                        ...rest,
-                        time: time ? `${time.$numberDecimal} s` : null, // Ensure time exists before calling toString()
-                        power: power ? `${power.$numberDecimal} KW` : null,
-                        cost: cost ? `${cost.$numberDecimal} $` : null,
-                        "At Time": createdAt ? new Date(createdAt).toLocaleTimeString('en-US', {
-                          year: 'numeric', month: 'short', day: 'numeric',
-                          hour: '2-digit', minute: '2-digit'
-                        }) : null
-                      })
-                    );*/
-          // Assuming response.data contains an array of objects, dynamically generate columns
           if (cleanedData.length > 0) {
             const sampleRow = cleanedData[0];
             const generatedColumns = Object.keys(sampleRow).map((key) => ({
@@ -59,10 +48,12 @@ const Apartments = () => {
         }
       } catch (error) {
         console.error("Error fetching data:", error);
+      } finally {
+        setLoading(false);
       }
     };
     fetchData();
-  }, []);
+  }, [building_id, isloading]);
   return (
     <Box m="20px">
       {<Header title="Apartments" subtitle="Apartments in your  Building" />}
@@ -102,10 +93,24 @@ const Apartments = () => {
           rows={rows}
           columns={columns}
           components={{ Toolbar: GridToolbar }}
-          getRowId={(row) => row.id || row.apartment_number} // Ensure there's a unique ID
+          getRowId={(row) => row.id || row.apartment_number}
+          loading={loading}
+          localeText={{
+            noRowsLabel: loading ? "Loading data..." : "No expenses found",
+          }}
         />
       </Box>
     </Box>
   );
 };
-export default Apartments;
+Apartments.propTypes = {
+  building_id: PropTypes.string,
+  isloading: PropTypes.bool.isRequired,
+};
+const mapStateToProps = (state) => {
+  return {
+    isloading: state.auth.loading,
+    building_id: state.auth.apartment?.building || null,
+  };
+};
+export default connect(mapStateToProps)(Apartments);

@@ -30,14 +30,10 @@ export const loadApartment = () => async (dispatch) => {
 export const registerApartment =
   ({ building, pin, is_moderator }) =>
   async (dispatch) => {
-    const config = {
-      headers: {
-        "Content-Type": "application/json",
-      },
-    };
+    setAuthToken(localStorage.token);
     const body = JSON.stringify({ building, pin, is_moderator });
     try {
-      const res = await axios.post("/api/apartment", body, config);
+      const res = await axios.post("/api/apartment", body);
       dispatch({ type: APARTMENT_REGISTER_SUCCESS, payload: res.data });
     } catch (err) {
       const errors = err.response.data.errors;
@@ -51,12 +47,7 @@ export const registerApartment =
 export const registerBuilding =
   ({ name, email, address, state, city, password = null }) =>
   async (dispatch) => {
-    const config = {
-      headers: {
-        "Content-Type": "application/json",
-        "x-auth-token": localStorage.token,
-      },
-    };
+    setAuthToken(localStorage.token);
     const body = JSON.stringify({
       name,
       email,
@@ -66,7 +57,7 @@ export const registerBuilding =
       password,
     });
     try {
-      const res = await axios.post("/api/building/create", body, config);
+      const res = await axios.post("/api/building/create", body);
       dispatch({ type: BUILDING_REGISTER_SUCCESS, payload: res.data });
     } catch (err) {
       const errors = err.response.data.errors;
@@ -86,15 +77,11 @@ export const loginApartment =
       console.log(email);
       if (!isNaN(pin) && pin.length === 4) {
         console.log("pin");
-        const config = {
-          headers: {
-            "Content-Type": "application/json",
-            "x-auth-token": localStorage.token,
-          },
-        };
+        setAuthToken(localStorage.token);
+
         const body = JSON.stringify({ pin });
         try {
-          const res = await axios.post("/api/auth", body, config);
+          const res = await axios.post("/api/auth", body);
           localStorage.setItem("token", res.data.token);
           dispatch({ type: APARTMENT_LOGIN_SUCCESS, payload: res.data });
 

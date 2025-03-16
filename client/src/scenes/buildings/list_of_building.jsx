@@ -6,6 +6,7 @@ import Header from "../../components/Header";
 import { useTheme } from "@mui/material";
 import PropTypes from "prop-types";
 import axios from "axios";
+import setAuthToken from "../../utils/setAuthToken";
 const Buildings = ({ head }) => {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
@@ -15,12 +16,9 @@ const Buildings = ({ head }) => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const config = {
-          headers: {
-            "x-auth-token": localStorage.token,
-          },
-        };
-        const response = await axios.get("/api/building", config);
+        setAuthToken(localStorage.token);
+
+        const response = await axios.get("/api/building");
 
         if (response.data) {
           const cleanedData = response.data.map(

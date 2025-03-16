@@ -10,6 +10,7 @@ const ApartmentSchema = new Schema(
     building: {
       type: Schema.Types.ObjectId,
       ref: "building",
+      required: true,
     },
     apartment_number: {
       type: Number,
