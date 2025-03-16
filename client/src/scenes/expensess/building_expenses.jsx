@@ -4,29 +4,49 @@ import { tokens } from "../../theme";
 import Header from "../../components/Header";
 import { useEffect, useState } from "react";
 import axios from "axios";
-const Expensess = () => {
+import PropTypes from "prop-types";
+import { connect } from "react-redux";
+const baseURL = process.env.REACT_APP_API_BASE_URL;
+const Expenses = ({ building_id }) => {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
   const [rows, setRows] = useState([]);
   const [columns, setColumns] = useState([]);
+  axios.defaults.baseURL = baseURL;
   //TODO resolve conflict
   useEffect(() => {
     const fetchData = async () => {
       try {
         const response = await axios.get(
-          "/api/expense/building/67b9e0625fa31dca724d1712"
+          `/api//expense/building/${building_id}`
         );
         if (response.data) {
           const cleanedData = response.data.map(
-            ({ __v, _id, apartment, deleted_at, time, power, cost, updatedAt, createdAt, ...rest }) => ({
+            ({
+              __v,
+              _id,
+              apartment,
+              deleted_at,
+              time,
+              power,
+              cost,
+              updatedAt,
+              createdAt,
+              ...rest
+            }) => ({
               ...rest,
               time: time ? `${time.$numberDecimal} s` : null, // Ensure time exists before calling toString()
               power: power ? `${power.$numberDecimal} KW` : null,
               cost: cost ? `${cost.$numberDecimal} $` : null,
-              "At Time": createdAt ? new Date(createdAt).toLocaleTimeString('en-US', {
-                year: 'numeric', month: 'short', day: 'numeric',
-                hour: '2-digit', minute: '2-digit'
-              }) : null
+              "At Time": createdAt
+                ? new Date(createdAt).toLocaleTimeString("en-US", {
+                    year: "numeric",
+                    month: "short",
+                    day: "numeric",
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })
+                : null,
             })
           );
 
@@ -91,5 +111,11 @@ const Expensess = () => {
     </Box>
   );
 };
+Expenses.propTypes = {
+  building_id: PropTypes.number.isRequired,
+};
+const mapStateToProps = (state) => ({
+  building_id: state.auth.apartment.building,
+});
 
-export default Expensess;
+export default connect(mapStateToProps)(Expenses);

@@ -27,7 +27,6 @@ import Qrcode from "./scenes/form/qrcode";
 
 import PrivateRoute from "./components/routing/privateroute";
 
-
 const router = createBrowserRouter([
   {
     path: "/", // Apply MainLayout for the root
@@ -90,7 +89,6 @@ const router = createBrowserRouter([
         path: "/dash",
         element: <PrivateRoute children={<AdminDashboard />} />,
       },
-
     ],
   },
   {
@@ -101,7 +99,6 @@ const router = createBrowserRouter([
         path: "/create_apartment",
         element: <PrivateRoute children={<Apartment />} />,
       },
-
     ],
   },
   {
@@ -112,7 +109,6 @@ const router = createBrowserRouter([
         path: "/mod",
         element: <PrivateRoute children={<Mod />} />,
       },
-
     ],
   },
   {
@@ -124,10 +120,9 @@ const router = createBrowserRouter([
         element: <Apr />,
       },
       {
-        path: "/apr_expenses",
+        path: "/apr/apr_expenses",
         element: <Aprexpensess />,
       },
-
     ],
   },
   {
