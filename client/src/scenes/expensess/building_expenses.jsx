@@ -3,10 +3,10 @@ import { DataGrid, GridToolbar } from "@mui/x-data-grid";
 import { tokens } from "../../theme";
 import Header from "../../components/Header";
 import { useEffect, useState } from "react";
-import axios from "axios";
+import { fetchBuildingExpense } from "../../actions/expense";
 import PropTypes from "prop-types";
 import { connect } from "react-redux";
-const Expenses = ({ building_id, isloading }) => {
+const Expenses = ({ building_id, isloading, fetchBuildingExpense }) => {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
   const [rows, setRows] = useState([]);
@@ -24,99 +24,93 @@ const Expenses = ({ building_id, isloading }) => {
       setLoading(true);
 
       try {
-        const response = await axios.get(
-          `/api/expense/building/${building_id}`
+        const Data = await fetchBuildingExpense(building_id);
+        const cleanedData = Data.map(
+          ({
+            __v,
+            _id,
+            apartment,
+            deleted_at,
+            time,
+            power,
+            cost,
+            updatedAt,
+            createdAt,
+            ...rest
+          }) => ({
+            ...rest,
+            time: time ? `${time.$numberDecimal} s` : null,
+            power: power ? `${power.$numberDecimal} KW` : null,
+            cost: cost ? `${cost.$numberDecimal} $` : null,
+            "At Time": createdAt
+              ? new Date(createdAt).toLocaleTimeString("en-US", {
+                  year: "numeric",
+                  month: "short",
+                  day: "numeric",
+                  hour: "2-digit",
+                  minute: "2-digit",
+                })
+              : "Unknown",
+          })
         );
 
-        if (response.data) {
-          // ✅ Clean and format data
-          const cleanedData = response.data.map(
-            ({
-              __v,
-              _id,
-              apartment,
-              deleted_at,
-              time,
-              power,
-              cost,
-              updatedAt,
-              createdAt,
-              ...rest
-            }) => ({
-              ...rest,
-              time: time ? `${time.$numberDecimal} s` : null, // Ensure time exists before calling toString()
-              power: power ? `${power.$numberDecimal} KW` : null,
-              cost: cost ? `${cost.$numberDecimal} $` : null,
-              "At Time": createdAt
-                ? new Date(createdAt).toLocaleTimeString("en-US", {
-                    year: "numeric",
-                    month: "short",
-                    day: "numeric",
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  })
-                : "Unknown",
-            })
-          );
+        setRows(cleanedData);
 
-          setRows(cleanedData);
-
-          if (cleanedData.length > 0) {
-            const generatedColumns = Object.keys(cleanedData[0]).map((key) => ({
-              field: key,
-              headerName: key.replace(/_/g, " ").toUpperCase(),
-              flex: 1,
-            }));
-            setColumns(generatedColumns);
-          }
-
-          // ✅ Group expenses by apartment_number
-          const groupedData = cleanedData.reduce((acc, item) => {
-            const aptNum = item.apartment_number;
-
-            if (!acc[aptNum]) {
-              acc[aptNum] = {
-                id: aptNum,
-                apartment_number: aptNum,
-                total_cost: 0,
-                total_power: 0,
-                total_time: 0,
-                count: 0,
-              };
-            }
-
-            acc[aptNum].total_cost += parseFloat(item.cost);
-            acc[aptNum].total_power += parseFloat(item.power);
-            acc[aptNum].total_time += parseFloat(item.time);
-            acc[aptNum].count += 1;
-
-            return acc;
-          }, {});
-
-          // ✅ Convert grouped object to array
-          const cleanedGroupData = Object.values(groupedData).map((entry) => ({
-            ...entry,
-            total_cost: `${entry.total_cost.toFixed(2)} $`,
-            total_power: `${entry.total_power.toFixed(2)} KW`,
-            total_time: `${entry.total_time.toFixed(2)} s`,
-            count: `${entry.count} records`,
+        if (cleanedData.length > 0) {
+          const generatedColumns = Object.keys(cleanedData[0]).map((key) => ({
+            field: key,
+            headerName: key.replace(/_/g, " ").toUpperCase(),
+            flex: 1,
           }));
+          setColumns(generatedColumns);
+        }
 
-          setGroupRows(cleanedGroupData);
+        const groupedData = cleanedData.reduce((acc, item) => {
+          const aptNum = item.apartment_number;
 
-          if (cleanedGroupData.length > 0) {
-            setGroupColumns([
-              {
-                field: "apartment_number",
-                headerName: "Apartment Number",
-                flex: 1,
-              },
-              { field: "total_cost", headerName: "Total Cost", flex: 1 },
-              { field: "total_power", headerName: "Total Power", flex: 1 },
-              { field: "total_time", headerName: "Total Time", flex: 1 },
-              { field: "count", headerName: "Records", flex: 1 },
-            ]);
+          if (!acc[aptNum]) {
+            acc[aptNum] = {
+              id: aptNum,
+              apartment_number: aptNum,
+              total_cost: 0,
+              total_power: 0,
+              total_time: 0.0,
+              count: 0,
+            };
           }
+
+          acc[aptNum].total_cost += parseFloat(item.cost);
+          acc[aptNum].total_power += parseFloat(item.power);
+          acc[aptNum].total_time =
+            parseFloat(item.time.replace(/[A-Za-z]/g, "")) / 60;
+
+          acc[aptNum].count += 1;
+
+          return acc;
+        }, {});
+
+        const cleanedGroupData = Object.values(groupedData).map((entry) => ({
+          ...entry,
+          total_cost: `${entry.total_cost.toFixed(2)} $`,
+          total_power: `${entry.total_power.toFixed(2)} KW`,
+          total_time: `${entry.total_time.toFixed(2)} min`,
+          count: `${entry.count} records`,
+        }));
+
+        setGroupRows(cleanedGroupData);
+
+        if (cleanedGroupData.length > 0) {
+          setGroupColumns([
+            {
+              field: "apartment_number",
+              headerName: "Apartment Number",
+              flex: 1,
+            },
+            { field: "total_cost", headerName: "Total Cost", flex: 1 },
+            { field: "total_power", headerName: "Total Power", flex: 1 },
+            { field: "total_time", headerName: "Total Time", flex: 1 },
+            { field: "count", headerName: "Records", flex: 1 },
+          ]);
         }
       } catch (error) {
         console.error("Error fetching data:", error);
@@ -125,7 +119,7 @@ const Expenses = ({ building_id, isloading }) => {
       }
     };
     fetchData();
-  }, [building_id, isloading]);
+  }, [building_id, isloading, fetchBuildingExpense]);
 
   return (
     <Box m="20px">
@@ -186,6 +180,7 @@ const Expenses = ({ building_id, isloading }) => {
 Expenses.propTypes = {
   building_id: PropTypes.string,
   isloading: PropTypes.bool.isRequired,
+  fetchBuildingExpense: PropTypes.func.isRequired,
 };
 const mapStateToProps = (state) => {
   return {
@@ -194,4 +189,4 @@ const mapStateToProps = (state) => {
   };
 };
 
-export default connect(mapStateToProps)(Expenses);
+export default connect(mapStateToProps, { fetchBuildingExpense })(Expenses);

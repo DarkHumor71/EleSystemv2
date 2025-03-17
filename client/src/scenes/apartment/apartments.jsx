@@ -5,10 +5,10 @@ import { tokens } from "../../theme";
 import Header from "../../components/Header";
 import { useTheme } from "@mui/material";
 import PropTypes from "prop-types";
-import axios from "axios";
+import { fetchApartments } from "../../actions/apartment";
 import { connect } from "react-redux";
-import setAuthToken from "../../utils/setAuthToken";
-const Apartments = ({ building_id, isloading }) => {
+
+const Apartments = ({ building_id, isloading, fetchApartments }) => {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
   const [rows, setRows] = useState([]);
@@ -23,28 +23,18 @@ const Apartments = ({ building_id, isloading }) => {
       }
       try {
         setLoading(true);
-        setAuthToken(localStorage.token);
 
-        const response = await axios.get(
-          `/api/apartment/building/${building_id}`
-        );
+        const cleanedData = await fetchApartments(building_id);
 
-        if (response.data) {
-          const cleanedData = response.data.map(
-            ({ deleted_at, _id, building, ...rest }) => ({
-              ...rest,
-            })
-          );
-          setRows(cleanedData);
-          if (cleanedData.length > 0) {
-            const sampleRow = cleanedData[0];
-            const generatedColumns = Object.keys(sampleRow).map((key) => ({
-              field: key,
-              headerName: key.toUpperCase(),
-              flex: 1,
-            }));
-            setColumns(generatedColumns);
-          }
+        setRows(cleanedData);
+        if (cleanedData.length > 0) {
+          const sampleRow = cleanedData[0];
+          const generatedColumns = Object.keys(sampleRow).map((key) => ({
+            field: key,
+            headerName: key.toUpperCase(),
+            flex: 1,
+          }));
+          setColumns(generatedColumns);
         }
       } catch (error) {
         console.error("Error fetching data:", error);
@@ -53,7 +43,7 @@ const Apartments = ({ building_id, isloading }) => {
       }
     };
     fetchData();
-  }, [building_id, isloading]);
+  }, [building_id, isloading, fetchApartments]);
   return (
     <Box m="20px">
       {<Header title="Apartments" subtitle="Apartments in your  Building" />}
@@ -106,6 +96,7 @@ const Apartments = ({ building_id, isloading }) => {
 Apartments.propTypes = {
   building_id: PropTypes.string,
   isloading: PropTypes.bool.isRequired,
+  fetchApartments: PropTypes.func.isRequired,
 };
 const mapStateToProps = (state) => {
   return {
@@ -113,4 +104,4 @@ const mapStateToProps = (state) => {
     building_id: state.auth.apartment?.building || null,
   };
 };
-export default connect(mapStateToProps)(Apartments);
+export default connect(mapStateToProps, { fetchApartments })(Apartments);

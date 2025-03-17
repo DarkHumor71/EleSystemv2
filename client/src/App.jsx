@@ -128,7 +128,12 @@ const router = createBrowserRouter([
     children: [
       {
         path: "/mod",
-        element: <PrivateRoute children={<Mod />} />,
+        element: (
+          <>
+            <Alert />
+            <PrivateRoute children={<Mod />} />
+          </>
+        ),
       },
     ],
   },

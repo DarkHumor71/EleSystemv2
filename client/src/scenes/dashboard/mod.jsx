@@ -1,82 +1,89 @@
 import React, { useEffect, useState } from "react";
-import {
-  Box,
-  IconButton,
-  Typography,
-  useTheme,
-  Button,
-  TextField,
-} from "@mui/material";
+import { Box, Typography, useTheme, Button, TextField } from "@mui/material";
+
+import { Formik, Form, Field } from "formik";
 import { tokens } from "../../theme";
-import DownloadOutlinedIcon from "@mui/icons-material/DownloadOutlined";
 import Header from "../../components/Header";
 import LineChart from "../../components/LineChart";
 import StatBox from "../../components/StatBox";
 import ApartmentIcon from "@mui/icons-material/Apartment";
 import PaidIcon from "@mui/icons-material/Paid";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
 import { connect } from "react-redux";
 import PropTypes from "prop-types";
-import setAuthToken from "../../utils/setAuthToken";
-const Mod = ({ isloading, building_id }) => {
+import { fetchBuildingExpense } from "../../actions/expense";
+import { deleteApartment, fetchApartments } from "../../actions/apartment";
+const Mod = ({
+  isloading,
+  building_id,
+  fetchBuildingExpense,
+  fetchApartments,
+  myApartment,
+  deleteApartment,
+}) => {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
   const navigate = useNavigate();
   const [data, setData] = useState([]);
   const [showPinField, setShowPinField] = useState(false);
-  const [loading, setLoading] = useState(true);
-
+  const [apartment_numbers, setApartment_numbers] = useState(0);
+  const [total_money, setTotal_money] = useState(0);
+  const [total_time, setTotal_time] = useState(0);
   useEffect(() => {
     const fetchData = async () => {
       if (isloading || !building_id) {
-        setLoading(true);
         return;
       }
       try {
-        setAuthToken(localStorage.token);
-        const response = await axios.get(
-          `/api/expense/building/${building_id}`
+        const apts = await fetchApartments(building_id);
+        setApartment_numbers(apts.length);
+        const Data = await fetchBuildingExpense(building_id);
+
+        const cleanedData = Data.map(
+          ({
+            __v,
+            _id,
+            apartment,
+            deleted_at,
+            time,
+            power,
+            cost,
+            updatedAt,
+            createdAt,
+            ...rest
+          }) => ({
+            ...rest,
+            time: time ? `${time.$numberDecimal} s` : null,
+            power: power ? `${power.$numberDecimal} KW` : null,
+            cost: cost ? `${cost.$numberDecimal} $` : null,
+            createdAt: createdAt
+              ? new Date(createdAt).toLocaleTimeString("en-US", {
+                  year: "numeric",
+                  month: "short",
+                  day: "numeric",
+                  hour: "2-digit",
+                  minute: "2-digit",
+                })
+              : null,
+          })
         );
-        if (response.data) {
-          const cleanedData = response.data.map(
-            ({
-              __v,
-              _id,
-              apartment,
-              deleted_at,
-              time,
-              power,
-              cost,
-              updatedAt,
-              createdAt,
-              ...rest
-            }) => ({
-              ...rest,
-              time: time ? `${time.$numberDecimal} s` : null,
-              power: power ? `${power.$numberDecimal} KW` : null,
-              cost: cost ? `${cost.$numberDecimal} $` : null,
-              createdAt: createdAt
-                ? new Date(createdAt).toLocaleTimeString("en-US", {
-                    year: "numeric",
-                    month: "short",
-                    day: "numeric",
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  })
-                : null,
-            })
-          );
-          setData(cleanedData);
+        const totalCost = cleanedData.reduce((sum, item) => sum + item.cost, 0);
+        let totalTime = cleanedData.reduce((sum, item) => sum + item.time, 0);
+        totalTime = parseFloat(totalTime);
+        if (totalTime) {
+          const hours = Math.floor(totalTime / 3600);
+          const minutes = Math.floor((totalTime % 3600) / 60);
+          const seconds = totalTime % 60;
+          setTotal_time(`${hours}h ${minutes}m ${seconds}s`);
         }
+        setTotal_money(parseFloat(totalCost).toFixed(2) + "$");
+        setData(cleanedData);
       } catch (error) {
         console.error("Error fetching data:", error);
-      } finally {
-        setLoading(false);
       }
     };
     fetchData();
-  }, [isloading, building_id]);
+  }, [isloading, building_id, fetchBuildingExpense, fetchApartments]);
 
   return (
     <Box m="20px">
@@ -101,7 +108,8 @@ const Mod = ({ isloading, building_id }) => {
           justifyContent="center"
         >
           <StatBox
-            title="6"
+            isProgress={false}
+            title={apartment_numbers}
             subtitle="Apartments"
             icon={
               <ApartmentIcon
@@ -118,7 +126,7 @@ const Mod = ({ isloading, building_id }) => {
           justifyContent="center"
         >
           <StatBox
-            title="98"
+            title={total_money}
             subtitle="Total Building Spent"
             icon={
               <PaidIcon
@@ -135,8 +143,8 @@ const Mod = ({ isloading, building_id }) => {
           justifyContent="center"
         >
           <StatBox
-            title="18$"
-            subtitle="My Spent"
+            title={total_time}
+            subtitle="Time Spent"
             icon={
               <PaidIcon
                 sx={{ color: colors.greenAccent[600], fontSize: "26px" }}
@@ -172,13 +180,32 @@ const Mod = ({ isloading, building_id }) => {
 
           {/* TextField Below */}
           {showPinField && (
-            <TextField
-              type="password"
-              label="Enter PIN"
-              variant="outlined"
-              fullWidth
-              sx={{ mt: 2 }}
-            />
+            <Formik
+              initialValues={{ apartmentNumber: "" }}
+              onSubmit={(values, { resetForm }) => {
+                deleteApartment(
+                  building_id,
+                  values.apartmentNumber,
+                  myApartment
+                );
+                resetForm();
+              }}
+            >
+              {({ handleSubmit }) => (
+                <Form onSubmit={handleSubmit}>
+                  <Box sx={{ mt: 2 }}>
+                    <Field
+                      as={TextField}
+                      name="apartmentNumber"
+                      label="Enter apartment number"
+                      variant="outlined"
+                      fullWidth
+                      sx={{ mb: 2 }}
+                    />
+                  </Box>
+                </Form>
+              )}
+            </Formik>
           )}
         </Box>
 
@@ -210,13 +237,6 @@ const Mod = ({ isloading, building_id }) => {
               >
                 $190
               </Typography>
-            </Box>
-            <Box>
-              <IconButton>
-                <DownloadOutlinedIcon
-                  sx={{ fontSize: "26px", color: colors.greenAccent[500] }}
-                />
-              </IconButton>
             </Box>
           </Box>
           <Box height="250px" m="-20px 0 0 0">
@@ -258,7 +278,6 @@ const Mod = ({ isloading, building_id }) => {
               alignItems="center"
               borderBottom={`4px solid ${colors.primary[500]}`}
               p="15px"
-              loading={loading}
             >
               <Box>
                 <Typography
@@ -290,9 +309,18 @@ const Mod = ({ isloading, building_id }) => {
 Mod.prototype = {
   building_id: PropTypes.string,
   isloading: PropTypes.bool,
+  fetchBuildingExpense: PropTypes.func.isRequired,
+  fetchApartments: PropTypes.func.isRequired,
+  myApartment: PropTypes.string,
+  deleteApartment: PropTypes.func.isRequired,
 };
 const mapStateToProps = (state) => ({
   building_id: state.auth.apartment?.building || null,
   isloading: state.auth.loading,
+  myApartment: state.auth.apartment?.apartment_number || null,
 });
-export default connect(mapStateToProps)(Mod);
+export default connect(mapStateToProps, {
+  fetchBuildingExpense,
+  fetchApartments,
+  deleteApartment,
+})(Mod);

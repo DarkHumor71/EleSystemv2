@@ -48,7 +48,9 @@ router.get("/building/:id", [auth], async (req, res) => {
     ) {
       return res.status(401).json({ msg: "User not authorized" });
     }
-    const apartments = await Apartment.find({ building: building.id }).select("-pin -__v -createdAt -updatedAt -is_moderator");
+    const apartments = await Apartment.find({ building: building.id }).select(
+      "-pin -__v -createdAt -updatedAt -is_moderator"
+    );
     res.json(apartments);
   } catch (err) {
     console.error(err.message);
@@ -109,20 +111,16 @@ router.post(
         email: email,
       });
 
-      // Save the apartment to the database
       const apartment = await newApartment.save();
 
-      // Return the created apartment
       res.json(apartment);
     } catch (err) {
       console.error(err.message);
 
-      // Handle duplicate key error (e.g., duplicate PIN)
       if (err.code === 11000) {
         return res.status(400).json({ msg: "PIN already exists" });
       }
 
-      // Handle invalid ObjectId error
       if (err.name === "CastError") {
         return res.status(400).json({ msg: "Invalid Building ID" });
       }
@@ -134,17 +132,24 @@ router.post(
 //@route DELETE api/apartment
 //@desc DELETE a apartment
 //@access Private
-router.delete("/:id", [auth, admin], async (req, res) => {
+router.delete("/:building/:number", [auth, mod], async (req, res) => {
   try {
-    const apartment = await Apartment.findById(req.params.id);
+    const { building, number } = req.params;
+    const apartmentNumber = parseInt(number, 10);
+
+    const deletedAt = new Date();
+
+    const apartment = await Apartment.findOneAndUpdate(
+      { building, apartment_number: apartmentNumber },
+      { $set: { deleted_at: deletedAt } },
+      { new: true, runValidators: true }
+    );
+
     if (!apartment) return res.status(404).json({ msg: "Apartment not found" });
-    await apartment.remove();
+
     res.json({ msg: "Apartment removed" });
   } catch (err) {
     console.error(err.message);
-    if (err.kind === "ObjectId")
-      return res.status(404).json({ msg: "Apartment not found" });
-
     res.status(500).send("Server Error");
   }
 });
