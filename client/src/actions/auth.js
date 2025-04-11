@@ -75,11 +75,13 @@ export const loginApartment =
     (pin, email = null) =>
     async (dispatch) => {
       console.log(email);
+      //isNumber
       if (!isNaN(pin) && pin.length === 4) {
         console.log("pin");
         setAuthToken(localStorage.token);
-
-        const body = JSON.stringify({ pin });
+        const body = {
+          pin: pin,
+        };
         try {
           const res = await axios.post("/api/auth", body);
           localStorage.setItem("token", res.data.token);
