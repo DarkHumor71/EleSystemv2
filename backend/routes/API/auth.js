@@ -84,7 +84,13 @@ router.post(
 
         (err, token) => {
           if (err) throw err;
-          res.json({ token, moderator, resident });
+          console.log(req.decoded);
+          res.json({
+            token,
+            moderator,
+            resident,
+            building: req.decoded.building.id,
+          });
         }
       );
     } catch (err) {
