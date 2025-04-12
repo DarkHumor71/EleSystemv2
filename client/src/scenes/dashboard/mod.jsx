@@ -30,59 +30,73 @@ const Mod = ({
   const [total_money, setTotal_money] = useState(0);
   const [total_time, setTotal_time] = useState(0);
   useEffect(() => {
-    const fetchData = async () => {
-      if (isloading || !building_id) {
-        return;
-      }
-      try {
-        const apts = await fetchApartments(building_id);
-        setApartment_numbers(apts.length);
-        const Data = await fetchBuildingExpense(building_id);
+    const timeout = setTimeout(() => {
+      const fetchData = async () => {
+        // if (isloading || !building_id) return;
 
-        const cleanedData = Data.map(
-          ({
-            __v,
-            _id,
-            apartment,
-            deleted_at,
-            time,
-            power,
-            cost,
-            updatedAt,
-            createdAt,
-            ...rest
-          }) => ({
-            ...rest,
-            time: time ? `${time.$numberDecimal} s` : null,
-            power: power ? `${power.$numberDecimal} KW` : null,
-            cost: cost ? `${cost.$numberDecimal} $` : null,
-            createdAt: createdAt
-              ? new Date(createdAt).toLocaleTimeString("en-US", {
-                  year: "numeric",
-                  month: "short",
-                  day: "numeric",
-                  hour: "2-digit",
-                  minute: "2-digit",
-                })
-              : null,
-          })
-        );
-        const totalCost = cleanedData.reduce((sum, item) => sum + item.cost, 0);
-        let totalTime = cleanedData.reduce((sum, item) => sum + item.time, 0);
-        totalTime = parseFloat(totalTime);
-        if (totalTime) {
-          const hours = Math.floor(totalTime / 3600);
-          const minutes = Math.floor((totalTime % 3600) / 60);
-          const seconds = totalTime % 60;
-          setTotal_time(`${hours}h ${minutes}m ${seconds}s`);
+        try {
+          console.log(building_id);
+          const apts = await fetchApartments(building_id);
+          setApartment_numbers(apts.length);
+
+          const Data = await fetchBuildingExpense(building_id);
+
+          const cleanedData = Data.map(
+            ({
+              __v,
+              _id,
+              apartment,
+              deleted_at,
+              time,
+              power,
+              cost,
+              updatedAt,
+              createdAt,
+              ...rest
+            }) => ({
+              ...rest,
+              time: time ? `${time.$numberDecimal} s` : null,
+              power: power ? `${power.$numberDecimal} KW` : null,
+              cost: cost ? `${cost.$numberDecimal} $` : null,
+              createdAt: createdAt
+                ? new Date(createdAt).toLocaleTimeString("en-US", {
+                    year: "numeric",
+                    month: "short",
+                    day: "numeric",
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })
+                : null,
+            })
+          );
+
+          const totalCost = cleanedData.reduce(
+            (sum, item) => sum + parseFloat(item.cost || 0),
+            0
+          );
+          const totalTime = cleanedData.reduce(
+            (sum, item) => sum + parseFloat(item.time || 0),
+            0
+          );
+
+          if (totalTime) {
+            const hours = Math.floor(totalTime / 3600);
+            const minutes = Math.floor((totalTime % 3600) / 60);
+            const seconds = Math.floor(totalTime % 60);
+            setTotal_time(`${hours}h ${minutes}m ${seconds}s`);
+          }
+
+          setTotal_money(totalCost.toFixed(2) + "$");
+          setData(cleanedData);
+        } catch (error) {
+          console.error("Error fetching data:", error);
         }
-        setTotal_money(parseFloat(totalCost).toFixed(2) + "$");
-        setData(cleanedData);
-      } catch (error) {
-        console.error("Error fetching data:", error);
-      }
-    };
-    fetchData();
+      };
+
+      fetchData();
+    }, 200); // Delay of 200ms
+
+    return () => clearTimeout(timeout);
   }, [isloading, building_id, fetchBuildingExpense, fetchApartments]);
 
   return (

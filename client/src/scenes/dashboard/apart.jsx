@@ -5,10 +5,9 @@ import DownloadOutlinedIcon from "@mui/icons-material/DownloadOutlined";
 import Header from "../../components/Header";
 import LineChart from "../../components/LineChart";
 import StatBox from "../../components/StatBox";
-import ApartmentIcon from '@mui/icons-material/Apartment';
-import PaidIcon from '@mui/icons-material/Paid';
+import ApartmentIcon from "@mui/icons-material/Apartment";
+import PaidIcon from "@mui/icons-material/Paid";
 import { useNavigate } from "react-router-dom";
-
 
 const Apr = () => {
   const theme = useTheme();
@@ -19,7 +18,6 @@ const Apr = () => {
       {/* HEADER */}
       <Box display="flex" justifyContent="space-between" alignItems="center">
         <Header title="DASHBOARD" subtitle="Welcome to your dashboard" />
-
       </Box>
 
       {/* GRID & CHARTS */}
@@ -64,7 +62,6 @@ const Apr = () => {
             }
           />
         </Box>
-
 
         {/* ROW 2 */}
         <Box
@@ -124,9 +121,14 @@ const Apr = () => {
             <Typography color={colors.grey[100]} variant="h5" fontWeight="600">
               Recent Expensess
             </Typography>
-            <Button variant="contained"
+            <Button
+              variant="contained"
               color="primary"
-              onClick={() => navigate("/expensess")}> Show More</Button>
+              onClick={() => navigate("/expensess")}
+            >
+              {" "}
+              Show More
+            </Button>
           </Box>
           {mockTransactions.map((transaction, i) => (
             <Box

@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import PropTypes from "prop-types";
 import { connect } from "react-redux";
+import { useEffect } from "react";
 import { setAlert } from "../../actions/alert";
 import { loginApartment, loginBuilding } from "../../actions/auth";
 import { useNavigate } from "react-router-dom";
@@ -12,6 +13,7 @@ const Login = ({
   isAuthenticated,
   isModerator,
   isResident,
+  building_id,
 }) => {
   const navigate = useNavigate();
 
@@ -53,8 +55,10 @@ const Login = ({
       if (req.work) {
         if (req.mod) {
           setShowPopup(true);
-        } else {
+        } else if (req.admin) {
           navigate("/dash");
+        } else {
+          navigate("/apr");
         }
       } else {
         setShowPinField(false);
@@ -65,35 +69,28 @@ const Login = ({
       console.error(error);
     }
   };
-  if (isAuthenticated) {
-    if (isModerator) {
-      return (
-        <div className="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50">
-          <div className="bg-white p-6 rounded-lg shadow-lg">
-            <p className="text-lg font-bold mb-4">LOGIN AS</p>
-            <div className="flex gap-4">
-              <button
-                className="btn btn-success"
-                onClick={() => navigate("/mod")}
-              >
-                Moderator
-              </button>
-              <button
-                className="btn btn-secondary"
-                onClick={() => navigate("/apr")}
-              >
-                Apartment
-              </button>
-            </div>
-          </div>
-        </div>
-      );
-    } else if (isResident) {
-      return navigate("apr");
-    } else {
-      return navigate("dash");
+  useEffect(() => {
+    if (isAuthenticated && isModerator && !showPopup && building_id) {
+      navigate("/mod");
     }
-  }
+    if (isAuthenticated && !showPopup) {
+      if (isModerator) {
+        setShowPopup(true); // Trigger popup, no need to navigate yet
+      } else if (isResident) {
+        navigate("/apr");
+      } else {
+        navigate("/dash");
+      }
+    }
+  }, [
+    isAuthenticated,
+    isModerator,
+    isResident,
+    navigate,
+    showPopup,
+    building_id,
+  ]);
+
   return (
     <section className="container">
       <h1 className="large text-primary">Sign In</h1>
@@ -139,13 +136,17 @@ const Login = ({
             <div className="flex gap-4">
               <button
                 className="btn btn-success"
-                onClick={() => navigate("/mod")}
+                onClick={() => {
+                  navigate("/mod");
+                }}
               >
                 Moderator
               </button>
               <button
                 className="btn btn-secondary"
-                onClick={() => navigate("/apr")}
+                onClick={() => {
+                  navigate("/apr");
+                }}
               >
                 Apartment
               </button>
@@ -164,11 +165,13 @@ Login.propTypes = {
   isAuthenticated: PropTypes.bool,
   isModerator: PropTypes.bool,
   isResident: PropTypes.bool,
+  building_id: PropTypes.string,
 };
 const mapStateToProps = (state) => ({
   isAuthenticated: state.auth.isAuthenticated,
   isModerator: state.auth.isModerator,
   isResident: state.auth.isResident,
+  building_id: state.auth.building_id,
 });
 
 export default connect(mapStateToProps, {
