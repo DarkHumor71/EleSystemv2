@@ -42,4 +42,13 @@ const ApartmentSchema = new Schema(
     }
 );
 ApartmentSchema.index({building: 1, apartment_number: 1}, {unique: true});
+ApartmentSchema.methods.softDelete = function () {
+    this.deleted_at = new Date();
+    return this.save();
+};
+ApartmentSchema.methods.restore = function () {
+    this.deleted_at = null;
+    this.createdAt = new Date();
+    return this.save();
+};
 module.exports = Apartment = mongoose.model("apartment", ApartmentSchema);

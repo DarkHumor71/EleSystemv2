@@ -33,5 +33,14 @@ const BuildingSchema = new Schema(
         timestamps: true, // Automatically adds `createdAt` and `updatedAt` fields
     }
 );
+BuildingSchema.methods.softDelete = function () {
+    this.deleted_at = new Date();
+    return this.save();
+};
+BuildingSchema.methods.restore = function () {
+    this.deleted_at = null;
+    this.createdAt = new Date();
+    return this.save();
+};
 
 module.exports = Building = mongoose.model("building", BuildingSchema);

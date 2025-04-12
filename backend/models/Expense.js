@@ -28,7 +28,15 @@ const ExpenseSchema = new mongoose.Schema(
         timestamps: true, // Automatically adds `createdAt` and `updatedAt` fields
     }
 );
-
+ExpenseSchema.methods.softDelete = function () {
+    this.deleted_at = new Date();
+    return this.save();
+};
+ExpenseSchema.methods.restore = function () {
+    this.deleted_at = null;
+    this.createdAt = new Date();
+    return this.save();
+};
 const Expense = mongoose.model("expense", ExpenseSchema);
 
 module.exports = Expense;
