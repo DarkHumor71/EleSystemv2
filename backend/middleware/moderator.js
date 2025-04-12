@@ -1,7 +1,12 @@
 module.exports = function (req, res, next) {
-    //Get token from header
-    const permissions = req.decoded.permissions;
-    if (!permissions.moderator)
-        return res.status(401).json({msg: "Not authorized"});
+    const {permissions} = req.decoded;
+
+    // Allow admins to pass through
+    if (permissions?.admin) return next();
+
+    // Check if user is a moderator
+    if (!permissions?.moderator) {
+        return res.status(403).json({msg: "Access denied: not a moderator"});
+    }
     next();
 };
