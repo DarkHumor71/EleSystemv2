@@ -1,12 +1,18 @@
+<<<<<<< HEAD
 import React, { useEffect, useState } from "react";
 import { Box, IconButton, Typography, useTheme, Button } from "@mui/material";
 import { tokens } from "../../theme";
+=======
+import {Box, Button, IconButton, Typography, useTheme} from "@mui/material";
+import {tokens} from "../../theme";
+import {mockTransactions} from "../../data/mockData";
+>>>>>>> d2f540bd26bc8ab2308deb58f872bfc5da1711d6
 import DownloadOutlinedIcon from "@mui/icons-material/DownloadOutlined";
 import Header from "../../components/Header";
 import LineChart from "../../components/LineChart";
 import StatBox from "../../components/StatBox";
-import ApartmentIcon from "@mui/icons-material/Apartment";
 import PaidIcon from "@mui/icons-material/Paid";
+<<<<<<< HEAD
 import { useNavigate } from "react-router-dom";
 import { connect } from "react-redux";
 import PropTypes from "prop-types";
@@ -224,13 +230,37 @@ const Apr = ({
               alignItems="center"
               borderBottom={`4px solid ${colors.primary[500]}`}
               p="15px"
+=======
+import {useNavigate} from "react-router-dom";
+
+const Apr = () => {
+    const theme = useTheme();
+    const colors = tokens(theme.palette.mode);
+    const navigate = useNavigate();
+    return (
+        <Box m="20px">
+            {/* HEADER */}
+            <Box display="flex" justifyContent="space-between" alignItems="center">
+                <Header title="DASHBOARD" subtitle="Welcome to your dashboard"/>
+            </Box>
+
+            {/* GRID & CHARTS */}
+            <Box
+                display="grid"
+                gridTemplateColumns="repeat(12, 1fr)"
+                gridAutoRows="140px"
+                gap="20px"
+>>>>>>> d2f540bd26bc8ab2308deb58f872bfc5da1711d6
             >
-              <Box>
-                <Typography
-                  color={colors.greenAccent[500]}
-                  variant="h5"
-                  fontWeight="600"
+                {/* ROW 1 */}
+                <Box
+                    gridColumn="span 3"
+                    backgroundColor={colors.primary[400]}
+                    display="flex"
+                    alignItems="center"
+                    justifyContent="center"
                 >
+<<<<<<< HEAD
                   {transaction.createdAt}
                 </Typography>
                 <Typography color={colors.grey[100]}>
@@ -245,12 +275,138 @@ const Apr = ({
               >
                 {transaction.cost}
               </Box>
+=======
+                    <StatBox
+                        title="18$"
+                        subtitle="My Spent"
+                        icon={
+                            <PaidIcon
+                                sx={{color: colors.greenAccent[600], fontSize: "26px"}}
+                            />
+                        }
+                    />
+                </Box>
+                <Box
+                    gridColumn="span 3"
+                    backgroundColor={colors.primary[400]}
+                    display="flex"
+                    alignItems="center"
+                    justifyContent="center"
+                >
+                    <StatBox
+                        title="100$"
+                        subtitle="Total Building Spent"
+                        icon={
+                            <PaidIcon
+                                sx={{color: colors.greenAccent[600], fontSize: "26px"}}
+                            />
+                        }
+                    />
+                </Box>
+
+                {/* ROW 2 */}
+                <Box
+                    gridColumn="span 8"
+                    gridRow="span 2"
+                    backgroundColor={colors.primary[400]}
+                >
+                    <Box
+                        mt="25px"
+                        p="0 30px"
+                        display="flex "
+                        justifyContent="space-between"
+                        alignItems="center"
+                    >
+                        <Box>
+                            <Typography
+                                variant="h5"
+                                fontWeight="600"
+                                color={colors.grey[100]}
+                            >
+                                Yearly Total Spent on Elevators
+                            </Typography>
+                            <Typography
+                                variant="h3"
+                                fontWeight="bold"
+                                color={colors.greenAccent[500]}
+                            >
+                                $190
+                            </Typography>
+                        </Box>
+                        <Box>
+                            <IconButton>
+                                <DownloadOutlinedIcon
+                                    sx={{fontSize: "26px", color: colors.greenAccent[500]}}
+                                />
+                            </IconButton>
+                        </Box>
+                    </Box>
+                    <Box height="250px" m="-20px 0 0 0">
+                        <LineChart isDashboard={true}/>
+                    </Box>
+                </Box>
+                <Box
+                    gridColumn="span 4"
+                    gridRow="span 2"
+                    backgroundColor={colors.primary[400]}
+                    overflow="auto"
+                >
+                    <Box
+                        display="flex"
+                        justifyContent="space-between"
+                        alignItems="center"
+                        borderBottom={`4px solid ${colors.primary[500]}`}
+                        colors={colors.grey[100]}
+                        p="15px"
+                    >
+                        <Typography color={colors.grey[100]} variant="h5" fontWeight="600">
+                            Recent Expensess
+                        </Typography>
+                        <Button
+                            variant="contained"
+                            color="primary"
+                            onClick={() => navigate("/expensess")}
+                        >
+                            {" "}
+                            Show More
+                        </Button>
+                    </Box>
+                    {mockTransactions.map((transaction, i) => (
+                        <Box
+                            key={`${transaction.txId}-${i}`}
+                            display="flex"
+                            justifyContent="space-between"
+                            alignItems="center"
+                            borderBottom={`4px solid ${colors.primary[500]}`}
+                            p="15px"
+                        >
+                            <Box>
+                                <Typography
+                                    color={colors.greenAccent[500]}
+                                    variant="h5"
+                                    fontWeight="600"
+                                >
+                                    {transaction.txId}
+                                </Typography>
+                                <Typography color={colors.grey[100]}>
+                                    {transaction.user}
+                                </Typography>
+                            </Box>
+                            <Box color={colors.grey[100]}>{transaction.date}</Box>
+                            <Box
+                                backgroundColor={colors.greenAccent[500]}
+                                p="5px 10px"
+                                borderRadius="4px"
+                            >
+                                ${transaction.cost}
+                            </Box>
+                        </Box>
+                    ))}
+                </Box>
+>>>>>>> d2f540bd26bc8ab2308deb58f872bfc5da1711d6
             </Box>
-          ))}
         </Box>
-      </Box>
-    </Box>
-  );
+    );
 };
 
 Apr.propTypes = {

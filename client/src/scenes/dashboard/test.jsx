@@ -1,6 +1,6 @@
-import { Box, Button, IconButton, Typography, useTheme } from "@mui/material";
-import { tokens } from "../../theme";
-import { mockTransactions } from "../../data/mockData";
+import {Box, Button, IconButton, Typography, useTheme} from "@mui/material";
+import {tokens} from "../../theme";
+import {mockTransactions} from "../../data/mockData";
 import DownloadOutlinedIcon from "@mui/icons-material/DownloadOutlined";
 import EmailIcon from "@mui/icons-material/Email";
 import PointOfSaleIcon from "@mui/icons-material/PointOfSale";
@@ -18,7 +18,7 @@ const Test = () => {
         <Box m="20px">
             {/* HEADER */}
             <Box display="flex" justifyContent="space-between" alignItems="center">
-                <Header title="DASHBOARD" subtitle="Welcome to your dashboard" />
+                <Header title="DASHBOARD" subtitle="Welcome to your dashboard"/>
 
                 <Box>
                     <Button
@@ -30,7 +30,7 @@ const Test = () => {
                             padding: "10px 20px",
                         }}
                     >
-                        <DownloadOutlinedIcon sx={{ mr: "10px" }} />
+                        <DownloadOutlinedIcon sx={{mr: "10px"}}/>
                         Download Reports
                     </Button>
                 </Box>
@@ -58,7 +58,7 @@ const Test = () => {
                         increase="+14%"
                         icon={
                             <EmailIcon
-                                sx={{ color: colors.greenAccent[600], fontSize: "26px" }}
+                                sx={{color: colors.greenAccent[600], fontSize: "26px"}}
                             />
                         }
                     />
@@ -77,7 +77,7 @@ const Test = () => {
                         increase="+21%"
                         icon={
                             <PointOfSaleIcon
-                                sx={{ color: colors.greenAccent[600], fontSize: "26px" }}
+                                sx={{color: colors.greenAccent[600], fontSize: "26px"}}
                             />
                         }
                     />
@@ -96,7 +96,7 @@ const Test = () => {
                         increase="+5%"
                         icon={
                             <PersonAddIcon
-                                sx={{ color: colors.greenAccent[600], fontSize: "26px" }}
+                                sx={{color: colors.greenAccent[600], fontSize: "26px"}}
                             />
                         }
                     />
@@ -115,7 +115,7 @@ const Test = () => {
                         increase="+43%"
                         icon={
                             <TrafficIcon
-                                sx={{ color: colors.greenAccent[600], fontSize: "26px" }}
+                                sx={{color: colors.greenAccent[600], fontSize: "26px"}}
                             />
                         }
                     />
@@ -153,13 +153,13 @@ const Test = () => {
                         <Box>
                             <IconButton>
                                 <DownloadOutlinedIcon
-                                    sx={{ fontSize: "26px", color: colors.greenAccent[500] }}
+                                    sx={{fontSize: "26px", color: colors.greenAccent[500]}}
                                 />
                             </IconButton>
                         </Box>
                     </Box>
                     <Box height="250px" m="-20px 0 0 0">
-                        <LineChart isDashboard={true} />
+                        <LineChart isDashboard={true}/>
                     </Box>
                 </Box>
                 <Box

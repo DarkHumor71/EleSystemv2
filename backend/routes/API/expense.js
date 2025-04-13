@@ -1,41 +1,46 @@
-const express = require("express");
+const express = require('express');
 const router = express.Router();
-const auth = require("../../middleware/auth");
-const { check, validationResult } = require("express-validator");
-const Apartment = require("../../models/Apartment");
-const Expense = require("../../models/Expense");
-const Building = require("../../models/Building");
-const admin = require("../../middleware/admin");
+const auth = require('../../middleware/auth');
+const { check, validationResult } = require('express-validator');
+const Apartment = require('../../models/Apartment');
+const Expense = require('../../models/Expense');
+const Building = require('../../models/Building');
+const admin = require('../../middleware/admin');
 
-//@route    POST api/expense
-//@desc     Create an Expense
-//@access   Private
+// @route    POST api/expense
+// @desc     Create an Expense
+// @access   Private
 router.post(
-  "/",
+  '/',
   [
-    check("brain", "Brain code is required").not().isEmpty(),
-    check("time", "Time is required").not().isEmpty(),
-    check("qr_code", "qr is required").not().isEmpty(),
+    check('brain', 'Brain code is required').not().isEmpty(),
+    check('time', 'Time is required').not().isEmpty(),
+    check('qr_code', 'qr is required').not().isEmpty(),
   ],
   async (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(400).json({ errors: errors.array() });
     }
-    if (req.body.brain != 1234) {
+    if (req.body.brain !== 1234) {
       //password is required, it must be 1234
-      return res.status(400).json({ msg: "Invalid Credentials" });
+      return res.status(400).json({ msg: 'Invalid Credentials' });
     }
     try {
       const qr_code = req.body.qr_code.payload;
       const apartment = await Apartment.findById(qr_code);
-      let current = 1; //admin may change this value
+      if (!apartment)
+        return res.status(404).json({ msg: 'Apartment not found' });
+
+      let current = 1; // Admin can change this value
       let power = 24 * current;
       let energy = (power / 1000) * (req.body.time / 3600);
-      let unitCost = 1; //admin may change this value
+      let unitCost = 1; // Admin may change this value
       let cost = energy * unitCost;
+
       const roundToTwo = (num) =>
         Math.round((num + Number.EPSILON) * 100) / 100;
+
       const newExpense = new Expense({
         apartment: apartment.id,
         time: req.body.time,
@@ -47,65 +52,68 @@ router.post(
       res.json(expense);
     } catch (err) {
       console.error(err.message);
-      res.status(500).send("Server Error");
+      res.status(500).send('Server Error');
     }
   }
 );
 
-//@route    GET api/expenses
-//@desc     get all expenses
-//@access   private
-
-router.get("/", [auth, admin], async (req, res) => {
+// @route    GET api/expenses
+// @desc     Get all expenses with pagination
+// @access   private
+router.get('/', [auth, admin], async (req, res) => {
   try {
-    const expenses = await Expense.find().sort({ date: -1 });
+    const { page = 1, limit = 10 } = req.query; // Default to page 1 and 10 results per page
+    const expenses = await Expense.find()
+      .skip((page - 1) * limit) // Skip the appropriate number of results
+      .limit(Number(limit)) // Limit the results to the specified number
+      .sort({ date: -1 });
 
     res.json(expenses);
   } catch (err) {
     console.error(err.message);
-    res.status(500).send("Server Error");
+    res.status(500).send('Server Error');
   }
 });
 
-//@route    GET api/apartment/expense/:id
-//@desc     get expense by id
-//@access   private
-router.get("/apartment/:id", auth, async (req, res) => {
+// @route    GET api/apartment/expense/:id
+// @desc     Get expense by apartment id
+// @access   private
+router.get('/apartment/:id', auth, async (req, res) => {
   try {
-    const apartment = await Apartment.findById(expense.apartment);
+    const apartment = await Apartment.findById(req.params.id);
+    if (!apartment) return res.status(404).json({ msg: 'Apartment not found' });
+
     const building = await Building.findById(apartment.building);
     const perm = req.decoded.permissions;
+
     if (
       (perm.moderator && req.decoded.building.id === building.id.toString()) ||
       (perm.resident && req.decoded.apartment.id === apartment.id.toString())
     ) {
-      const aptid = apartment.id;
-      const expenses = await Expense.find({ aptid });
-      if (!expenses) return res.status(404).json({ msg: "Expense not found" });
+      const expenses = await Expense.find({ apartment: apartment.id });
+      if (!expenses) return res.status(404).json({ msg: 'Expense not found' });
       res.json(expenses);
+    } else {
+      return res.status(401).json({ msg: 'User not authorized' });
     }
-
-    //default case
-    return res.status(401).json({ msg: "User not authorized" });
   } catch (err) {
     console.error(err.message);
-    if (err.kind === "ObjectId")
-      return res.status(404).json({ msg: "Expense not found" });
+    if (err.kind === 'ObjectId')
+      return res.status(404).json({ msg: 'Expense not found' });
 
-    res.status(500).send("Server Error");
+    res.status(500).send('Server Error');
   }
 });
 
-//@route    GET api/building/expense/:id
-//@desc     get expenses by building id
-//@access   private
-
-router.get("/building/:id", auth, async (req, res) => {
+// @route    GET api/building/expense/:id
+// @desc     Get expenses by building id
+// @access   private
+router.get('/building/:id', auth, async (req, res) => {
   try {
     // Check if the building exists
     const building = await Building.findById(req.params.id);
     if (!building) {
-      return res.status(404).json({ msg: "Building not found" });
+      return res.status(404).json({ msg: 'Building not found' });
     }
 
     // Check user permissions
@@ -115,7 +123,7 @@ router.get("/building/:id", auth, async (req, res) => {
       (perm.moderator && req.decoded.building.id === building.id.toString());
 
     if (!isAuthorized) {
-      return res.status(401).json({ msg: "User not authorized" });
+      return res.status(401).json({ msg: 'User not authorized' });
     }
 
     // Find all apartments in the building
@@ -132,7 +140,6 @@ router.get("/building/:id", auth, async (req, res) => {
       );
       return {
         apartment_number: apartment ? apartment.apartment_number : null, // Add apartment_number
-
         ...expense.toObject(), // Convert Mongoose document to plain object
       };
     });
@@ -141,33 +148,29 @@ router.get("/building/:id", auth, async (req, res) => {
     return res.json(expensesWithApartmentNumber);
   } catch (err) {
     console.error(err.message);
-
-    // Handle specific errors
-    if (err.kind === "ObjectId") {
-      return res.status(404).json({ msg: "Building not found" });
+    if (err.kind === 'ObjectId') {
+      return res.status(404).json({ msg: 'Building not found' });
     }
-
-    // Handle all other errors
-    return res.status(500).json({ msg: "Server Error" });
+    return res.status(500).json({ msg: 'Server Error' });
   }
 });
 
-//@route    DELETE api/expenses/:id
-//@desc     delete a expense
-//@access   private
-
-router.get("/:id", [auth, admin], async (req, res) => {
+// @route    DELETE api/expenses/:id
+// @desc     Delete an expense
+// @access   private
+router.delete('/:id', [auth, admin], async (req, res) => {
   try {
     const expense = await Expense.findById(req.params.id);
-    if (!expense) return res.status(404).json({ msg: "Expense not found" });
 
-    await expense.remove();
-    res.json({ msg: "Expense removed" });
+    if (!expense) {
+      return res.status(404).json({ msg: 'Building not found' });
+    }
+
+    await expense.softDelete();
+    res.json({ msg: 'Expense deleted', expense });
   } catch (err) {
     console.error(err.message);
-    if (err.kind === "ObjectId")
-      return res.status(404).json({ msg: "Expense not found" });
-    res.status(500).send("Server Error");
+    res.status(500).send('Server Error');
   }
 });
 
