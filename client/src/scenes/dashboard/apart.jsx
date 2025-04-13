@@ -1,6 +1,6 @@
+import React, { useEffect, useState } from "react";
 import { Box, IconButton, Typography, useTheme, Button } from "@mui/material";
 import { tokens } from "../../theme";
-import { mockTransactions } from "../../data/mockData";
 import DownloadOutlinedIcon from "@mui/icons-material/DownloadOutlined";
 import Header from "../../components/Header";
 import LineChart from "../../components/LineChart";
@@ -8,11 +8,97 @@ import StatBox from "../../components/StatBox";
 import ApartmentIcon from "@mui/icons-material/Apartment";
 import PaidIcon from "@mui/icons-material/Paid";
 import { useNavigate } from "react-router-dom";
+import { connect } from "react-redux";
+import PropTypes from "prop-types";
+import { fetchBuildingExpense } from "../../actions/expense";
+import { fetchApartments } from "../../actions/apartment";
 
-const Apr = () => {
+const Apr = ({
+  isloading,
+  building_id,
+  fetchBuildingExpense,
+  fetchApartments,
+  myApartment,
+}) => {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
   const navigate = useNavigate();
+  const [data, setData] = useState([]);
+  const [total_money, setTotal_money] = useState("$0");
+  const [my_spent, setMy_spent] = useState("$0");
+
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      const fetchData = async () => {
+        try {
+
+          const Data = await fetchBuildingExpense(building_id);
+
+          const cleanedData = Data.map(
+            ({
+              __v,
+              _id,
+              apartment,
+              deleted_at,
+              time,
+              power,
+              cost,
+              updatedAt,
+              createdAt,
+              ...rest
+            }) => ({
+              ...rest,
+              apartment_number: apartment?.apartment_number || "N/A",
+              time: time ? `${time.$numberDecimal} s` : null,
+              power: power ? `${power.$numberDecimal} KW` : null,
+              cost: cost ? `$${cost.$numberDecimal}` : null,
+              createdAt: createdAt
+                ? new Date(createdAt).toLocaleTimeString("en-US", {
+                  year: "numeric",
+                  month: "short",
+                  day: "numeric",
+                  hour: "2-digit",
+                  minute: "2-digit",
+                })
+                : null,
+              date: createdAt
+                ? new Date(createdAt).toLocaleDateString("en-US", {
+                  year: "numeric",
+                  month: "short",
+                  day: "numeric",
+                })
+                : null,
+            })
+          );
+
+          // Calculate total building spent
+          const totalCost = cleanedData.reduce(
+            (sum, item) => sum + parseFloat(item.cost?.replace('$', '') || 0),
+            0
+          );
+          setTotal_money(`$${totalCost.toFixed(2)}`);
+
+          // Calculate my apartment's spent
+          const myCost = cleanedData
+            .filter(item => item.apartment_number === myApartment)
+            .reduce(
+              (sum, item) => sum + parseFloat(item.cost?.replace('$', '') || 0),
+              0
+            );
+          setMy_spent(`$${myCost.toFixed(2)}`);
+
+          setData(cleanedData.slice(0, 5)); // Show only 5 recent expenses
+        } catch (error) {
+          console.error("Error fetching data:", error);
+        }
+      };
+
+      fetchData();
+    }, 200);
+
+    return () => clearTimeout(timeout);
+  }, [isloading, building_id, fetchBuildingExpense, fetchApartments, myApartment]);
+
   return (
     <Box m="20px">
       {/* HEADER */}
@@ -36,7 +122,7 @@ const Apr = () => {
           justifyContent="center"
         >
           <StatBox
-            title="18$"
+            title={my_spent}
             subtitle="My Spent"
             icon={
               <PaidIcon
@@ -53,7 +139,7 @@ const Apr = () => {
           justifyContent="center"
         >
           <StatBox
-            title="100$"
+            title={total_money}
             subtitle="Total Building Spent"
             icon={
               <PaidIcon
@@ -89,7 +175,7 @@ const Apr = () => {
                 fontWeight="bold"
                 color={colors.greenAccent[500]}
               >
-                $190
+                {total_money}
               </Typography>
             </Box>
             <Box>
@@ -119,20 +205,20 @@ const Apr = () => {
             p="15px"
           >
             <Typography color={colors.grey[100]} variant="h5" fontWeight="600">
-              Recent Expensess
+              Recent Expenses
             </Typography>
             <Button
               variant="contained"
               color="primary"
-              onClick={() => navigate("/expensess")}
+              onClick={() => navigate("/expenses")}
             >
-              {" "}
               Show More
             </Button>
           </Box>
-          {mockTransactions.map((transaction, i) => (
+
+          {data.map((transaction, i) => (
             <Box
-              key={`${transaction.txId}-${i}`}
+              key={`${transaction.apartment_number}-${i}`}
               display="flex"
               justifyContent="space-between"
               alignItems="center"
@@ -145,10 +231,10 @@ const Apr = () => {
                   variant="h5"
                   fontWeight="600"
                 >
-                  {transaction.txId}
+                  {transaction.createdAt}
                 </Typography>
                 <Typography color={colors.grey[100]}>
-                  {transaction.user}
+                  Apt {transaction.apartment_number}
                 </Typography>
               </Box>
               <Box color={colors.grey[100]}>{transaction.date}</Box>
@@ -157,7 +243,7 @@ const Apr = () => {
                 p="5px 10px"
                 borderRadius="4px"
               >
-                ${transaction.cost}
+                {transaction.cost}
               </Box>
             </Box>
           ))}
@@ -166,4 +252,22 @@ const Apr = () => {
     </Box>
   );
 };
-export default Apr;
+
+Apr.propTypes = {
+  building_id: PropTypes.string,
+  isloading: PropTypes.bool,
+  fetchBuildingExpense: PropTypes.func.isRequired,
+  fetchApartments: PropTypes.func.isRequired,
+  myApartment: PropTypes.string,
+};
+
+const mapStateToProps = (state) => ({
+  building_id: state.auth.apartment?.building || null,
+  isloading: state.auth.loading,
+  myApartment: state.auth.apartment?.apartment_number || null,
+});
+
+export default connect(mapStateToProps, {
+  fetchBuildingExpense,
+  fetchApartments,
+})(Apr);
