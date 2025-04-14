@@ -1,52 +1,55 @@
 const express = require('express');
 const router = express.Router();
+const bcrypt = require('bcryptjs');
 const { check, validationResult } = require('express-validator');
 const jwt = require('jsonwebtoken');
 const config = require('config');
 const auth = require('../../middleware/auth');
 const Apartment = require('../../models/Apartment');
-const Building = require('../../models/Building');
 const building = require('../../middleware/building');
+const c = require('config');
 
-// @route    GET api/auth
-// @desc     Get authenticated apartment/building info based on user
-// @access   Private
+//@route    GET api/auth
+//@desc     token to detailed Object
+//@access   Public
 router.get('/', auth, async (req, res) => {
   try {
-    // If apartment is not found, check building data
-    if (req.decoded.apartment) {
+    const building = await Building.findById(req.decoded.building.id).select(
+      '-password'
+    );
+    if (!req.decoded.apartment && req.decoded.building) res.json(building);
+    else {
       const apartment = await Apartment.findById(
         req.decoded.apartment.id
       ).select('-pin');
-      return res.json(apartment);
-    } else if (req.decoded.building) {
-      const building = await Building.findById(req.decoded.building.id).select(
-        '-password'
-      );
-      return res.json(building);
-    }
+      console.log(apartment);
+      const data = {
+        apartment: apartment,
+        building: building,
+      };
 
-    return res
-      .status(400)
-      .json({ msg: 'No valid apartment or building found' });
+      res.send(data);
+    }
   } catch (err) {
     console.error(err.message);
     res.status(500).send('Server Error');
   }
 });
 
-// @route    POST api/auth
-// @desc     Authenticate apartment via PIN and return JWT token with permissions
-// @access   Public
+//@route    POST api/auth
+//@desc     authenticate apartment and get jwt to use in private (for login)
+//@access   Private
 router.post(
   '/',
   [
-    // Validate PIN input
+    auth,
+    building,
     check('pin', 'PIN is required and must be exactly 4 numeric characters')
       .exists()
       .isLength({ min: 4, max: 4 })
       .isNumeric(),
   ],
+
   async (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -55,49 +58,46 @@ router.post(
 
     const { pin } = req.body;
     try {
-      // Check if apartment exists with the provided PIN
+      //See if apartment exists
+
       let apartment = await Apartment.findOne({ pin });
       if (!apartment) {
         return res
           .status(400)
           .json({ errors: [{ msg: 'Invalid Credentials' }] });
       }
-
       req.decoded.apartment = { id: apartment.id };
 
-      // Set user permissions based on apartment's role
-      if (!req.decoded.permissions) {
-        req.decoded.permissions = {}; // Initialize permissions if not already set
-      }
-
-      // Assign permissions based on the apartment's role
       if (apartment.is_moderator) {
+        if (!req.decoded.permissions) {
+          req.decoded.permissions = {};
+        }
         req.decoded.permissions.moderator = true;
         req.decoded.permissions.resident = true;
       } else {
         req.decoded.permissions.resident = true;
         req.decoded.permissions.moderator = false;
       }
-
-      // Create payload for JWT token
-      const payload = {
+      const modifiedPayload = {
         ...req.decoded,
-        permissions: {
-          moderator: req.decoded.permissions.moderator,
-          resident: req.decoded.permissions.resident,
-        },
       };
+      const moderator = req.decoded.permissions.moderator;
+      const resident = req.decoded.permissions.resident;
+      jwt.sign(
+        modifiedPayload,
+        config.get('jwtSecret'),
 
-      // Generate and return the JWT token
-      jwt.sign(payload, config.get('jwtSecret'), (err, token) => {
-        if (err) throw err;
-        res.json({
-          token,
-          moderator: req.decoded.permissions.moderator,
-          resident: req.decoded.permissions.resident,
-          building: req.decoded.building?.id || null,
-        });
-      });
+        (err, token) => {
+          if (err) throw err;
+          console.log(req.decoded);
+          res.json({
+            token,
+            moderator,
+            resident,
+            building: req.decoded.building.id,
+          });
+        }
+      );
     } catch (err) {
       console.error(err.message);
       res.status(500).send('Server error');
