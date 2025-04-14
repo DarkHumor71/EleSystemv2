@@ -39,7 +39,7 @@ export default function (state = initialState, action) {
         isAuthenticated: true,
         loading: false,
         apartment: payload.length > 1 ? payload : payload,
-        isResident: payload.length > 1 ? true : false,
+        isResident: payload.length > 1,
         isModerator: payload.moderator,
       };
     case APARTMENT_LOADED:
@@ -50,7 +50,7 @@ export default function (state = initialState, action) {
         loading: false,
         apartment: payload.token ? payload.token : payload.apartment,
         building: payload.token ? payload.token : payload.building,
-        isResident: payload.token ? false : true,
+        isResident: !payload.token,
 
         isModerator: payload.apartment.is_moderator,
       };
