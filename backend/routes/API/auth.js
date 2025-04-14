@@ -1,14 +1,11 @@
 const express = require('express');
 const router = express.Router();
-const bcrypt = require('bcryptjs');
 const { check, validationResult } = require('express-validator');
 const jwt = require('jsonwebtoken');
 const config = require('config');
 const auth = require('../../middleware/auth');
 const Apartment = require('../../models/Apartment');
 const building = require('../../middleware/building');
-const c = require('config');
-
 //@route    GET api/auth
 //@desc     token to detailed Object
 //@access   Public
