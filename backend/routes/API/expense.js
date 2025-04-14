@@ -75,8 +75,8 @@ router.get('/', [auth, admin], async (req, res) => {
   }
 });
 
-// @route    GET api/apartment/expense/:id
-// @desc     Get expense by apartment id
+// @route    GET api/expense/apartment/:id
+// @desc     Get expenses by apartment id
 // @access   private
 router.get('/apartment/:id', auth, async (req, res) => {
   try {
