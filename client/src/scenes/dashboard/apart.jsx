@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { Box, Button, IconButton, Typography, useTheme } from '@mui/material';
+import { Box, Button, Typography, useTheme } from '@mui/material';
 import { tokens } from '../../theme';
-import DownloadOutlinedIcon from '@mui/icons-material/DownloadOutlined';
 import Header from '../../components/Header';
 import LineChart from '../../components/LineChart';
 import StatBox from '../../components/StatBox';
@@ -159,13 +158,6 @@ const Apr = ({ isloading, apartment_id, fetchApartmentExpenses }) => {
                 {total_money}
               </Typography>
             </Box>
-            <Box>
-              <IconButton>
-                <DownloadOutlinedIcon
-                  sx={{ fontSize: '26px', color: colors.greenAccent[500] }}
-                />
-              </IconButton>
-            </Box>
           </Box>
           <Box height="250px" m="-20px 0 0 0">
             <LineChart isDashboard={true} data={data} />
@@ -201,7 +193,7 @@ const Apr = ({ isloading, apartment_id, fetchApartmentExpenses }) => {
           ) : !data || data.length === 0 ? (
             <Typography p="15px">No expenses found.</Typography>
           ) : (
-            data.map((transaction, i) => (
+            data.slice(-5).map((transaction, i) => (
               <Box
                 key={`${transaction.apartment_number}-${i}`}
                 display="flex"
