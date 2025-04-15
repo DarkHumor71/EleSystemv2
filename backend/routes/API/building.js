@@ -117,49 +117,52 @@ router.get("/", [auth, admin], async (req, res) => {
 // @route    POST api/building/create
 // @desc     Create a new Building + first Apartment (moderator)
 // @access   Private
-router.post("/create", auth, async (req, res) => {
-    const { name, address, city, state, password, pin, first_name, last_name, apartment_number, email } = req.body;
+router.post("/create", [auth, check('pin', 'PIN must be 4-digit numeric')
+    .isLength({ min: 4, max: 4 })
+    .isNumeric(),
+    check('apartment_number', 'Apartment number is required').isNumeric()], async (req, res) => {
+        const { name, address, city, state, password, pin, first_name, last_name, apartment_number, email } = req.body;
 
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-        return res.status(400).json({ errors: errors.array() });
-    }
-
-    const session = client.startSession();
-    try {
-        session.startTransaction();
-
-        const newBuilding = new Building({ name, email, address, city, state });
-
-        if (password) {
-            const salt = await bcrypt.genSalt(10);
-            newBuilding.password = await bcrypt.hash(password, salt);
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            return res.status(400).json({ errors: errors.array() });
         }
 
-        const building = await newBuilding.save({ session });
+        const session = client.startSession();
+        try {
+            session.startTransaction();
 
-        const newApartment = new Apartment({
-            building: building._id,
-            pin,
-            first_name,
-            last_name,
-            apartment_number,
-            email,
-            is_moderator: true,
-        });
+            const newBuilding = new Building({ name, email, address, city, state });
 
-        const apartment = await newApartment.save({ session });
+            if (password) {
+                const salt = await bcrypt.genSalt(10);
+                newBuilding.password = await bcrypt.hash(password, salt);
+            }
 
-        await session.commitTransaction();
-        res.json({ apartment, building });
-    } catch (err) {
-        await session.abortTransaction();
-        console.error(err.message);
-        res.status(500).send("Server Error");
-    } finally {
-        session.endSession();
-    }
-});
+            const building = await newBuilding.save({ session });
+
+            const newApartment = new Apartment({
+                building: building._id,
+                pin,
+                first_name,
+                last_name,
+                apartment_number,
+                email,
+                is_moderator: true,
+            });
+
+            const apartment = await newApartment.save({ session });
+
+            await session.commitTransaction();
+            res.json({ apartment, building });
+        } catch (err) {
+            await session.abortTransaction();
+            console.error(err.message);
+            res.status(500).send("Server Error");
+        } finally {
+            session.endSession();
+        }
+    });
 
 // @route    DELETE api/building/:email
 // @desc     Soft delete a building by email
