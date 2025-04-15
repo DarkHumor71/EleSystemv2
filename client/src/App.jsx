@@ -8,7 +8,6 @@ import Apr from './scenes/dashboard/apart';
 import Apartments from './scenes/apartment/apartments';
 import AdminDashboard from './scenes/dashboard/admin';
 import Apartment from './scenes/form/createapartment';
-import Line from './scenes/line';
 import Qrcode from './scenes/form/qrcode';
 import PrivateRoute from './components/routing/privateroute';
 import Login from './scenes/login/login';
@@ -31,7 +30,7 @@ const router = createBrowserRouter([
         path: '/side',
         element: <SidebarComponent />,
       },
-      
+
       {
         path: '/buildings',
         element: <Buildings />,
@@ -48,10 +47,6 @@ const router = createBrowserRouter([
       {
         path: '/qrcode',
         element: <Qrcode />,
-      },
-      {
-        path: '/line',
-        element: <Line />,
       },
     ],
   },
