@@ -8,6 +8,7 @@ import {
   BUILDING_LOGIN_SUCCESS,
   LOGIN_FAIL,
   LOGOUT,
+  BUILDING_REGISTER_SUCCESS,
   REGISTER_FAIL,
 } from '../actions/types';
 
@@ -73,11 +74,15 @@ export default function (state = initialState, action) {
         loading: false,
         building: payload,
       };
+    case BUILDING_REGISTER_SUCCESS:
     case APARTMENT_REGISTER_SUCCESS:
       return {
         ...state,
       };
     case REGISTER_FAIL:
+      return {
+        ...state,
+      };
     case AUTH_ERROR:
     case LOGOUT:
     case LOGIN_FAIL:
