@@ -125,7 +125,10 @@ router.post("/create", auth, async (req, res) => {
         return res.status(400).json({ errors: errors.array() });
     }
 
+    const session = client.startSession();
     try {
+        session.startTransaction();
+
         const newBuilding = new Building({ name, email, address, city, state });
 
         if (password) {
@@ -133,9 +136,10 @@ router.post("/create", auth, async (req, res) => {
             newBuilding.password = await bcrypt.hash(password, salt);
         }
 
+        const building = await newBuilding.save({ session });
 
         const newApartment = new Apartment({
-            building,
+            building: building._id,
             pin,
             first_name,
             last_name,
@@ -143,14 +147,17 @@ router.post("/create", auth, async (req, res) => {
             email,
             is_moderator: true,
         });
-        const building = await newBuilding.save();
 
-        const apartment = await newApartment.save();
+        const apartment = await newApartment.save({ session });
 
+        await session.commitTransaction();
         res.json({ apartment, building });
     } catch (err) {
+        await session.abortTransaction();
         console.error(err.message);
         res.status(500).send("Server Error");
+    } finally {
+        session.endSession();
     }
 });
 
