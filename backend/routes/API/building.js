@@ -133,7 +133,6 @@ router.post("/create", auth, async (req, res) => {
             newBuilding.password = await bcrypt.hash(password, salt);
         }
 
-        const building = await newBuilding.save();
 
         const newApartment = new Apartment({
             building,
@@ -144,6 +143,7 @@ router.post("/create", auth, async (req, res) => {
             email,
             is_moderator: true,
         });
+        const building = await newBuilding.save();
 
         const apartment = await newApartment.save();
 
