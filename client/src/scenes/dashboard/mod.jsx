@@ -248,7 +248,7 @@ const Mod = ({
                 fontWeight="bold"
                 color={colors.greenAccent[500]}
               >
-                $190
+                ${total_money}
               </Typography>
             </Box>
           </Box>
@@ -283,7 +283,7 @@ const Mod = ({
             </Button>
           </Box>
 
-          {data.map((transaction, i) => (
+          {data.slice(-5).map((transaction, i) => (
             <Box
               key={`${transaction.apartment_number}-${i}`}
               display="flex"
