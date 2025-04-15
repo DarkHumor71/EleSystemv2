@@ -21,7 +21,9 @@ export const loadApartment = () => async (dispatch) => {
   }
   try {
     const res = await axios.get('/api/auth');
-    dispatch({ type: APARTMENT_LOADED, payload: res.data });
+    if (res.data.is_admin)
+      dispatch({ type: ADMIN_LOGIN_SUCCESS, payload: res.data });
+    else dispatch({ type: APARTMENT_LOADED, payload: res.data });
   } catch (err) {
     dispatch({ type: AUTH_ERROR });
   }
@@ -45,17 +47,34 @@ export const registerApartment =
   };
 //Register building
 export const registerBuilding =
-  ({ name, email, address, state, city, password = null }) =>
+  ({
+    name,
+    email,
+    address,
+    state,
+    city,
+    password = null,
+    pin,
+    firstName,
+    lastName,
+    apartmentNumber,
+    apartmentEmail,
+  }) =>
   async (dispatch) => {
     setAuthToken(localStorage.token);
-    const body = JSON.stringify({
+    const body = {
       name,
       email,
       address,
       state,
       city,
       password,
-    });
+      pin,
+      first_name: firstName,
+      last_name: lastName,
+      apartment_number: apartmentNumber,
+      apartmentEmail,
+    };
     try {
       const res = await axios.post('/api/building/create', body);
       dispatch({ type: BUILDING_REGISTER_SUCCESS, payload: res.data });
@@ -101,7 +120,7 @@ export const loginApartment =
           const res = await axios.post('/api/building', { email, password });
           localStorage.setItem('token', res.data.token);
           dispatch({ type: ADMIN_LOGIN_SUCCESS, payload: res.data });
-          return true;
+          return { admin: true };
         } catch (err) {
           const errors = err.response.data.errors;
           if (errors) {
