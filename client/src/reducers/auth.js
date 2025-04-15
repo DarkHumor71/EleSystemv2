@@ -24,9 +24,21 @@ export default function (state = initialState, action) {
   const { type, payload } = action;
   switch (type) {
     case ADMIN_LOGIN_SUCCESS:
-    case BUILDING_LOGIN_SUCCESS:
       return {
         ...state,
+        showPinField: true,
+        isAuthenticated: true,
+        loading: false,
+        building: payload,
+        is_admin: true,
+        isResident: false,
+        isModerator: false,
+      };
+    case BUILDING_LOGIN_SUCCESS:
+      return {
+        isResident: false,
+        isModerator: false,
+        apartment: null,
         showPinField: true,
         isAuthenticated: false,
         loading: false,

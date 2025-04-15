@@ -17,7 +17,6 @@ import store from './store';
 import Landing from './components/Landing';
 import Alert from './Layout/Alert';
 import BuildingRegister from './scenes/form/createbuilding';
-import SidebarComponent from './scenes/global/Sidebar';
 import setAuthToken from './utils/setAuthToken';
 import { loadApartment } from './actions/auth';
 
@@ -26,11 +25,6 @@ const router = createBrowserRouter([
     path: '/', // Apply MainLayout for the root
     element: <MainLayout />,
     children: [
-      {
-        path: '/side',
-        element: <SidebarComponent />,
-      },
-
       {
         path: '/buildings',
         element: <Buildings />,

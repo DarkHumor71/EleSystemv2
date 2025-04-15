@@ -12,14 +12,18 @@ const building = require('../../middleware/building');
 router.get('/', auth, async (req, res) => {
   try {
     const building = await Building.findById(req.decoded.building.id).select(
-      '-password'
+      '-password -__v'
     );
-    if (!req.decoded.apartment && req.decoded.building) res.json(building);
-    else {
-      const apartment = await Apartment.findById(
-        req.decoded.apartment.id
-      ).select('-pin');
-      console.log(apartment);
+    if (
+      !req.decoded.apartment &&
+      req.decoded.building &&
+      req.decoded.permissions.admin
+    ) {
+      const buildingObj = building.toObject();
+      buildingObj.is_admin = true;
+      res.json(buildingObj);
+    } else {
+      const apartment = await Apartment.findById(req.decoded.apartment.id);
       const data = {
         apartment: apartment,
         building: building,
@@ -101,5 +105,29 @@ router.post(
     }
   }
 );
+
+router.put('/', auth, async (req, res) => {
+  try {
+    const { firstName, lastName, email } = req.body;
+
+    // Find the apartment by ID from decoded token (assuming auth middleware sets req.decoded)
+    const apartment = await Apartment.findById(req.decoded.apartment.id);
+    if (!apartment) {
+      return res.status(404).json({ msg: 'Apartment not found' });
+    }
+
+    // Update fields
+    if (firstName) apartment.first_name = firstName;
+    if (lastName) apartment.last_name = lastName;
+    if (email) apartment.email = email;
+
+    await apartment.save();
+
+    res.json('Successfully updated apartment');
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server Error');
+  }
+});
 
 module.exports = router;
