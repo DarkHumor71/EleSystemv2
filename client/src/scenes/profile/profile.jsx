@@ -20,6 +20,7 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack'; // Import Back Icon
 import { tokens } from '../../theme';
 import PropTypes from 'prop-types';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 
 const Profile = ({
   setAlert,
@@ -52,11 +53,22 @@ const Profile = ({
     navigate('/apr');
   };
 
-  const handleFormSubmit = (values) => {
+  const handleFormSubmit = async (values) => {
     try {
-      console.log('Form submitted:', values);
+      const res = await axios.put('/api/auth', {
+        firstName: values.firstName,
+        lastName: values.lastName,
+        email: values.email,
+      });
+
+      console.log('Update successful:', res.data);
+      // Optionally, show a success message or update local state here
     } catch (error) {
-      setAlert(error.message, 'error');
+      console.error(
+        'Error updating profile:',
+        error.response?.data || error.message
+      );
+      // Handle errors gracefully (e.g., show error message to user)
     }
   };
 
@@ -68,7 +80,7 @@ const Profile = ({
     address: address,
     state: state,
     city: city,
-    pin: 'omk', //pin
+    pin: pin, //pin
   };
 
   return (
@@ -437,7 +449,7 @@ const mapStateToProps = (state) => {
     address: state.auth.building?.address || '',
     state: state.auth.building?.state || '',
     city: state.auth.building?.city || '',
-    // pin: state.auth.pin || '',
+    pin: state.auth.apartment.pin || '',
   };
 };
 
