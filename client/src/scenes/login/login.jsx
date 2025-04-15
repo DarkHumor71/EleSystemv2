@@ -17,6 +17,7 @@ const Login = ({
   isAuthenticated,
   isModerator,
   isResident,
+  isloading,
   building_id,
 }) => {
   const navigate = useNavigate();
@@ -30,6 +31,7 @@ const Login = ({
   // Handle email submission
   const handleEmailSubmit = async (e) => {
     e.preventDefault();
+
     if (!email) {
       setAlert('Please enter an email address', 'danger');
       return;
@@ -39,6 +41,7 @@ const Login = ({
       const response = await loginBuilding(email);
       if (response && response.exists) {
         setShowPinField(true);
+        setShowPopup(false);
         setShowCheck(false);
       }
     } catch (error) {
@@ -56,13 +59,13 @@ const Login = ({
 
     try {
       const req = await loginApartment(pin, email);
+      console.log(req);
       if (req.work) {
         await loadApartment();
-
-        if (req.mod) {
-          setShowPopup(true);
-        } else if (req.admin) {
+        if (req.admin) {
           navigate('/dash');
+        } else if (req.mod) {
+          setShowPopup(true);
         } else {
           navigate('/apr');
         }
@@ -76,6 +79,8 @@ const Login = ({
     }
   };
   useEffect(() => {
+    if (isloading) {
+    }
     if (isAuthenticated && isModerator && !showPopup && building_id) {
       navigate('/mod');
     }
@@ -91,6 +96,7 @@ const Login = ({
   }, [
     isAuthenticated,
     isModerator,
+    isloading,
     isResident,
     navigate,
     showPopup,
@@ -172,11 +178,13 @@ Login.propTypes = {
   isModerator: PropTypes.bool,
   isResident: PropTypes.bool,
   building_id: PropTypes.string,
+  isloading: PropTypes.bool.isRequired,
 };
 const mapStateToProps = (state) => ({
   isAuthenticated: state.auth.isAuthenticated,
   isModerator: state.auth.isModerator,
   isResident: state.auth.isResident,
+  isloading: state.auth.loading,
   building_id: state.auth.building_id,
 });
 
