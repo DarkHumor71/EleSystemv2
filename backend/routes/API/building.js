@@ -128,7 +128,7 @@ router.post("/create", [auth, check('pin', 'PIN must be 4-digit numeric')
             return res.status(400).json({ errors: errors.array() });
         }
 
-        const session = client.startSession();
+        const session = mongoose.startSession();
         try {
             session.startTransaction();
 
