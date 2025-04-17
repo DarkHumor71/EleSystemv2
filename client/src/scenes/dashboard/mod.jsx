@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import { Box, Button, TextField, Typography, useTheme } from '@mui/material';
-
 import { Field, Form, Formik } from 'formik';
 import { tokens } from '../../theme';
 import Header from '../../components/Header';
@@ -194,13 +193,9 @@ const Mod = ({
           {/* TextField Below */}
           {showPinField && (
             <Formik
-              initialValues={{ apartmentNumber: '' }}
+              initialValues={{ email: '' }}
               onSubmit={(values, { resetForm }) => {
-                deleteApartment(
-                  building_id,
-                  values.apartmentNumber,
-                  myApartment
-                );
+                deleteApartment(values.email);
                 resetForm();
               }}
             >
@@ -209,8 +204,8 @@ const Mod = ({
                   <Box sx={{ mt: 2 }}>
                     <Field
                       as={TextField}
-                      name="apartmentNumber"
-                      label="Enter apartment number"
+                      name="email"
+                      label="Enter apartment email"
                       variant="outlined"
                       fullWidth
                       sx={{ mb: 2 }}
@@ -319,7 +314,7 @@ const Mod = ({
     </Box>
   );
 };
-Mod.prototype = {
+Mod.propTypes = {
   building_id: PropTypes.string,
   isloading: PropTypes.bool,
   fetchBuildingExpense: PropTypes.func.isRequired,
