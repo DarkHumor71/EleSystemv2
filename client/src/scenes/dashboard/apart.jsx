@@ -183,7 +183,7 @@ const Apr = ({ isloading, apartment_id, fetchApartmentExpenses }) => {
             <Button
               variant="contained"
               color="primary"
-              onClick={() => navigate('/expenses')}
+              onClick={() => navigate('/my_expenses')}
             >
               Show More
             </Button>
