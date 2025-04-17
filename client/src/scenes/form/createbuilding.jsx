@@ -48,13 +48,13 @@ const BuildingRegister = ({ setAlert, registerBuilding }) => {
                 fullWidth
                 variant="filled"
                 type="text"
-                label="Building Name"
+                label="Building name"
                 onBlur={handleBlur}
                 onChange={handleChange}
-                value={values.Name}
-                name="Name"
-                error={!!touched.Name && !!errors.Name}
-                helperText={touched.Name && errors.Name}
+                value={values.name}
+                name="name"
+                error={!!touched.name && !!errors.name}
+                helperText={touched.name && errors.name}
                 sx={{ gridColumn: 'span 4' }}
               />
               <TextField
@@ -189,7 +189,7 @@ const BuildingRegister = ({ setAlert, registerBuilding }) => {
 
 // 🛡️ Validation Schema
 const checkoutSchema = yup.object().shape({
-  Name: yup.string().required('required'),
+  name: yup.string().required('required'),
   email: yup.string().email('invalid email').required('required'),
   address: yup.string().required('required'),
   state: yup.string().required('required'),
@@ -203,7 +203,7 @@ const checkoutSchema = yup.object().shape({
 
 // 🧾 Initial Values
 const initialValues = {
-  Name: '',
+  name: '',
   email: '',
   address: '',
   state: '',
