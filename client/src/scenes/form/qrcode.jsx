@@ -1,22 +1,27 @@
-import React from "react";
-import { Box, Button, Typography, useTheme } from "@mui/material";
-import PrintIcon from "@mui/icons-material/Print";
-import DownloadIcon from "@mui/icons-material/Download";
-import SendIcon from "@mui/icons-material/Send";
-import { tokens } from "../../theme";
+import React from 'react';
+import { Box, Button, useTheme } from '@mui/material';
+import PrintIcon from '@mui/icons-material/Print';
+import DownloadIcon from '@mui/icons-material/Download';
+import SendIcon from '@mui/icons-material/Send';
+import { tokens } from '../../theme';
 
-const QRCodeComponent = ({ id }) => {
-    const theme = useTheme();
-    const colors = tokens(theme.palette.mode);
+const QRCodeComponent = ({
+  id = null,
+  download = true,
+  print = true,
+  send = true,
+}) => {
+  const theme = useTheme();
+  const colors = tokens(theme.palette.mode);
 
-    // Generate QR Code URL
-    const imageUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${id}`;
+  // Generate QR Code URL
+  const imageUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${id}`;
 
-    // Function to handle printing the image
-    const handlePrint = () => {
-        const printWindow = window.open("", "_blank");
+  // Function to handle printing the image
+  const handlePrint = () => {
+    const printWindow = window.open('', '_blank');
 
-        printWindow.document.write(`
+    printWindow.document.write(`
           <html>
             <head>
               <title>QR Code</title>
@@ -66,90 +71,96 @@ const QRCodeComponent = ({ id }) => {
             </body>
           </html>
         `);
-        printWindow.document.close();
-    };
+    printWindow.document.close();
+  };
 
-    // Function to handle downloading the image
-    const handleDownload = () => {
-        const link = document.createElement("a");
-        link.href = imageUrl;
-        link.download = "qrcode.png"; // The name of the downloaded file
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-    };
+  // Function to handle downloading the image
+  const handleDownload = () => {
+    const link = document.createElement('a');
+    link.href = imageUrl;
+    link.download = 'qrcode.png'; // The name of the downloaded file
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
 
-    const handleSend = () => {
-        const subject = "QR Code";
-        const body = `Here is your QR code: ${imageUrl}`;
-        window.location.href = `mailto:?subject=${encodeURIComponent(
-            subject
-        )}&body=${encodeURIComponent(body)}`;
-    };
+  const handleSend = () => {
+    const subject = 'QR Code';
+    const body = `Here is your QR code: ${imageUrl}`;
+    window.location.href = `mailto:?subject=${encodeURIComponent(
+      subject
+    )}&body=${encodeURIComponent(body)}`;
+  };
 
-    return (
-        <Box
-            display="flex"
-            flexDirection="column"
-            alignItems="center"
-            justifyContent="center"
-            mt={4}
-        >
-            {/* QR Code Placeholder */}
-            <Box
-                width="300px"
-                height="300px"
-                bgcolor={colors.primary[500]}
-                display="flex"
-                alignItems="center"
-                justifyContent="center"
-                borderRadius="16px"
-                boxShadow={3}
-                border={`4px solid ${colors.primary[700]}`}
-                overflow="hidden"
-                position="relative"
-            >
-                <img
-                    src={imageUrl}
-                    alt="QR Code"
-                    style={{
-                        maxWidth: "100%",
-                        maxHeight: "100%",
-                        borderRadius: "16px",
-                        boxShadow: "0 4px 8px rgba(0, 0, 0, 0.2)",
-                    }}
-                />
-            </Box>
+  return (
+    <Box
+      display="flex"
+      flexDirection="column"
+      alignItems="center"
+      justifyContent="center"
+      mt={4}
+    >
+      {/* QR Code Placeholder */}
+      <Box
+        width="300px"
+        height="300px"
+        bgcolor={colors.primary[500]}
+        display="flex"
+        alignItems="center"
+        justifyContent="center"
+        borderRadius="16px"
+        boxShadow={3}
+        border={`4px solid ${colors.primary[700]}`}
+        overflow="hidden"
+        position="relative"
+      >
+        <img
+          src={imageUrl}
+          alt="QR Code"
+          style={{
+            maxWidth: '100%',
+            maxHeight: '100%',
+            borderRadius: '16px',
+            boxShadow: '0 4px 8px rgba(0, 0, 0, 0.2)',
+          }}
+        />
+      </Box>
 
-            {/* Buttons under QR Code */}
-            <Box mt={3} display="flex" gap={2}>
-                <Button
-                    variant="contained"
-                    color="primary"
-                    startIcon={<PrintIcon />}
-                    onClick={handlePrint}
-                >
-                    Print
-                </Button>
-                <Button
-                    variant="contained"
-                    color="secondary"
-                    startIcon={<DownloadIcon />}
-                    onClick={handleDownload}
-                >
-                    Download
-                </Button>
-                <Button
-                    variant="contained"
-                    color="success"
-                    startIcon={<SendIcon />}
-                    onClick={handleSend}
-                >
-                    Send
-                </Button>
-            </Box>
-        </Box>
-    );
+      {/* Buttons under QR Code */}
+      <Box mt={3} display="flex" gap={2}>
+        {print && (
+          <Button
+            variant="contained"
+            color="primary"
+            startIcon={<PrintIcon />}
+            onClick={handlePrint}
+          >
+            Print
+          </Button>
+        )}
+        {download && (
+          <Button
+            variant="contained"
+            color="secondary"
+            startIcon={<DownloadIcon />}
+            onClick={handleDownload}
+          >
+            Download
+          </Button>
+        )}
+        {send && (
+          <Button
+            variant="contained"
+            color="success"
+            startIcon={<SendIcon />}
+            onClick={handleSend}
+          >
+            Send
+          </Button>
+        )}
+      </Box>
+    </Box>
+  );
 };
 
 export default QRCodeComponent;
