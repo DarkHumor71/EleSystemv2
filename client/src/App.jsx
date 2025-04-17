@@ -154,6 +154,16 @@ const router = createBrowserRouter([
       },
     ],
   },
+  {
+    path: '/my_expenses',
+    element: <MainLayout side={false} profile={false} />,
+    children: [
+      {
+        path: '/my_expenses',
+        element: <Expensess single={true} />,
+      },
+    ],
+  },
 
   { index: true, element: <Landing /> },
 ]);
