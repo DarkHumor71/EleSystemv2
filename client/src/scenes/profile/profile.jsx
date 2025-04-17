@@ -21,6 +21,7 @@ import { tokens } from '../../theme';
 import PropTypes from 'prop-types';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import Qrcode from '../form/qrcode';
 
 const Profile = ({
   setAlert,
@@ -306,22 +307,7 @@ const Profile = ({
             </Grid>
             <Grid item xs={12} md={4}>
               {/* QR Code Section */}
-              <Box
-                component="img"
-                src={`  https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${id}}`}
-                alt="QR Code"
-                sx={{
-                  width: '300px',
-                  height: '300px',
-                  borderRadius: '8px',
-                  boxShadow: '0px 4px 6px rgba(0, 0, 0, 0.1)',
-                  backgroundColor: '#fff',
-                  border: '2px solid #e0e0e0',
-                  objectFit: 'contain',
-                  mx: 10, // Center the QR code horizontally
-                  my: 0, // Add margin top and bottom
-                }}
-              />
+              <Qrcode id={id} send={false} />
               <Typography
                 variant="body1"
                 align="center"
@@ -384,21 +370,7 @@ const Profile = ({
               alignItems="center"
               flexDirection="column"
             >
-              <Box
-                component="img"
-                src={`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${id}`}
-                alt="QR Code"
-                sx={{
-                  width: '150px',
-                  height: '150px',
-                  borderRadius: '8px',
-                  boxShadow: '0px 4px 6px rgba(0, 0, 0, 0.1)',
-                  backgroundColor: '#fff',
-                  border: '2px solid #e0e0e0',
-                  objectFit: 'contain',
-                  mx: 'auto', // Center the QR code horizontally
-                }}
-              />
+              <Qrcode id={id} send={false} />
               <Typography
                 variant="body1"
                 align="center"
