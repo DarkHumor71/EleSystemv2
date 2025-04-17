@@ -20,6 +20,7 @@ const PrivateRoute = ({
       '/create_apartment',
       '/qrcode',
       '/expenses',
+      '/profile',
     ],
   };
   if (loading) return null;
