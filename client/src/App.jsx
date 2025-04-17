@@ -95,6 +95,21 @@ const router = createBrowserRouter([
     ],
   },
   {
+    path: '/qrcode',
+    element: <MainLayout side={true} profile={false} />,
+    children: [
+      {
+        path: '/qrcode',
+        element: (
+          <>
+            <Alert />
+            <PrivateRoute children={<Qrcode />} />
+          </>
+        ),
+      },
+    ],
+  },
+  {
     path: '/apartments',
     element: <MainLayout side={true} profile={false} />,
     children: [
