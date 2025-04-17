@@ -7,6 +7,7 @@ const Building = require('../../models/Building');
 const Apartment = require('../../models/Apartment');
 const sameBuildingMod = require('../../middleware/sameBuildingMod');
 const { check, validationResult } = require('express-validator');
+const Expense = require('../../models/Expense');
 
 // @route    GET api/apartment/:id
 // @desc     Get a single apartment by ID
@@ -143,29 +144,39 @@ router.post(
 // @route    DELETE api/apartment/:building/:number
 // @desc     Soft delete an apartment
 // @access   Private/Moderator
-router.delete(
-  '/:building/:number',
-  [auth, mod, sameBuildingMod],
-  async (req, res) => {
-    try {
-      const { building, number } = req.params;
-      const apartmentNumber = parseInt(number, 10);
+// Soft Delete Apartment
+router.delete('/:email', async (req, res) => {
+  try {
+    const apartment = await Apartment.findOne({ email: req.params.email });
+    if (!apartment) return res.status(404).json({ msg: 'Apartment not found' });
 
-      const apartment = await Apartment.findOne({
-        building,
-        apartment_number: apartmentNumber,
-      });
-      if (!apartment) {
-        return res.status(404).json({ msg: 'Apartment not found' });
-      }
+    await apartment.softDelete();
+    await Expense.updateMany(
+      { apartment: apartment._id },
+      { deleted_at: new Date() }
+    );
 
-      await apartment.softDelete();
-      res.json({ msg: 'Apartment deleted', apartment });
-    } catch (err) {
-      console.error(err.message);
-      res.status(500).send('Server Error');
-    }
+    res.json({ msg: 'Apartment and related expenses deleted' });
+  } catch (err) {
+    res.status(500).json({ msg: err.message });
   }
-);
+});
 
+// Restore Apartment
+router.patch('/:email', async (req, res) => {
+  try {
+    const apartment = await Apartment.findOne({ email: req.params.email });
+    if (!apartment) return res.status(404).json({ msg: 'Apartment not found' });
+
+    await apartment.restore();
+    await Expense.updateMany(
+      { apartment: apartment._id },
+      { deleted_at: null, createdAt: new Date() }
+    );
+
+    res.json({ msg: 'Apartment and related expenses restored' });
+  } catch (err) {
+    res.status(500).json({ msg: err.message });
+  }
+});
 module.exports = router;
