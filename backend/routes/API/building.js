@@ -8,6 +8,7 @@ const { check, validationResult } = require('express-validator');
 const jwt = require('jsonwebtoken');
 const config = require('config');
 const Apartment = require('../../models/Apartment');
+const Expense = require('../../models/Expense');
 const { startSession } = require('mongoose');
 
 // @route    GET api/building/:id
@@ -208,20 +209,48 @@ router.post(
 // @route    DELETE api/building/:email
 // @desc     Soft delete a building by email
 // @access   Private/Admin
-router.delete('/:email', [auth, admin], async (req, res) => {
+router.delete('/:email', async (req, res) => {
   try {
     const building = await Building.findOne({ email: req.params.email });
-
-    if (!building) {
-      return res.status(404).json({ msg: 'Building not found' });
-    }
+    if (!building) return res.status(404).json({ msg: 'Building not found' });
 
     await building.softDelete();
-    res.json({ msg: 'Building deleted', building });
+
+    const apartments = await Apartment.find({ building: building._id });
+    for (const apt of apartments) {
+      await apt.softDelete();
+      await Expense.updateMany(
+        { apartment: apt._id },
+        { deleted_at: new Date() }
+      );
+    }
+
+    res.json({ msg: 'Building and related data deleted' });
   } catch (err) {
-    console.error(err.message);
-    res.status(500).send('Server Error');
+    res.status(500).json({ msg: err.message });
   }
 });
 
+// Restore Building
+router.patch('/:email', async (req, res) => {
+  try {
+    const building = await Building.findOne({ email: req.params.email });
+    if (!building) return res.status(404).json({ msg: 'Building not found' });
+
+    await building.restore();
+
+    const apartments = await Apartment.find({ building: building._id });
+    for (const apt of apartments) {
+      await apt.restore();
+      await Expense.updateMany(
+        { apartment: apt._id },
+        { deleted_at: null, createdAt: new Date() }
+      );
+    }
+
+    res.json({ msg: 'Building and related data restored' });
+  } catch (err) {
+    res.status(500).json({ msg: err.message });
+  }
+});
 module.exports = router;

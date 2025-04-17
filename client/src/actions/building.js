@@ -1,27 +1,33 @@
-// export const fetchBuildings = () => async (dispatch) => {
-//   try {
-//     const response = await axios.get("/api/buildings"); // Fetch data from backend
-//     dispatch({ type: BUILDING_REGISTER_SUCCESS, payload: response.data });
-//   } catch (error) {
-//     dispatch(setAlert({ type: REGISTER_FAIL }));
-//   }
-// };
-//TODO check
-// Delete building
-// export const deleteBuilding = (email) => async (dispatch) => {
-//   try {
-//     await axios.delete(`/building/${email}`);
+import setAuthToken from '../utils/setAuthToken';
+import axios from 'axios';
+import { DELETE_BUILDING, RESTORE_BUILDING } from './types';
 
-//     dispatch({
-//       type: DELETE_BUILDING,
-//       payload: email,
-//     });
+export const deleteBuilding = (email) => async (dispatch) => {
+  try {
+    setAuthToken(localStorage.token);
+    const res = await axios.delete(`/api/building/${email}`);
+    if (res.data) {
+      dispatch({ type: DELETE_BUILDING });
+      return res.data;
+    }
+    return null;
+  } catch (error) {
+    console.error('Error deleting building:', error);
+    return null;
+  }
+};
 
-//     dispatch(setAlert("Building Removed", "success"));
-//   } catch (err) {
-//     dispatch({
-//       type: BUILDING_ERROR,
-//       payload: { msg: err.response.statusText, status: err.response.status },
-//     });
-//   }
-// };
+export const restoreBuilding = (email) => async (dispatch) => {
+  try {
+    setAuthToken(localStorage.token);
+    const res = await axios.patch(`/api/building/${email}`);
+    if (res.data) {
+      dispatch({ type: RESTORE_BUILDING });
+      return res.data;
+    }
+    return null;
+  } catch (error) {
+    console.error('Error restoring building:', error);
+    return null;
+  }
+};

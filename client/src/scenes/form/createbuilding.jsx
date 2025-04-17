@@ -6,13 +6,24 @@ import Header from '../../components/Header';
 import { setAlert } from '../../actions/alert';
 import { registerBuilding } from '../../actions/auth';
 import { connect } from 'react-redux';
+import { useState } from 'react';
+import Qrcode from './qrcode';
 
 const BuildingRegister = ({ setAlert, registerBuilding }) => {
   const isNonMobile = useMediaQuery('(min-width:600px)');
-
-  const handleFormSubmit = (values) => {
+  const [showQRcode, setShowQRcode] = useState(false);
+  const [QRid, setQRid] = useState(null);
+  const handleFormSubmit = async (values) => {
     try {
-      registerBuilding(values);
+      const ret = await registerBuilding(values);
+      console.log(ret);
+      if (ret.work) {
+        setShowQRcode(true);
+        setQRid(ret.apartment_id);
+      } else {
+        setShowQRcode(false);
+        setQRid(null);
+      }
     } catch (error) {
       setAlert(error.message, 'error');
     }
@@ -183,6 +194,7 @@ const BuildingRegister = ({ setAlert, registerBuilding }) => {
           </form>
         )}
       </Formik>
+      {showQRcode && <Qrcode id={QRid} />}
     </Box>
   );
 };
