@@ -6,10 +6,14 @@ import {
   AUTH_ERROR,
   BUILDING_LOADED,
   BUILDING_LOGIN_SUCCESS,
+  BUILDING_REGISTER_SUCCESS,
+  DELETE_APARTMENT,
+  DELETE_BUILDING,
   LOGIN_FAIL,
   LOGOUT,
-  BUILDING_REGISTER_SUCCESS,
   REGISTER_FAIL,
+  RESTORE_APARTMENT,
+  RESTORE_BUILDING,
 } from '../actions/types';
 
 const initialState = {
@@ -92,6 +96,30 @@ export default function (state = initialState, action) {
         token: null,
         isAuthenticated: false,
         loading: false,
+      };
+    case DELETE_BUILDING:
+      return {
+        ...state,
+        status: 'deleted',
+        message: 'Building and related data deleted',
+      };
+    case RESTORE_BUILDING:
+      return {
+        ...state,
+        status: 'restored',
+        message: 'Building and related data restored',
+      };
+    case DELETE_APARTMENT:
+      return {
+        ...state,
+        status: 'deleted',
+        message: 'Apartment and related expenses deleted',
+      };
+    case RESTORE_APARTMENT:
+      return {
+        ...state,
+        status: 'restored',
+        message: 'Apartment and related expenses restored',
       };
     default:
       return state;

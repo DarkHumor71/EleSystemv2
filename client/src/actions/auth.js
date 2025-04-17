@@ -31,20 +31,20 @@ export const loadApartment = () => async (dispatch) => {
 //Register apartment
 export const registerApartment =
   ({ building, pin, is_moderator }) =>
-    async (dispatch) => {
-      setAuthToken(localStorage.token);
-      const body = JSON.stringify({ building, pin, is_moderator });
-      try {
-        const res = await axios.post('/api/apartment', body);
-        dispatch({ type: APARTMENT_REGISTER_SUCCESS, payload: res.data });
-      } catch (err) {
-        const errors = err.response.data.errors;
-        if (errors) {
-          errors.forEach((error) => dispatch(setAlert(error.msg, 'danger')));
-        }
-        dispatch({ type: REGISTER_FAIL });
+  async (dispatch) => {
+    setAuthToken(localStorage.token);
+    const body = JSON.stringify({ building, pin, is_moderator });
+    try {
+      const res = await axios.post('/api/apartment', body);
+      dispatch({ type: APARTMENT_REGISTER_SUCCESS, payload: res.data });
+    } catch (err) {
+      const errors = err.response.data.errors;
+      if (errors) {
+        errors.forEach((error) => dispatch(setAlert(error.msg, 'danger')));
       }
-    };
+      dispatch({ type: REGISTER_FAIL });
+    }
+  };
 //Register building
 export const registerBuilding =
   ({
@@ -60,32 +60,33 @@ export const registerBuilding =
     apartmentNumber,
     apartmentEmail,
   }) =>
-    async (dispatch) => {
-      setAuthToken(localStorage.token);
-      const body = {
-        name,
-        email,
-        address,
-        state,
-        city,
-        password,
-        pin,
-        first_name: firstName,
-        last_name: lastName,
-        apartment_number: apartmentNumber,
-        apartmentEmail,
-      };
-      try {
-        const res = await axios.post('/api/building/create', body);
-        dispatch({ type: BUILDING_REGISTER_SUCCESS, payload: res.data });
-      } catch (err) {
-        const errors = err.response.data.errors;
-        if (errors) {
-          errors.forEach((error) => dispatch(setAlert(error.msg, 'danger')));
-        }
-        dispatch({ type: REGISTER_FAIL });
-      }
+  async (dispatch) => {
+    setAuthToken(localStorage.token);
+    const body = {
+      name,
+      email,
+      address,
+      state,
+      city,
+      password,
+      pin,
+      first_name: firstName,
+      last_name: lastName,
+      apartment_number: apartmentNumber,
+      apartmentEmail,
     };
+    try {
+      const res = await axios.post('/api/building/create', body);
+      dispatch({ type: BUILDING_REGISTER_SUCCESS, payload: res.data });
+      return { work: true, apartment_id: res.data.apartment._id };
+    } catch (err) {
+      const errors = err.response.data.errors;
+      if (errors) {
+        errors.forEach((error) => dispatch(setAlert(error.msg, 'danger')));
+      }
+      dispatch({ type: REGISTER_FAIL });
+    }
+  };
 //Login apartment
 export const loginApartment =
   //resident
