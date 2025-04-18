@@ -1,3 +1,22 @@
+/**
+ * @file auth.js
+ * @description This file defines the authentication and authorization routes for apartments within the system.
+ * 
+ * Routes:
+ * - GET `/api/auth` - Returns apartment or building details based on the JWT token.
+ * - POST `/api/auth` - Authenticates an apartment using a PIN and returns a JWT.
+ * - PUT `/api/auth` - Updates apartment details (first name, last name, email).
+ * - POST `/api/auth/authorize` - Verifies if an apartment with a given ID exists.
+ * 
+ * @requires express - Fast, unopinionated, minimalist web framework for Node.js.
+ * @requires express-validator - Middleware for validating and sanitizing user input.
+ * @requires jsonwebtoken - Library for signing and verifying JSON Web Tokens.
+ * @requires config - Node.js application configuration loader.
+ * @requires auth - Custom middleware for validating JWT and extracting user data.
+ * @requires building - Middleware for checking building validity.
+ * @requires Apartment - Mongoose model representing apartments in the database.
+ */
+
 const express = require('express');
 const router = express.Router();
 const { check, validationResult } = require('express-validator');
@@ -6,6 +25,8 @@ const config = require('config');
 const auth = require('../../middleware/auth');
 const Apartment = require('../../models/Apartment');
 const building = require('../../middleware/building');
+const Building = require('../../models/Building');
+
 //@route    GET api/auth
 //@desc     token to detailed Object
 //@access   Public
@@ -105,7 +126,9 @@ router.post(
     }
   }
 );
-
+// @route    PUT api/auth
+// @desc     Update apartment details
+// @access   Private
 router.put('/', auth, async (req, res) => {
   try {
     const { firstName, lastName, email } = req.body;
@@ -129,5 +152,4 @@ router.put('/', auth, async (req, res) => {
     res.status(500).send('Server Error');
   }
 });
-
 module.exports = router;

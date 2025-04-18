@@ -1,3 +1,30 @@
+/**
+ * @file building.js
+ * @description This file contains routes for handling building-level operations, including login,
+ * CRUD operations, and related apartment management. Role-based access control is enforced
+ * for admin and moderator-level users.
+ * 
+ * Routes:
+ * - GET `/api/building/:id` - Retrieve a specific building by ID (admin or same-building moderator).
+ * - POST `/api/building` - Log in to a building using email (and optionally password for admin access).
+ * - GET `/api/building` - Retrieve all buildings (admin only).
+ * - POST `/api/building/create` - Create a new building along with the first moderator apartment.
+ * - DELETE `/api/building/:email` - Soft delete a building and all associated apartments and expenses (admin only).
+ * - PATCH `/api/building/:email` - Restore a soft-deleted building, its apartments, and related expenses (admin only).
+ * 
+ * @requires express - Fast, unopinionated web framework for Node.js.
+ * @requires express-validator - Middleware for validating and sanitizing input.
+ * @requires bcryptjs - Library to hash and compare passwords.
+ * @requires jsonwebtoken - JWT creation and verification.
+ * @requires config - Application configuration management.
+ * @requires mongoose - MongoDB object modeling.
+ * @requires auth - Middleware to authenticate requests using JWT.
+ * @requires admin - Middleware to enforce administrator access.
+ * @requires Building - Mongoose model for building entities.
+ * @requires Apartment - Mongoose model for apartment entities.
+ * @requires Expense - Mongoose model for expense entities (used when deleting/restoring).
+ */
+
 const express = require('express');
 const router = express.Router();
 const auth = require('../../middleware/auth');
@@ -209,7 +236,7 @@ router.post(
 // @route    DELETE api/building/:email
 // @desc     Soft delete a building by email
 // @access   Private/Admin
-router.delete('/:email', async (req, res) => {
+router.delete('/:email', [auth, admin], async (req, res) => {
   try {
     const building = await Building.findOne({ email: req.params.email });
     if (!building) return res.status(404).json({ msg: 'Building not found' });
@@ -231,8 +258,10 @@ router.delete('/:email', async (req, res) => {
   }
 });
 
-// Restore Building
-router.patch('/:email', async (req, res) => {
+// @route    PATCH api/building/:email
+// @desc     Restore a soft-deleted building by email
+// @access   Private/Admin
+router.patch('/:email', [auth, admin], async (req, res) => {
   try {
     const building = await Building.findOne({ email: req.params.email });
     if (!building) return res.status(404).json({ msg: 'Building not found' });

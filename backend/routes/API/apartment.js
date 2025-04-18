@@ -1,3 +1,28 @@
+/**
+ * @file apartment.js
+ * @description This file contains routes related to managing apartment entities within buildings.
+ * It handles retrieval, creation, soft deletion, and restoration of apartments. It also includes
+ * role-based access control for administrators, moderators, and residents.
+ * 
+ * Routes:
+ * - GET `/api/apartment/:id` - Get details of a single apartment by its ID.
+ * - GET `/api/apartment/building/:id` - Get all apartments associated with a specific building.
+ * - GET `/api/apartment` - Get all apartments (admin-only access).
+ * - POST `/api/apartment` - Create a new apartment (moderator access for the same building).
+ * - DELETE `/api/apartment/:email` - Soft delete an apartment and its related expenses by email.
+ * - PATCH `/api/apartment/:email` - Restore a previously deleted apartment and its expenses.
+ * 
+ * @requires express - Fast, unopinionated web framework for Node.js
+ * @requires express-validator - Middleware for validating and sanitizing input
+ * @requires auth - Custom middleware to authenticate users via JWT
+ * @requires admin - Middleware to check for administrator permissions
+ * @requires mod - Middleware to check for moderator permissions
+ * @requires sameBuildingMod - Middleware to ensure moderator belongs to the same building
+ * @requires Apartment - Mongoose model representing an apartment
+ * @requires Building - Mongoose model representing a building
+ * @requires Expense - Mongoose model representing an expense (for soft delete/restore)
+ */
+
 const express = require('express');
 const router = express.Router();
 const auth = require('../../middleware/auth');
@@ -140,6 +165,28 @@ router.post(
     }
   }
 );
+
+
+// @route    POST api/apartment/exists
+// @desc     Check if apatment exists
+// @access   Public 
+router.post('/exists', async (req, res) => {
+  try {
+    const { id } = req.body;
+    //See if apartment exists
+    let apartment = await Apartment.findById(id);
+    if (!apartment) {
+      return res.status(400).json({ errors: [{ msg: 'Invalid Credentials' }] });
+    } else {
+      return res.status(200).json({ msg: 'Apartment found' });
+    }
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server error');
+  }
+}
+);
+
 
 // @route    DELETE api/apartment/:building/:number
 // @desc     Soft delete an apartment

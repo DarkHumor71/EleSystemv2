@@ -1,11 +1,38 @@
+/**
+ * @file expense.js
+ * @description This file defines routes related to managing expenses in the system. It includes routes for:
+ * creating expenses, retrieving expenses (by apartment or building), paginated lists, and deleting expenses.
+ * Role-based access control is enforced through middleware.
+ * 
+ * Routes:
+ * - POST `/api/expense` - Create a new expense (requires brain code validation).
+ * - GET `/api/expense` - Get all expenses with pagination (admin-only).
+ * - GET `/api/expense/apartment/:id` - Get all expenses for a specific apartment (resident or moderator of same building).
+ * - GET `/api/expense/building/:id` - Get all expenses for a specific building (admin or same-building moderator).
+ * - DELETE `/api/expense/:id` - Soft delete an expense (admin-only).
+ * 
+ * @requires express - Web framework for Node.js.
+ * @requires express-validator - Middleware for request validation.
+ * @requires auth - Middleware for verifying JWT and decoding permissions.
+ * @requires admin - Middleware to ensure admin-level access.
+ * @requires Apartment - Mongoose model representing apartments.
+ * @requires Expense - Mongoose model representing expenses.
+ * @requires Building - Mongoose model representing buildings.
+ * @requires config - Configuration management for sensitive data (like brain code).
+ * @requires BRAIN_CODE - Brain code for validating expense creation requests.
+ */
+
 const express = require('express');
 const router = express.Router();
 const auth = require('../../middleware/auth');
 const { check, validationResult } = require('express-validator');
 const Apartment = require('../../models/Apartment');
 const Expense = require('../../models/Expense');
+const config = require('config');
 const Building = require('../../models/Building');
 const admin = require('../../middleware/admin');
+const BRAIN_CODE = config.get('brainCode');
+
 
 // @route    POST api/expense
 // @desc     Create an Expense
@@ -22,7 +49,7 @@ router.post(
     if (!errors.isEmpty()) {
       return res.status(400).json({ errors: errors.array() });
     }
-    if (req.body.brain !== 1234) {
+    if (req.body.brain !== BRAIN_CODE) {
       //password is required, it must be 1234
       return res.status(400).json({ msg: 'Invalid Credentials' });
     }
