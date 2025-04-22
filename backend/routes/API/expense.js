@@ -54,10 +54,10 @@ router.post(
       return res.status(400).json({ msg: 'Invalid Credentials' });
     }
     try {
-      const qr_code = req.body.qr_code.payload;
+      const qr_code = req.body.qr_code;
       const apartment = await Apartment.findById(qr_code);
       if (!apartment)
-        return res.status(404).json({ msg: 'Apartment not found' });
+        return res.status(400).json({ msg: 'Apartment not found' });
 
       let current = 1; // Admin can change this value
       let power = 24 * current;
@@ -76,7 +76,7 @@ router.post(
       });
 
       const expense = await newExpense.save();
-      res.json(expense);
+      res.send("OK");
     } catch (err) {
       console.error(err.message);
       res.status(500).send('Server Error');

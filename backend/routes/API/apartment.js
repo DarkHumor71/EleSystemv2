@@ -121,7 +121,7 @@ router.post(
   [
     auth,
     mod,
-    sameBuildingMod,
+
     check('pin', 'PIN must be 4-digit numeric')
       .isLength({ min: 4, max: 4 })
       .isNumeric(),
@@ -176,9 +176,9 @@ router.post('/exists', async (req, res) => {
     //See if apartment exists
     let apartment = await Apartment.findById(id);
     if (!apartment) {
-      return res.status(400).json({ errors: [{ msg: 'Invalid Credentials' }] });
+      return res.status(400);
     } else {
-      return res.status(200).json({ msg: 'Apartment found' });
+      return res.status(200).send("OK");
     }
   } catch (err) {
     console.error(err.message);

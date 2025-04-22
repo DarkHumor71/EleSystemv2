@@ -3,6 +3,17 @@ import { ResponsiveLine } from '@nivo/line';
 import { useTheme } from '@mui/material';
 import { tokens } from '../theme';
 
+/**
+ * LineChart component renders a responsive line chart using the Nivo library.
+ * It takes data representing apartment costs over time, processes it, and displays it on a line chart.
+ * Optionally, it allows for customization of line colors and behavior based on whether the chart is used within a dashboard or not.
+ * 
+ * @param {Object} props
+ * @param {boolean} [props.isCustomLineColors=false] - Flag to toggle custom line colors.
+ * @param {boolean} [props.isDashboard=false] - Flag to customize chart axis legend for dashboard usage.
+ * @param {Array} [props.data=[]] - Array of data objects representing apartment expenses over time.
+ * @returns {ReactNode} - JSX representing the responsive line chart.
+ */
 const LineChart = ({
   isCustomLineColors = false,
   isDashboard = false,
@@ -11,6 +22,7 @@ const LineChart = ({
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
 
+  // Group the data by apartment and date
   const grouped = data.reduce((acc, entry) => {
     const apt = entry?.apartment_number || '';
     const date = new Date(entry.createdAt).toISOString().split('T')[0];
@@ -23,12 +35,14 @@ const LineChart = ({
     return acc;
   }, {});
 
+  // Prepare the chart data
   const chartData = Object.entries(grouped).map(([apt, dates]) => ({
     id: `Apartment ${apt}`,
     data: Object.entries(dates)
-      .sort(([a], [b]) => new Date(a) - new Date(b)) // sort by date
+      .sort(([a], [b]) => new Date(a) - new Date(b)) // Sort by date
       .map(([date, cost]) => ({ x: date, y: cost })),
   }));
+
   return (
     <ResponsiveLine
       data={chartData} // Pass the data as an array

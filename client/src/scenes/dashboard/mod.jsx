@@ -58,12 +58,12 @@ const Mod = ({
               cost: cost ? `${cost.$numberDecimal} $` : null,
               createdAt: createdAt
                 ? new Date(createdAt).toLocaleTimeString('en-US', {
-                    year: 'numeric',
-                    month: 'short',
-                    day: 'numeric',
-                    hour: '2-digit',
-                    minute: '2-digit',
-                  })
+                  year: 'numeric',
+                  month: 'short',
+                  day: 'numeric',
+                  hour: '2-digit',
+                  minute: '2-digit',
+                })
                 : null,
             })
           );
@@ -319,7 +319,7 @@ Mod.propTypes = {
   isloading: PropTypes.bool,
   fetchBuildingExpense: PropTypes.func.isRequired,
   fetchApartments: PropTypes.func.isRequired,
-  myApartment: PropTypes.string,
+  myApartment: PropTypes.number,
   deleteApartment: PropTypes.func.isRequired,
 };
 const mapStateToProps = (state) => ({

@@ -33,6 +33,6 @@ app.use('/api/expense', require('./routes/API/expense'));     // Expense trackin
 const PORT = process.env.PORT || 5000;
 
 // Start Server
-app.listen(PORT, '192.168.1.106', () =>
+app.listen(PORT, '192.168.1.109', () =>
   console.log(`Example app listening on port ${PORT}!`)
 );
