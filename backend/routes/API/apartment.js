@@ -33,6 +33,10 @@ const Apartment = require('../../models/Apartment');
 const sameBuildingMod = require('../../middleware/sameBuildingMod');
 const { check, validationResult } = require('express-validator');
 const Expense = require('../../models/Expense');
+const Session = require('../../models/Session');
+const config = require('config');
+const BRAIN_CODE = config.get('brainCode');
+
 
 // @route    GET api/apartment/:id
 // @desc     Get a single apartment by ID
@@ -168,24 +172,34 @@ router.post(
 
 
 // @route    POST api/apartment/exists
-// @desc     Check if apatment exists
+// @desc     Check if apartment exists
 // @access   Public 
 router.post('/exists', async (req, res) => {
   try {
     const { id } = req.body;
-    //See if apartment exists
-    let apartment = await Apartment.findById(id);
+
+    // Check if apartment exists
+    const apartment = await Apartment.findById(id);
+
     if (!apartment) {
-      return res.status(400);
-    } else {
-      return res.status(200).send("OK");
+      return res.status(400).json({ msg: "Apartment not found" });
     }
+
+    // Update session to reference this apartment
+    await Session.findByIdAndUpdate(
+      'singleton',
+      { apartment: id },
+      { upsert: true, new: true }
+    );
+
+    return res.status(200).send("OK");
+
   } catch (err) {
     console.error(err.message);
     res.status(500).send('Server error');
   }
-}
-);
+});
+
 
 
 // @route    DELETE api/apartment/:building/:number
@@ -224,6 +238,23 @@ router.patch('/:email', async (req, res) => {
     res.json({ msg: 'Apartment and related expenses restored' });
   } catch (err) {
     res.status(500).json({ msg: err.message });
+  }
+});
+
+// @route    GET api/apartment/session
+// @desc     Get session data for the apartment
+// @access   Private
+router.post('/session', check('brain', 'Brain code is required').not().isEmpty(), async (req, res) => {
+  try {
+    if (req.body.brain !== BRAIN_CODE) {
+      return res.status(400).json({ msg: 'Invalid Credentials' });
+    }
+    const session = await Session.findById('singleton');
+    if (!session) return res.status(404).json({ msg: 'Session not found' });
+    return res.send(session.apartment.toString());
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server Error');
   }
 });
 module.exports = router;
