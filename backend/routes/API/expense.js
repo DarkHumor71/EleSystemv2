@@ -43,6 +43,7 @@ router.post(
     check('brain', 'Brain code is required').not().isEmpty(),
     check('time', 'Time is required').not().isEmpty(),
     check('qr_code', 'qr is required').not().isEmpty(),
+    check('current', 'current is not valid').isNumeric(),
   ],
   async (req, res) => {
     const errors = validationResult(req);
@@ -59,7 +60,7 @@ router.post(
       if (!apartment)
         return res.status(400).json({ msg: 'Apartment not found' });
 
-      let current = 1; // Admin can change this value
+      let current = req.body.current;
       let power = 24 * current;
       let energy = (power / 1000) * (req.body.time / 3600);
       let unitCost = 1; // Admin may change this value
