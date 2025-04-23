@@ -7,7 +7,7 @@ import { tokens } from '../theme';
  * LineChart component renders a responsive line chart using the Nivo library.
  * It takes data representing apartment costs over time, processes it, and displays it on a line chart.
  * Optionally, it allows for customization of line colors and behavior based on whether the chart is used within a dashboard or not.
- * 
+ *
  * @param {Object} props
  * @param {boolean} [props.isCustomLineColors=false] - Flag to toggle custom line colors.
  * @param {boolean} [props.isDashboard=false] - Flag to customize chart axis legend for dashboard usage.
@@ -123,7 +123,7 @@ const LineChart = ({
       pointBorderWidth={2}
       pointBorderColor={{ from: 'serieColor' }}
       pointLabelYOffset={-12}
-      useMesh={true}
+      useMesh={chartData?.some((d) => d.data?.length > 0)}
       legends={[
         {
           anchor: 'bottom-right',
