@@ -1,45 +1,75 @@
 import {
-  REGISTER_FAIL,
-  AUTH_ERROR,
+  ADMIN_LOGIN_SUCCESS,
   APARTMENT_LOADED,
+  APARTMENT_LOGIN_SUCCESS,
   APARTMENT_REGISTER_SUCCESS,
-  BUILDING_REGISTER_SUCCESS,
+  AUTH_ERROR,
   BUILDING_LOADED,
   BUILDING_LOGIN_SUCCESS,
-  APARTMENT_LOGIN_SUCCESS,
+  BUILDING_REGISTER_SUCCESS,
+  DELETE_APARTMENT,
+  DELETE_BUILDING,
   LOGIN_FAIL,
-} from "../actions/types";
+  LOGOUT,
+  REGISTER_FAIL,
+  RESTORE_APARTMENT,
+  RESTORE_BUILDING,
+} from '../actions/types';
 
 const initialState = {
-  token: localStorage.getItem("token"),
+  token: localStorage.getItem('token'),
   isAuthenticated: null,
+  isResident: false,
+  isModerator: false,
   loading: true,
-  user: null,
+  apartment: null,
+  building: null,
 };
 export default function (state = initialState, action) {
   const { type, payload } = action;
   switch (type) {
-    case BUILDING_LOGIN_SUCCESS:
-      state.showPinField = true;
+    case ADMIN_LOGIN_SUCCESS:
       return {
         ...state,
+        showPinField: true,
         isAuthenticated: true,
+        loading: false,
+        building: payload,
+        is_admin: true,
+        isResident: false,
+        isModerator: false,
+      };
+    case BUILDING_LOGIN_SUCCESS:
+      return {
+        isResident: false,
+        isModerator: false,
+        apartment: null,
+        showPinField: true,
+        isAuthenticated: false,
         loading: false,
         building: payload,
       };
     case APARTMENT_LOGIN_SUCCESS:
       return {
         ...state,
+        token: localStorage.getItem('token'),
         isAuthenticated: true,
         loading: false,
-        apartment: payload,
+        apartment: payload.length > 1 ? payload : payload,
+        isResident: payload.length > 1,
+        isModerator: payload.moderator,
       };
     case APARTMENT_LOADED:
       return {
         ...state,
+        token: localStorage.getItem('token'),
         isAuthenticated: true,
         loading: false,
-        apartment: payload,
+        apartment: payload.token ? payload.token : payload.apartment,
+        building: payload.token ? payload.token : payload.building,
+        isResident: !payload.token,
+
+        isModerator: payload.apartment.is_moderator,
       };
     case BUILDING_LOADED:
       return {
@@ -48,23 +78,48 @@ export default function (state = initialState, action) {
         loading: false,
         building: payload,
       };
-    case APARTMENT_REGISTER_SUCCESS:
     case BUILDING_REGISTER_SUCCESS:
+    case APARTMENT_REGISTER_SUCCESS:
       return {
         ...state,
-        isAuthenticated: null,
-        loading: false,
       };
     case REGISTER_FAIL:
+      return {
+        ...state,
+      };
     case AUTH_ERROR:
+    case LOGOUT:
     case LOGIN_FAIL:
-      localStorage.removeItem("token");
-      console.log("login fail");
+      localStorage.removeItem('token');
       return {
         ...state,
         token: null,
         isAuthenticated: false,
         loading: false,
+      };
+    case DELETE_BUILDING:
+      return {
+        ...state,
+        status: 'deleted',
+        message: 'Building and related data deleted',
+      };
+    case RESTORE_BUILDING:
+      return {
+        ...state,
+        status: 'restored',
+        message: 'Building and related data restored',
+      };
+    case DELETE_APARTMENT:
+      return {
+        ...state,
+        status: 'deleted',
+        message: 'Apartment and related expenses deleted',
+      };
+    case RESTORE_APARTMENT:
+      return {
+        ...state,
+        status: 'restored',
+        message: 'Apartment and related expenses restored',
       };
     default:
       return state;
