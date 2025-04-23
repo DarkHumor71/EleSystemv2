@@ -6,11 +6,11 @@ import SendIcon from '@mui/icons-material/Send';
 import { tokens } from '../../theme';
 
 const QRCodeComponent = ({
-  id = null,
-  download = true,
-  print = true,
-  send = true,
-}) => {
+                           id = null,
+                           download = true,
+                           print = true,
+                           send = true,
+                         }) => {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
 
@@ -22,7 +22,7 @@ const QRCodeComponent = ({
     const printWindow = window.open('', '_blank');
 
     printWindow.document.write(`
-          <html>
+          <html lang="en">
             <head>
               <title>QR Code</title>
               <style>
@@ -94,7 +94,7 @@ const QRCodeComponent = ({
     const subject = 'QR Code';
     const body = `Here is your QR code: ${imageUrl}`;
     window.location.href = `mailto:?subject=${encodeURIComponent(
-      subject
+      subject,
     )}&body=${encodeURIComponent(body)}`;
   };
 
