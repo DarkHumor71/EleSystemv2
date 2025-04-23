@@ -7,34 +7,33 @@ import StatBox from '../../components/StatBox';
 import Buldings from '../buildings/list_of_building';
 import { useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
-import axios from 'axios';
-import { deleteBuilding } from '../../actions/building';
+import { buildingRes, deleteBuilding } from '../../actions/building';
+import { apartmentRes } from '../../actions/apartment';
 import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
 
-const AdminDashboard = ({ deleteBuilding }) => {
+const AdminDashboard = ({ deleteBuilding, buildingRes, apartmentRes }) => {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
   const navigate = useNavigate();
   const [showTextField, setShowTextField] = useState(false);
   const [buildingCount, setBuildingCount] = useState(0);
   const [apartmentCount, setApartmentCount] = useState(0);
+  const [refreshKey, setRefreshKey] = useState(0); // NEW
 
+  const fetchCounts = async () => {
+    try {
+      const building = await buildingRes();
+      const apt = await apartmentRes();
+      setBuildingCount(building.length);
+      setApartmentCount(apt.length);
+    } catch (err) {
+      console.error('Error fetching data:', err);
+    }
+  };
   useEffect(() => {
-    const fetchCounts = async () => {
-      try {
-        const buildingRes = await axios.get('/api/building');
-        const apartmentRes = await axios.get('/api/apartment');
-
-        setBuildingCount(buildingRes.data.length);
-        setApartmentCount(apartmentRes.data.length);
-      } catch (err) {
-        console.error('Error fetching data:', err);
-      }
-    };
-
     fetchCounts();
-  }, [deleteBuilding]);
+  }, []);
 
   return (
     <Box m="20px">
@@ -120,16 +119,20 @@ const AdminDashboard = ({ deleteBuilding }) => {
               variant="outlined"
               type="email"
               fullWidth
-              onKeyDown={(e) => {
+              onKeyDown={async (e) => {
                 if (e.key === 'Enter') {
-                  deleteBuilding(e.target.value);
+                  await deleteBuilding(e.target.value);
+                  e.target.value = '';
+                  setShowTextField(false);
+                  fetchCounts(); // Refresh count
+                  setRefreshKey((prev) => prev + 1); // Trigger table refresh
                 }
               }}
             />
           )}
         </Box>
         <Box gridColumn="span 9" gridRow="span 2">
-          <Buldings head={false} />
+          <Buldings head={false} inheritedDeps={[refreshKey]} />
         </Box>
       </Box>
     </Box>
@@ -137,7 +140,13 @@ const AdminDashboard = ({ deleteBuilding }) => {
 };
 AdminDashboard.propTypes = {
   deleteBuilding: PropTypes.func.isRequired,
+  buildingRes: PropTypes.func.isRequired,
+  apartmentRes: PropTypes.func.isRequired,
 };
 
 const mapStateToProps = (state) => ({});
-export default connect(mapStateToProps, { deleteBuilding })(AdminDashboard);
+export default connect(mapStateToProps, {
+  deleteBuilding,
+  buildingRes,
+  apartmentRes,
+})(AdminDashboard);

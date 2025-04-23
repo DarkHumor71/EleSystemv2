@@ -21,6 +21,7 @@ export const LOGOUT = 'LOGOUT';                      // User logged out
 export const DELETE_BUILDING = 'DELETE_BUILDING';    // Soft-delete a building
 export const RESTORE_BUILDING = 'RESTORE_BUILDING';  // Restore a deleted building
 export const BUILDING_ERROR = 'BUILDING_ERROR';      // Building-related error
+export const FETCH_ALL_BUILDING = 'FETCH_ALL_BUILDING';
 
 // Apartment management
 export const GETAPARTMENTS = 'GETAPARTMENTS';        // Fetch apartments

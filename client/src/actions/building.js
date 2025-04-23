@@ -1,6 +1,6 @@
 import setAuthToken from '../utils/setAuthToken';
 import axios from 'axios';
-import { DELETE_BUILDING, RESTORE_BUILDING } from './types';
+import { DELETE_BUILDING, FETCH_ALL_BUILDING, RESTORE_BUILDING } from './types';
 
 /**
  * Soft deletes a building by email.
@@ -44,6 +44,20 @@ export const restoreBuilding = (email) => async (dispatch) => {
     return null;
   } catch (error) {
     console.error('Error restoring building:', error.message);
+    return null;
+  }
+};
+export const buildingRes = () => async (dispatch) => {
+  try {
+    setAuthToken(localStorage.token);
+
+    const res = await axios.get('/api/building');
+    if (res.data) {
+      dispatch({ type: FETCH_ALL_BUILDING });
+      return res.data;
+    }
+  } catch (error) {
+    console.error('Error fetching buildings:', error.message);
     return null;
   }
 };

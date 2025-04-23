@@ -100,3 +100,18 @@ export const restoreApartment = (email) => async (dispatch) => {
     return null; // Return null if an error occurred.
   }
 };
+export const apartmentRes = () => async (dispatch) => {
+  try {
+    setAuthToken(localStorage.token); // Set token for authenticated requests.
+
+    const res = await axios.get('/api/apartment');
+    if (res.data) {
+      dispatch({ type: RESTORE_APARTMENT }); // Dispatch success action for apartment restoration.
+      return res.data; // Return the response data (apartment details).
+    }
+    return null; // Return null if restoration failed.
+  } catch (error) {
+    console.error('Error restoring apartment:', error); // Log error for debugging.
+    return null; // Return null if an error occurred.
+  }
+};
