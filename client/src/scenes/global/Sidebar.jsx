@@ -1,13 +1,13 @@
-import { useState } from 'react';
-import { Menu, MenuItem, Sidebar } from 'react-pro-sidebar';
-import { Box, IconButton, Typography, useTheme } from '@mui/material';
-import { Link } from 'react-router-dom';
-import { tokens } from '../../theme';
-import HomeOutlinedIcon from '@mui/icons-material/HomeOutlined';
-import PersonOutlinedIcon from '@mui/icons-material/PersonOutlined';
-import MenuOutlinedIcon from '@mui/icons-material/MenuOutlined';
-import ApartmentIcon from '@mui/icons-material/Apartment';
-import MonetizationOnIcon from '@mui/icons-material/MonetizationOn';
+import { useState } from "react";
+import { Menu, MenuItem, Sidebar } from "react-pro-sidebar";
+import { Box, IconButton, Typography, useTheme } from "@mui/material";
+import { Link } from "react-router-dom";
+import { tokens } from "../../theme";
+import HomeOutlinedIcon from "@mui/icons-material/HomeOutlined";
+import PersonOutlinedIcon from "@mui/icons-material/PersonOutlined";
+import MenuOutlinedIcon from "@mui/icons-material/MenuOutlined";
+import ApartmentIcon from "@mui/icons-material/Apartment";
+import MonetizationOnIcon from "@mui/icons-material/MonetizationOn";
 
 const Item = ({ title, to, icon, selected, setSelected }) => {
   const theme = useTheme();
@@ -31,7 +31,7 @@ const SidebarComponent = () => {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
   const [isCollapsed, setIsCollapsed] = useState(false);
-  const [selected, setSelected] = useState('Dashboard');
+  const [selected, setSelected] = useState("Dashboard");
 
   return (
     <Box>
@@ -42,7 +42,7 @@ const SidebarComponent = () => {
             onClick={() => setIsCollapsed(!isCollapsed)}
             icon={isCollapsed ? <MenuOutlinedIcon /> : undefined}
             style={{
-              margin: '10px 0 20px 0',
+              margin: "10px 0 20px 0",
               color: colors.grey[100],
             }}
           >
@@ -63,7 +63,7 @@ const SidebarComponent = () => {
             )}
           </MenuItem>
 
-          <Box paddingLeft={isCollapsed ? undefined : '10%'}>
+          <Box paddingLeft={isCollapsed ? undefined : "10%"}>
             <Item
               title="Dashboard"
               to="/mod"
@@ -75,7 +75,7 @@ const SidebarComponent = () => {
             <Typography
               variant="h6"
               color={colors.grey[300]}
-              sx={{ m: '15px 0 5px 20px' }}
+              sx={{ m: "15px 0 5px 20px" }}
             >
               Data
             </Typography>
@@ -97,7 +97,7 @@ const SidebarComponent = () => {
             <Typography
               variant="h6"
               color={colors.grey[300]}
-              sx={{ m: '15px 0 5px 20px' }}
+              sx={{ m: "15px 0 5px 20px" }}
             >
               Pages
             </Typography>

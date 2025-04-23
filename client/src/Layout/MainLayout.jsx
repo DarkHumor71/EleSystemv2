@@ -18,29 +18,32 @@ import { ColorModeContext, useMode } from "../theme";
  * @param {boolean} profile - Whether to show the profile section in the topbar.
  */
 const MainLayout = ({ side = true, profile = true }) => {
-    const [isSidebar, setIsSidebar] = useState(true);
-    const [theme, colorMode] = useMode();
+  const [isSidebar, setIsSidebar] = useState(true);
+  const [theme, colorMode] = useMode();
 
-    return (
-        <ColorModeContext.Provider value={colorMode}>
-            <ThemeProvider theme={theme}>
-                <CssBaseline />
-                <div className="app">
-                    {side && <Sidebar isSidebar={isSidebar} />}
-                    <main className="content">
-                        <Topbar setIsSidebar={setIsSidebar} profile={profile} />
-                        <Outlet />
-                    </main>
-                </div>
-            </ThemeProvider>
-        </ColorModeContext.Provider>
-    );
+  return (
+    <ColorModeContext.Provider value={colorMode}>
+      <ThemeProvider theme={theme}>
+        <CssBaseline />
+        <div className="app">
+          {side && <Sidebar isSidebar={isSidebar} />}
+          <main className="content">
+            <Topbar setIsSidebar={setIsSidebar} profile={profile} />
+            <Outlet />
+          </main>
+        </div>
+      </ThemeProvider>
+    </ColorModeContext.Provider>
+  );
 };
 
 // Corrected prop type declaration (was `Proptype`)
 MainLayout.propTypes = {
-    side: PropTypes.bool,
-    profile: PropTypes.bool,
+  side: PropTypes.bool,
+  profile: PropTypes.bool,
 };
 
+MainLayout.Proptype = {
+  side: PropTypes.bool,
+};
 export default MainLayout;

@@ -1,51 +1,51 @@
-import React, { useEffect } from 'react';
-import { createBrowserRouter, RouterProvider } from 'react-router-dom';
-import Profile from './scenes/profile/profile';
-import Expensess from './scenes/expensess/building_expenses';
-import Buildings from './scenes/buildings/list_of_building';
-import Mod from './scenes/dashboard/mod';
-import Apr from './scenes/dashboard/apart';
-import Apartments from './scenes/apartment/apartments';
-import AdminDashboard from './scenes/dashboard/admin';
-import Apartment from './scenes/form/createapartment';
-import Qrcode from './scenes/form/qrcode';
-import PrivateRoute from './components/routing/privateroute';
-import Login from './scenes/login/login';
-import MainLayout from './Layout/MainLayout';
-import { Provider } from 'react-redux';
-import store from './store';
-import Landing from './components/Landing';
-import Alert from './Layout/Alert';
-import BuildingRegister from './scenes/form/createbuilding';
-import setAuthToken from './utils/setAuthToken';
-import { loadApartment } from './actions/auth';
+import React, { useEffect } from "react";
+import { createBrowserRouter, RouterProvider } from "react-router-dom";
+import Profile from "./scenes/profile/profile";
+import Expensess from "./scenes/expensess/building_expenses";
+import Buildings from "./scenes/buildings/list_of_building";
+import Mod from "./scenes/dashboard/mod";
+import Apr from "./scenes/dashboard/apart";
+import Apartments from "./scenes/apartment/apartments";
+import AdminDashboard from "./scenes/dashboard/admin";
+import Apartment from "./scenes/form/createapartment";
+import Qrcode from "./scenes/form/qrcode";
+import PrivateRoute from "./components/routing/privateroute";
+import Login from "./scenes/login/login";
+import MainLayout from "./Layout/MainLayout";
+import { Provider } from "react-redux";
+import store from "./store";
+import Landing from "./components/Landing";
+import Alert from "./Layout/Alert";
+import BuildingRegister from "./scenes/form/createbuilding";
+import setAuthToken from "./utils/setAuthToken";
+import { loadApartment } from "./actions/auth";
 
 const router = createBrowserRouter([
   {
-    path: '/', // Apply MainLayout for the root
+    path: "/", // Apply MainLayout for the root
     element: <MainLayout />,
     children: [
       {
-        path: '/buildings',
+        path: "/buildings",
         element: <Buildings />,
       },
       {
-        path: '/expenses',
+        path: "/expenses",
         element: <Expensess />,
       },
 
       {
-        path: '/create_apartment',
+        path: "/create_apartment",
         element: <Apartment />,
       },
       {
-        path: '/qrcode',
+        path: "/qrcode",
         element: <Qrcode />,
       },
     ],
   },
   {
-    path: '/login',
+    path: "/login",
     element: (
       <>
         <Alert />
@@ -54,22 +54,22 @@ const router = createBrowserRouter([
     ),
   },
   {
-    path: '/profile',
+    path: "/profile",
     element: <MainLayout side={false} profile={false} />,
     children: [
       {
-        path: '/profile',
+        path: "/profile",
         element: <PrivateRoute children={<Profile />} />,
       },
     ],
   },
 
   {
-    path: '/dash',
+    path: "/dash",
     element: <MainLayout side={false} profile={false} />,
     children: [
       {
-        path: '/dash',
+        path: "/dash",
         element: (
           <>
             <Alert />
@@ -80,11 +80,11 @@ const router = createBrowserRouter([
     ],
   },
   {
-    path: '/create_apartment',
+    path: "/create_apartment",
     element: <MainLayout side={true} profile={false} />,
     children: [
       {
-        path: '/create_apartment',
+        path: "/create_apartment",
         element: (
           <>
             <Alert />
@@ -95,11 +95,11 @@ const router = createBrowserRouter([
     ],
   },
   {
-    path: '/qrcode',
+    path: "/qrcode",
     element: <MainLayout side={true} profile={false} />,
     children: [
       {
-        path: '/qrcode',
+        path: "/qrcode",
         element: (
           <>
             <Alert />
@@ -110,21 +110,21 @@ const router = createBrowserRouter([
     ],
   },
   {
-    path: '/apartments',
+    path: "/apartments",
     element: <MainLayout side={true} profile={false} />,
     children: [
       {
-        path: '/apartments',
+        path: "/apartments",
         element: <PrivateRoute children={<Apartments />} />,
       },
     ],
   },
   {
-    path: '/mod',
+    path: "/mod",
     element: <MainLayout side={true} profile={false} />,
     children: [
       {
-        path: '/mod',
+        path: "/mod",
         element: (
           <>
             <Alert />
@@ -135,31 +135,31 @@ const router = createBrowserRouter([
     ],
   },
   {
-    path: '/apr',
+    path: "/apr",
     element: <MainLayout side={false} />,
     children: [
       {
-        path: '/apr',
+        path: "/apr",
         element: <Apr />,
       },
     ],
   },
   {
-    path: '/create_building',
+    path: "/create_building",
     element: <MainLayout side={false} profile={false} />,
     children: [
       {
-        path: '/create_building',
+        path: "/create_building",
         element: <BuildingRegister />,
       },
     ],
   },
   {
-    path: '/my_expenses',
+    path: "/my_expenses",
     element: <MainLayout side={false} profile={false} />,
     children: [
       {
-        path: '/my_expenses',
+        path: "/my_expenses",
         element: <Expensess single={true} />,
       },
     ],

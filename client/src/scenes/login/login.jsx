@@ -1,13 +1,13 @@
-import React, { useEffect, useState } from 'react';
-import PropTypes from 'prop-types';
-import { connect } from 'react-redux';
-import { setAlert } from '../../actions/alert';
+import React, { useEffect, useState } from "react";
+import PropTypes from "prop-types";
+import { connect } from "react-redux";
+import { setAlert } from "../../actions/alert";
 import {
   loadApartment,
   loginApartment,
   loginBuilding,
-} from '../../actions/auth';
-import { useNavigate } from 'react-router-dom';
+} from "../../actions/auth";
+import { useNavigate } from "react-router-dom";
 
 const Login = ({
   setAlert,
@@ -22,8 +22,8 @@ const Login = ({
 }) => {
   const navigate = useNavigate();
 
-  const [pin, setPin] = useState('');
-  const [email, setEmail] = useState('');
+  const [pin, setPin] = useState("");
+  const [email, setEmail] = useState("");
   const [showPinField, setShowPinField] = useState(false);
   const [showCheck, setShowCheck] = useState(true);
   const [showPopup, setShowPopup] = useState(false); // Popup state
@@ -33,7 +33,7 @@ const Login = ({
     e.preventDefault();
 
     if (!email) {
-      setAlert('Please enter an email address', 'danger');
+      setAlert("Please enter an email address", "danger");
       return;
     }
 
@@ -53,7 +53,7 @@ const Login = ({
   const handlePinSubmit = async (e) => {
     e.preventDefault();
     if (!pin) {
-      setAlert('Please enter a PIN', 'danger');
+      setAlert("Please enter a PIN", "danger");
       return;
     }
 
@@ -63,16 +63,16 @@ const Login = ({
       if (req.work) {
         await loadApartment();
         if (req.admin) {
-          navigate('/dash');
+          navigate("/dash");
         } else if (req.mod) {
           setShowPopup(true);
         } else {
-          navigate('/apr');
+          navigate("/apr");
         }
       } else {
         setShowPinField(false);
         setShowCheck(true);
-        setPin('');
+        setPin("");
       }
     } catch (error) {
       console.error(error);
@@ -82,15 +82,15 @@ const Login = ({
     if (isloading) {
     }
     if (isAuthenticated && isModerator && !showPopup && building_id) {
-      navigate('/mod');
+      navigate("/mod");
     }
     if (isAuthenticated && !showPopup) {
       if (isModerator) {
         setShowPopup(true); // Trigger popup, no need to navigate yet
       } else if (isResident) {
-        navigate('/apr');
+        navigate("/apr");
       } else {
-        navigate('/dash');
+        navigate("/dash");
       }
     }
   }, [
@@ -149,7 +149,7 @@ const Login = ({
               <button
                 className="btn btn-success"
                 onClick={() => {
-                  navigate('/mod');
+                  navigate("/mod");
                 }}
               >
                 Moderator
@@ -157,7 +157,7 @@ const Login = ({
               <button
                 className="btn btn-secondary"
                 onClick={() => {
-                  navigate('/apr');
+                  navigate("/apr");
                 }}
               >
                 Apartment
