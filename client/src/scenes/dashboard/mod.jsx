@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import { Box, Button, TextField, Typography, useTheme } from '@mui/material';
-import { Field, Form, Formik } from 'formik';
 import { tokens } from '../../theme';
 import Header from '../../components/Header';
 import LineChart from '../../components/LineChart';
@@ -18,7 +17,6 @@ const Mod = ({
   building_id,
   fetchBuildingExpense,
   fetchApartments,
-  myApartment,
   deleteApartment,
 }) => {
   const theme = useTheme();
@@ -29,6 +27,8 @@ const Mod = ({
   const [apartment_numbers, setApartment_numbers] = useState(0);
   const [total_money, setTotal_money] = useState(0);
   const [total_time, setTotal_time] = useState(0);
+  const [refreshKey, setRefreshKey] = useState(0);
+
   useEffect(() => {
     const timeout = setTimeout(() => {
       const fetchData = async () => {
@@ -58,12 +58,12 @@ const Mod = ({
               cost: cost ? `${cost.$numberDecimal} $` : null,
               createdAt: createdAt
                 ? new Date(createdAt).toLocaleTimeString('en-US', {
-                  year: 'numeric',
-                  month: 'short',
-                  day: 'numeric',
-                  hour: '2-digit',
-                  minute: '2-digit',
-                })
+                    year: 'numeric',
+                    month: 'short',
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                  })
                 : null,
             })
           );
@@ -95,7 +95,13 @@ const Mod = ({
     }, 200); // Delay of 200ms
 
     return () => clearTimeout(timeout);
-  }, [isloading, building_id, fetchBuildingExpense, fetchApartments]);
+  }, [
+    isloading,
+    building_id,
+    fetchBuildingExpense,
+    fetchApartments,
+    refreshKey,
+  ]);
 
   return (
     <Box m="20px">
@@ -192,28 +198,19 @@ const Mod = ({
 
           {/* TextField Below */}
           {showPinField && (
-            <Formik
-              initialValues={{ email: '' }}
-              onSubmit={(values, { resetForm }) => {
-                deleteApartment(values.email);
-                resetForm();
+            <TextField
+              label="Enter apartment email"
+              variant="outlined"
+              fullWidth
+              onKeyDown={async (e) => {
+                if (e.key === 'Enter') {
+                  await deleteApartment(e.target.value);
+                  e.target.value = '';
+                  setShowPinField(false);
+                  setRefreshKey((prev) => prev + 1); // Trigger refresh
+                }
               }}
-            >
-              {({ handleSubmit }) => (
-                <Form onSubmit={handleSubmit}>
-                  <Box sx={{ mt: 2 }}>
-                    <Field
-                      as={TextField}
-                      name="email"
-                      label="Enter apartment email"
-                      variant="outlined"
-                      fullWidth
-                      sx={{ mb: 2 }}
-                    />
-                  </Box>
-                </Form>
-              )}
-            </Formik>
+            />
           )}
         </Box>
 
