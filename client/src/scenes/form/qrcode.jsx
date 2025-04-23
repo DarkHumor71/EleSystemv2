@@ -75,13 +75,19 @@ const QRCodeComponent = ({
   };
 
   // Function to handle downloading the image
-  const handleDownload = () => {
+  const handleDownload = async () => {
+    const response = await fetch(imageUrl, { mode: 'cors' });
+    const blob = await response.blob();
+    const url = URL.createObjectURL(blob);
+
     const link = document.createElement('a');
-    link.href = imageUrl;
-    link.download = 'qrcode.png'; // The name of the downloaded file
+    link.href = url;
+    link.download = 'qrcode.png';
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+
+    URL.revokeObjectURL(url); // clean up
   };
 
   const handleSend = () => {
