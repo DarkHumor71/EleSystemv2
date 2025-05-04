@@ -3,7 +3,7 @@
  * @description This file contains routes related to managing apartment entities within buildings.
  * It handles retrieval, creation, soft deletion, and restoration of apartments. It also includes
  * role-based access control for administrators, moderators, and residents.
- * 
+ *
  * Routes:
  * - GET `/api/apartment/:id` - Get details of a single apartment by its ID.
  * - GET `/api/apartment/building/:id` - Get all apartments associated with a specific building.
@@ -11,7 +11,7 @@
  * - POST `/api/apartment` - Create a new apartment (moderator access for the same building).
  * - DELETE `/api/apartment/:email` - Soft delete an apartment and its related expenses by email.
  * - PATCH `/api/apartment/:email` - Restore a previously deleted apartment and its expenses.
- * 
+ *
  * @requires express - Fast, unopinionated web framework for Node.js
  * @requires express-validator - Middleware for validating and sanitizing input
  * @requires auth - Custom middleware to authenticate users via JWT
@@ -167,39 +167,37 @@ router.post(
 
       res.status(500).send('Server Error');
     }
-  }
+  },
 );
 
 
 // @route    POST api/apartment/exists
 // @desc     Check if apartment exists
 // @access   Public 
-router.post('/exists', async (req, res) => {
+router.post('/exists', check('MID', 'Machine ID is required').not().isEmpty(), async (req, res) => {
   try {
-    const { id } = req.body;
+    const { id, MID } = req.body;
 
     // Check if apartment exists
     const apartment = await Apartment.findById(id);
 
     if (!apartment) {
-      return res.status(400).json({ msg: "Apartment not found" });
+      return res.status(400).json({ msg: 'Apartment not found' });
     }
+    const sess = new Session({
+      _id: MID,
+      apartment: apartment,
+    });
+    await sess.save();
 
-    // Update session to reference this apartment
-    await Session.findByIdAndUpdate(
-      'singleton',
-      { apartment: id },
-      { upsert: true, new: true }
-    );
 
-    return res.status(200).send("OK");
+    return res.status(200).send('OK');
 
   } catch (err) {
     console.error(err.message);
     res.status(500).send('Server error');
   }
 });
-
 
 
 // @route    DELETE api/apartment/:building/:number
@@ -214,7 +212,7 @@ router.delete('/:email', async (req, res) => {
     await apartment.softDelete();
     await Expense.updateMany(
       { apartment: apartment._id },
-      { deleted_at: new Date() }
+      { deleted_at: new Date() },
     );
 
     res.json({ msg: 'Apartment and related expenses deleted' });
@@ -232,7 +230,7 @@ router.patch('/:email', async (req, res) => {
     await apartment.restore();
     await Expense.updateMany(
       { apartment: apartment._id },
-      { deleted_at: null, createdAt: new Date() }
+      { deleted_at: null, createdAt: new Date() },
     );
 
     res.json({ msg: 'Apartment and related expenses restored' });
@@ -244,14 +242,15 @@ router.patch('/:email', async (req, res) => {
 // @route    GET api/apartment/session
 // @desc     Get session data for the apartment
 // @access   Private
-router.post('/session', check('brain', 'Brain code is required').not().isEmpty(), async (req, res) => {
+router.post('/session', [check('brain', 'Brain code is required').not().isEmpty(), check('MID', 'Machine ID is required').not().Empty()], async (req, res) => {
   try {
     if (req.body.brain !== BRAIN_CODE) {
       return res.status(400).json({ msg: 'Invalid Credentials' });
     }
-    const session = await Session.findById('singleton');
+    const MID = req.body.MID;
+    const session = await Session.findById(MID);
     if (!session) return res.status(404).json({ msg: 'Session not found' });
-    return res.send(session.apartment.toString());
+    return res.send(session.apartment);
   } catch (err) {
     console.error(err.message);
     res.status(500).send('Server Error');

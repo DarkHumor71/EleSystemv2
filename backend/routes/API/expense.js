@@ -3,14 +3,14 @@
  * @description This file defines routes related to managing expenses in the system. It includes routes for:
  * creating expenses, retrieving expenses (by apartment or building), paginated lists, and deleting expenses.
  * Role-based access control is enforced through middleware.
- * 
+ *
  * Routes:
  * - POST `/api/expense` - Create a new expense (requires brain code validation).
  * - GET `/api/expense` - Get all expenses with pagination (admin-only).
  * - GET `/api/expense/apartment/:id` - Get all expenses for a specific apartment (resident or moderator of same building).
  * - GET `/api/expense/building/:id` - Get all expenses for a specific building (admin or same-building moderator).
  * - DELETE `/api/expense/:id` - Soft delete an expense (admin-only).
- * 
+ *
  * @requires express - Web framework for Node.js.
  * @requires express-validator - Middleware for request validation.
  * @requires auth - Middleware for verifying JWT and decoding permissions.
@@ -30,7 +30,9 @@ const Apartment = require('../../models/Apartment');
 const Expense = require('../../models/Expense');
 const config = require('config');
 const Building = require('../../models/Building');
+const Session = require('../../models/Session');
 const admin = require('../../middleware/admin');
+const mongoose = require('mongoose');
 const BRAIN_CODE = config.get('brainCode');
 
 
@@ -41,6 +43,7 @@ router.post(
   '/',
   [
     check('brain', 'Brain code is required').not().isEmpty(),
+    check('MID', 'Machine ID is required').not().isEmpty(),
     check('time', 'Time is required').not().isEmpty(),
     check('qr_code', 'qr is required').not().isEmpty(),
     check('current', 'current is not valid').isNumeric(),
@@ -55,6 +58,7 @@ router.post(
       return res.status(400).json({ msg: 'Invalid Credentials' });
     }
     try {
+      const MID = req.body.MID;
       const qr_code = req.body.qr_code;
       const apartment = await Apartment.findById(qr_code);
       if (!apartment)
@@ -77,12 +81,13 @@ router.post(
       });
 
       const expense = await newExpense.save();
-      res.send("OK");
+      Session.deleteOne({ _id: MID });
+      res.send('OK');
     } catch (err) {
       console.error(err.message);
       res.status(500).send('Server Error');
     }
-  }
+  },
 );
 
 // @route    GET api/expenses
@@ -164,7 +169,7 @@ router.get('/building/:id', auth, async (req, res) => {
     // Map apartment_number to each expense
     const expensesWithApartmentNumber = expenses.map((expense) => {
       const apartment = apartments.find((apt) =>
-        apt._id.equals(expense.apartment)
+        apt._id.equals(expense.apartment),
       );
       return {
         apartment_number: apartment ? apartment.apartment_number : null, // Add apartment_number

@@ -20,25 +20,9 @@ const connectDB = async () => {
       useUnifiedTopology: true,
     });
     console.log('MongoDB Connected...');
-    resetSessionFields();
   } catch (err) {
     console.error('MongoDB connection error:', err.message);
     process.exit(1); // Exit process with failure
-  }
-};
-const resetSessionFields = async () => {
-  try {
-    await Session.findByIdAndUpdate(
-      'singleton',
-      {
-        apartment: null,
-        time: 0,
-      },
-      { upsert: true }
-    );
-    console.log("Session fields reset.");
-  } catch (error) {
-    console.error("Error resetting session fields:", error);
   }
 };
 

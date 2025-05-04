@@ -24,15 +24,15 @@ app.use(express.json({ extended: false })); // Parses incoming JSON requests
 app.use(cors()); // Enables Cross-Origin Resource Sharing
 
 // Define API Routes
-app.use('/api/auth', require('./routes/API/auth'));           // Authentication routes
-app.use('/api/building', require('./routes/API/building'));   // Building management routes
+app.use('/api/auth', require('./routes/API/auth')); // Authentication routes
+app.use('/api/building', require('./routes/API/building')); // Building management routes
 app.use('/api/apartment', require('./routes/API/apartment')); // Apartment-related routes
-app.use('/api/expense', require('./routes/API/expense'));     // Expense tracking routes
+app.use('/api/expense', require('./routes/API/expense')); // Expense tracking routes
 
 // Define Port
 const PORT = process.env.PORT || 5000;
 
 // Start Server
-app.listen(PORT, '192.168.1.109', () =>
-  console.log(`Example app listening on port ${PORT}!`)
+app.listen(PORT, '192.168.1.113', () =>
+  console.log(`Example app listening on port ${PORT}!`),
 );
