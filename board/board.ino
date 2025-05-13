@@ -4,7 +4,7 @@
 // --- Wi-Fi credentials ---
 const char* ssid = "hotcold1";
 const char* password = "Mirna2016";
-const String MID="ELE1";
+const String MID="ELE1"; //ID of Machine (unique for each device)
 
 // --- Pin Definitions ---
 const int buttonPins[] = {19, 21, 22, 23};       // Buttons for floors 0, 1, 2, 3
