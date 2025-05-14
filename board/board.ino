@@ -4,7 +4,66 @@
 // --- Wi-Fi credentials ---
 const char* ssid = "hotcold1";
 const char* password = "Mirna2016";
+<<<<<<< HEAD
 const String MID="ELE1";
+=======
+const String MID="ELE1"; //ID of Machine (unique for each device)
+
+// --- Pin Definitions ---
+const int buttonPins[] = {19, 21, 22, 23};       // Buttons for floors 0, 1, 2, 3
+const int irSensorPins[] = {18, 5, 17, 16};       // IR sensors for floors 0, 1, 2, 3
+const int elevatorMotorUpPin = 13;
+const int elevatorMotorDownPin = 15;
+const int PWR = 32;
+const int ERR = 33;
+const int STP = 14;
+const int RDY = 4;
+const int Vsens = 34; 
+// --- Display Pins ---
+const int latchPin = 26;
+const int clockPin = 25;
+const int dataPin = 27;
+
+// --- 7-Segment Display Codes (0–3) ---
+const int NUM[4] = {
+  0b00111111, // 0
+  0b00000110, // 1
+  0b01011011, // 2
+  0b01001111  // 3
+};
+
+// --- Queue Variables ---
+const int MAX_QUEUE_SIZE = 10;
+int floorQueue[MAX_QUEUE_SIZE];
+int queueSize = 0;
+
+// --- Elevator State ---
+int currentFloor = 0;
+int targetFloor = 0;
+bool moving = false;
+int direction = -1;  // 1 = up, -1 = down
+bool emergencyStopped = false;
+bool sessionVerified = true;  // Flag to track if the session is verified
+
+// --- Timing & Movement State ---
+unsigned long lastMoveCheckTime = 0;
+unsigned long moveDelay = 10;
+
+bool isMovingUp = false;
+bool isMovingDown = false;
+
+unsigned long lastButtonCheck = 0;
+const unsigned long debounceDelay = 200;
+unsigned long motorStartTime = 0;
+float motorElapsedTime = 0.0;
+float time2send = 0.0;
+float voltageSum = 0.0;
+float currentSum = 0.0;
+int sampleCount = 0;
+
+float totalAvgVoltage = 0.0;
+float totalAvgCurrent = 0.0;
+>>>>>>> 8dcf27ea43ccadb47929275dec6b489401af81d6
 
 // --- Pin Definitions ---
 const int buttonPins[] = {19, 21, 22, 23};       // Buttons for floors 0, 1, 2, 3
@@ -21,6 +80,7 @@ const int latchPin = 26;
 const int clockPin = 25;
 const int dataPin = 27;
 
+<<<<<<< HEAD
 // --- 7-Segment Display Codes (0–3) ---
 const int NUM[4] = {
   0b00111111, // 0
@@ -63,6 +123,8 @@ const float Vref = 5.0;           // ADC reference voltage (5V for most Arduinos
 const float zeroCurrentVoltage = 2.5; // No-load voltage from ACS712 (typically 2.5V)
 const float sensitivity = 0.185;  // Sensitivity in V/A (0.185 for 5A module)
 
+=======
+>>>>>>> 8dcf27ea43ccadb47929275dec6b489401af81d6
 // ========== SETUP ==========
 void setup() {
   Serial.begin(115200);
@@ -105,14 +167,21 @@ void setup() {
 
 // ========== LOOP ==========
 void loop() {
+<<<<<<< HEAD
   checkIRSensors();
+=======
+>>>>>>> 8dcf27ea43ccadb47929275dec6b489401af81d6
   // Perform session verification only once
   if (!sessionVerified) {
     HTTPClient http;
     String url = "http://192.168.1.103:5000/api/apartment/session";
     http.begin(url);
     http.addHeader("Content-Type", "application/json");
+<<<<<<< HEAD
     String payload = "{\"brain\":\"P6p8h3uD&JQNWh\",\"mid\":\"" + MID + "\"}";
+=======
+    String payload = "{\"brain\":\"P6p8h3uD&JQNWh\",\"MID\":\"" + MID + "\"}";
+>>>>>>> 8dcf27ea43ccadb47929275dec6b489401af81d6
 
     int httpResponseCode = http.POST(payload);
     Serial.print("Session Check Response: ");
@@ -121,11 +190,19 @@ void loop() {
     String response = http.getString();
     http.end();
 
+<<<<<<< HEAD
     if (response == "OK" ) {
       sessionVerified = true;
       Serial.println("Session Verified");
     } 
     if (response != "OK" ) {
+=======
+    if (response == "OK" || true) {
+      sessionVerified = true;
+      Serial.println("Session Verified");
+    } 
+    if (response != "OK" && false) {
+>>>>>>> 8dcf27ea43ccadb47929275dec6b489401af81d6
   Serial.println("Session failed. Retrying...");
   digitalWrite(RDY, LOW);
   motorElapsedTime = 0.0;  // Reset motor time
@@ -152,12 +229,20 @@ void loop() {
     digitalWrite(RDY, LOW);
   }
 
+<<<<<<< HEAD
   delay(100);  // Control loop frequency
+=======
+  delay(1000);  // Control loop frequency
+>>>>>>> 8dcf27ea43ccadb47929275dec6b489401af81d6
 }
 
 
 // ========== Wi-Fi Data Sender ==========
+<<<<<<< HEAD
 void sendDataToServer(float value,float power) {
+=======
+void sendDataToServer(float value) {
+>>>>>>> 8dcf27ea43ccadb47929275dec6b489401af81d6
   if (WiFi.status() != WL_CONNECTED) {
     Serial.println("WiFi not connected!");
     return;
@@ -170,9 +255,16 @@ void sendDataToServer(float value,float power) {
     http.addHeader("Content-Type", "application/json");
 
     String payload = 
+<<<<<<< HEAD
       "{\"time\":" + String(value, 3) + 
       ",\"power\":" + String(power, 2) + 
       ",\"brain\":\"P6p8h3uD&JQNWh\",\"mid\":\"" + MID + "\"}";
+=======
+      "{\"time\":" + String(value, 2) + 
+      ",\"voltage\":" + String(totalAvgVoltage, 2) + 
+      ",\"current\":" + String(totalAvgCurrent, 2) + 
+      ",\"brain\":\"P6p8h3uD&JQNWh\",\"MID\":\"" + MID + "\"}";
+>>>>>>> 8dcf27ea43ccadb47929275dec6b489401af81d6
 
     int httpResponseCode = http.POST(payload);
     if (httpResponseCode == 200) {
@@ -226,6 +318,7 @@ void moveDown() {
   digitalWrite(elevatorMotorDownPin, HIGH);
 }
 
+<<<<<<< HEAD
 float getAverageCurrent(int samples = 100) {
   float sum = 0;
   for (int i = 0; i < samples; i++) {
@@ -243,6 +336,25 @@ void updateMovement() {
 currentSum += avgCurrent;
 sampleCount++;
 
+=======
+
+void updateMovement() {
+  int analogValue = analogRead(Vsens); 
+float analogVoltage = analogValue * (3.3 / 4095.0); // Convert ADC to actual voltage
+float motorVoltage = analogVoltage * 5;             // Adjust based on divider ratio
+float motorCurrent = (motorVoltage / 12) * 1000.0; // Convert to milliamps
+
+voltageSum += motorVoltage;
+currentSum += motorCurrent;
+sampleCount++;
+
+Serial.print("Motor Voltage: ");
+Serial.print(motorVoltage);
+Serial.print(" V");
+Serial.print("  Current: ");
+Serial.print(motorCurrent);
+Serial.println(" mA");
+>>>>>>> 8dcf27ea43ccadb47929275dec6b489401af81d6
 
   if (millis() - lastMoveCheckTime < moveDelay) return;
   lastMoveCheckTime = millis();
@@ -282,6 +394,7 @@ void arriveAtFloor() {
     time2send += motorElapsedTime; // Reset for next session
   }
   if (sampleCount > 0) {
+<<<<<<< HEAD
   float avgCurrent = currentSum / sampleCount;
   avgCurrent= avgCurrent*10;
   totalAvgCurrent += avgCurrent;
@@ -291,6 +404,21 @@ void arriveAtFloor() {
   Serial.print(avgCurrent);
   Serial.println(" mA");
 
+=======
+  float avgVoltage = voltageSum / sampleCount;
+  float avgCurrent = currentSum / sampleCount;
+
+  totalAvgVoltage += avgVoltage;
+  totalAvgCurrent += avgCurrent;
+
+  Serial.print("Average Voltage this run: ");
+  Serial.print(avgVoltage);
+  Serial.print(" V, Average Current: ");
+  Serial.print(avgCurrent);
+  Serial.println(" mA");
+
+  voltageSum = 0;
+>>>>>>> 8dcf27ea43ccadb47929275dec6b489401af81d6
   currentSum = 0;
   sampleCount = 0;
 }
@@ -395,9 +523,16 @@ void changeNumber(int floor) {
   digitalWrite(latchPin, HIGH);
 }
 void checkStopButton() {
+<<<<<<< HEAD
 
   if (digitalRead(STP) == HIGH) {
 
+=======
+  totalAvgVoltage = 0.0;
+  totalAvgCurrent = 0.0;
+
+  if (digitalRead(STP) == HIGH) {
+>>>>>>> 8dcf27ea43ccadb47929275dec6b489401af81d6
   Serial.println("EMERGENCY STOP TRIGGERED!");
   digitalWrite(elevatorMotorUpPin, LOW);
   digitalWrite(elevatorMotorDownPin, LOW);
@@ -413,6 +548,7 @@ void checkStopButton() {
     motorElapsedTime += (millis() - motorStartTime) / 1000.0;
     motorStartTime = 0;
   }
+<<<<<<< HEAD
 float power = totalAvgCurrent*22.2;
   sendDataToServer(time2send,power);
   emergencyStopped= false;
@@ -420,4 +556,11 @@ float power = totalAvgCurrent*22.2;
   totalAvgCurrent = 0.0;
   time2send = 0.0;
   }
+=======
+
+  sendDataToServer(time2send);
+  sessionVerified = false;
+  time2send = 0.0;
+}
+>>>>>>> 8dcf27ea43ccadb47929275dec6b489401af81d6
 }
