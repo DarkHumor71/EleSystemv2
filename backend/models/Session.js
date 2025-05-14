@@ -19,7 +19,6 @@ const SessionSchema = new mongoose.Schema(
      */
     _id: {
       type: String,
-      default: 'singleton',
     },
 
     /**

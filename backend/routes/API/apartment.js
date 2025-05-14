@@ -174,9 +174,9 @@ router.post(
 // @route    POST api/apartment/exists
 // @desc     Check if apartment exists
 // @access   Public 
-router.post('/exists', check('MID', 'Machine ID is required').not().isEmpty(), async (req, res) => {
+router.post('/exists', check('mid', 'Machine ID is required').not().isEmpty(), async (req, res) => {
   try {
-    const { id, MID } = req.body;
+    const { id, mid } = req.body;
 
     // Check if apartment exists
     const apartment = await Apartment.findById(id);
@@ -185,7 +185,7 @@ router.post('/exists', check('MID', 'Machine ID is required').not().isEmpty(), a
       return res.status(400).json({ msg: 'Apartment not found' });
     }
     const sess = new Session({
-      _id: MID,
+      _id: mid,
       apartment: apartment,
     });
     await sess.save();
@@ -195,7 +195,7 @@ router.post('/exists', check('MID', 'Machine ID is required').not().isEmpty(), a
 
   } catch (err) {
     console.error(err.message);
-    res.status(500).send('Server error');
+    res.status(500).send('Server epioyrror');
   }
 });
 
@@ -242,15 +242,15 @@ router.patch('/:email', async (req, res) => {
 // @route    GET api/apartment/session
 // @desc     Get session data for the apartment
 // @access   Private
-router.post('/session', [check('brain', 'Brain code is required').not().isEmpty(), check('MID', 'Machine ID is required').not().Empty()], async (req, res) => {
+router.post('/session', [check('brain', 'Brain code is required').not().isEmpty(), check('mid', 'Machine ID is required').not().isEmpty()], async (req, res) => {
   try {
     if (req.body.brain !== BRAIN_CODE) {
       return res.status(400).json({ msg: 'Invalid Credentials' });
     }
-    const MID = req.body.MID;
-    const session = await Session.findById(MID);
+    const mid = req.body.mid;
+    const session = await Session.findById(mid);
     if (!session) return res.status(404).json({ msg: 'Session not found' });
-    return res.send(session.apartment);
+    return res.send("OK");
   } catch (err) {
     console.error(err.message);
     res.status(500).send('Server Error');

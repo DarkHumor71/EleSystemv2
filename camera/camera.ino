@@ -6,9 +6,10 @@
 // Wi-Fi credentials
 const char* ssid = "hotcold1";
 const char* password = "Mirna2016";
+const String MID ="ELE1";
 
 // URLs
-const char* validationServerUrl = "http://192.168.1.106:5000/api/apartment/exists";
+const char* validationServerUrl = "http://192.168.1.103:5000/api/apartment/exists";
 
 // QR Reader setup
 ESP32QRCodeReader reader(CAMERA_MODEL_AI_THINKER);
@@ -17,6 +18,8 @@ String lastID = "";
 // === QR Task ===
 void onQrCodeTask(void *pvParameters) {
   struct QRCodeData qrCodeData;
+  unsigned long lastScanTime = 0;
+  const unsigned long scanCooldown = 5000; // 5 seconds
 
   while (true) {
     if (reader.receiveQrCode(&qrCodeData, 100)) {
@@ -26,11 +29,17 @@ void onQrCodeTask(void *pvParameters) {
         String payload = String((const char *)qrCodeData.payload);
         payload.trim();
 
-        if (payload != lastID && payload.length() > 0) {
+        unsigned long currentTime = millis();
+
+        if (payload == lastID && (currentTime - lastScanTime < scanCooldown)) {
+          Serial.println("Duplicate scan ignored (within 5 seconds)");
+        } else {
           lastID = payload;
+          lastScanTime = currentTime;
+
           Serial.print("Valid QR payload: ");
           Serial.println(payload);
-          sendIDToServer(payload);  // Send to validation server and dev board
+          sendIDToServer(payload);
         }
       } else {
         Serial.print("Invalid payload: ");
@@ -41,6 +50,7 @@ void onQrCodeTask(void *pvParameters) {
     vTaskDelay(100 / portTICK_PERIOD_MS);
   }
 }
+
 
 void setup() {
   Serial.begin(115200);
@@ -79,6 +89,8 @@ void sendIDToServer(String id) {
 
     StaticJsonDocument<200> doc;
     doc["id"] = id;
+
+    doc["mid"]= MID;
 
     String payload;
     serializeJson(doc, payload);

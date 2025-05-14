@@ -40,13 +40,11 @@ const BRAIN_CODE = config.get('brainCode');
 // @desc     Create an Expense
 // @access   Private
 router.post(
-  '/',
+  '/create',
   [
     check('brain', 'Brain code is required').not().isEmpty(),
-    check('MID', 'Machine ID is required').not().isEmpty(),
-    check('time', 'Time is required').not().isEmpty(),
-    check('qr_code', 'qr is required').not().isEmpty(),
-    check('current', 'current is not valid').isNumeric(),
+    check('mid', 'Machine ID is required').not().isEmpty(),
+    check('time', 'Time is required').not().isEmpty()
   ],
   async (req, res) => {
     const errors = validationResult(req);
@@ -58,17 +56,17 @@ router.post(
       return res.status(400).json({ msg: 'Invalid Credentials' });
     }
     try {
-      const MID = req.body.MID;
-      const qr_code = req.body.qr_code;
-      const apartment = await Apartment.findById(qr_code);
+      const mid = req.body.mid;
+      const session = await Session.findById(mid);
+      const apartment = await Apartment.findById(session.apartment);
       if (!apartment)
         return res.status(400).json({ msg: 'Apartment not found' });
 
-      let current = req.body.current;
-      let power = 24 * current;
+      let power = req.body.power;
       let energy = (power / 1000) * (req.body.time / 3600);
-      let unitCost = 1; // Admin may change this value
+      let unitCost = 0.5; // Admin may change this value
       let cost = energy * unitCost;
+      cost = cost.toFixed(4);
 
       const roundToTwo = (num) =>
         Math.round((num + Number.EPSILON) * 100) / 100;
@@ -81,8 +79,8 @@ router.post(
       });
 
       const expense = await newExpense.save();
-      Session.deleteOne({ _id: MID });
-      res.send('OK');
+      await Session.deleteOne({ _id: mid });
+      res.status(200).send('OK');
     } catch (err) {
       console.error(err.message);
       res.status(500).send('Server Error');

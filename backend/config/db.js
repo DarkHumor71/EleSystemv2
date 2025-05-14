@@ -19,6 +19,7 @@ const connectDB = async () => {
       useNewUrlParser: true,
       useUnifiedTopology: true,
     });
+    await Session.deleteMany({}); // Clear all sessions on startup
     console.log('MongoDB Connected...');
   } catch (err) {
     console.error('MongoDB connection error:', err.message);
