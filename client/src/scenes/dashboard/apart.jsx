@@ -44,12 +44,12 @@ const Apr = ({ isloading, apartment_id, fetchApartmentExpenses }) => {
               cost: cost ? `${cost.$numberDecimal} $` : null,
               createdAt: createdAt
                 ? new Date(createdAt).toLocaleTimeString('en-US', {
-                    year: 'numeric',
-                    month: 'short',
-                    day: 'numeric',
-                    hour: '2-digit',
-                    minute: '2-digit',
-                  })
+                  year: 'numeric',
+                  month: 'short',
+                  day: 'numeric',
+                  hour: '2-digit',
+                  minute: '2-digit',
+                })
                 : null,
             })
           );
@@ -211,7 +211,7 @@ const Apr = ({ isloading, apartment_id, fetchApartmentExpenses }) => {
                     {transaction.createdAt}
                   </Typography>
                   <Typography color={colors.grey[100]}>
-                    Apt {transaction.apartment_number}
+                    {transaction.time}
                   </Typography>
                 </Box>
                 <Box color={colors.grey[100]}>{transaction.date}</Box>
