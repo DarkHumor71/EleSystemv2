@@ -1,22 +1,23 @@
-import React, { useEffect } from "react";
+import { useEffect } from "react";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
-import Profile from "./scenes/profile/profile";
-import Expensess from "./scenes/expensess/building_expenses";
-import Buildings from "./scenes/buildings/list_of_building";
-import Mod from "./scenes/dashboard/mod";
-import Apr from "./scenes/dashboard/apart";
-import Apartments from "./scenes/apartment/apartments";
-import AdminDashboard from "./scenes/dashboard/admin";
-import Apartment from "./scenes/form/createapartment";
-import Qrcode from "./scenes/form/qrcode";
+import Profile from "./pages/profile";
+import Expensess from "./pages/building_expenses";
+import Buildings from "./pages/list_of_building";
+import Mod from "./pages/dashboard/mod";
+import Apr from "./pages/dashboard/apart";
+import Apartments from "./pages/apartments";
+import AdminDashboard from "./pages/dashboard/admin";
+import Apartment from "./pages/form/createapartment";
+import Qrcode from "./pages/form/qrcode";
 import PrivateRoute from "./components/routing/privateroute";
-import Login from "./scenes/login/login";
+import Login from "./pages/login";
 import MainLayout from "./Layout/MainLayout";
 import { Provider } from "react-redux";
 import store from "./store";
 import Landing from "./components/Landing";
 import Alert from "./Layout/Alert";
-import BuildingRegister from "./scenes/form/createbuilding";
+
+import BuildingRegister from "./pages/form/createbuilding";
 import setAuthToken from "./utils/setAuthToken";
 import { loadApartment } from "./actions/auth";
 

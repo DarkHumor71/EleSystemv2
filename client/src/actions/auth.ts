@@ -1,3 +1,4 @@
+import type { RegisterApartmentParams, RegisterBuildingParams } from "../types";
 import axios from "axios";
 import {
   ADMIN_LOGIN_SUCCESS,
@@ -19,25 +20,7 @@ const setToken = (): void => {
   if (localStorage.token) setAuthToken(localStorage.token);
 };
 
-export interface RegisterApartmentParams {
-  building: string;
-  pin: string;
-  is_moderator: boolean;
-}
-
-export interface RegisterBuildingParams {
-  name: string;
-  email: string;
-  address: string;
-  state: string;
-  city: string;
-  password?: string | null;
-  pin: string;
-  firstName: string;
-  lastName: string;
-  apartmentNumber: string;
-  apartmentEmail: string;
-}
+// Use types from types.d.ts
 
 export const loadApartment =
   () =>

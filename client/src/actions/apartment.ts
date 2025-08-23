@@ -1,3 +1,4 @@
+import type { ApartmentData, ApartmentResponse } from "../types";
 import axios from "axios";
 import { setAlert } from "./alert";
 import {
@@ -12,14 +13,7 @@ import setAuthToken from "../utils/setAuthToken";
 // Helper to set token for authenticated requests
 const setToken = (): void => setAuthToken(localStorage.token);
 
-export interface ApartmentData {
-  [key: string]: any;
-}
-
-export interface ApartmentResponse {
-  work: boolean;
-  id?: string;
-}
+// Use types from types.d.ts
 
 export const registerApartment =
   (data: ApartmentData) =>
