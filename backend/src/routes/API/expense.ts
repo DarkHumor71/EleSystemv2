@@ -32,7 +32,7 @@ import Building from "../../models/Building";
 import Session from "../../models/Session";
 import config from "config";
 import mongoose from "mongoose";
-import { DecodedToken } from "../../types";
+import { DecodedToken } from "../types";
 
 const BRAIN_CODE: string = config.get("brainCode");
 const router = express.Router();
@@ -105,78 +105,88 @@ router.get("/", [auth, admin as any], async (req: Request, res: Response) => {
 // @route    GET api/expense/apartment/:id
 // @desc     Get expenses by apartment id
 // @access   private
-router.get("/apartment/:id", auth, async (req: Request, res: Response) => {
-  try {
-    const apartment = await Apartment.findById(req.params.id);
-    if (!apartment) return res.status(404).json({ msg: "Apartment not found" });
-    const building = await Building.findById(apartment.building);
-    const decoded = req.decoded as DecodedToken;
-    const perm = decoded.permissions;
-    if (
-      perm &&
-      ((perm.DecodedPermissions?.moderator &&
-        building &&
-        decoded.building?.id === building.id.toString()) ||
-        (perm.DecodedPermissions?.resident &&
-          decoded.apartment?.id === apartment.id.toString()))
-    ) {
-      const expenses = await Expense.find({ apartment: apartment.id });
-      if (!expenses) return res.status(404).json({ msg: "Expense not found" });
-      res.json(expenses);
-    } else {
-      return res.status(401).json({ msg: "User not authorized" });
+router.get(
+  "/apartment/:id",
+  auth as any,
+  async (req: Request, res: Response) => {
+    try {
+      const apartment = await Apartment.findById(req.params.id);
+      if (!apartment)
+        return res.status(404).json({ msg: "Apartment not found" });
+      const building = await Building.findById(apartment.building);
+      const decoded = req.decoded as DecodedToken;
+      const perm = decoded.permissions;
+      if (
+        perm &&
+        ((perm.DecodedPermissions?.moderator &&
+          building &&
+          decoded.building?.id === building.id.toString()) ||
+          (perm.DecodedPermissions?.resident &&
+            decoded.apartment?.id === apartment.id.toString()))
+      ) {
+        const expenses = await Expense.find({ apartment: apartment.id });
+        if (!expenses)
+          return res.status(404).json({ msg: "Expense not found" });
+        res.json(expenses);
+      } else {
+        return res.status(401).json({ msg: "User not authorized" });
+      }
+    } catch (err: any) {
+      console.error(err.message);
+      if (err.kind === "ObjectId")
+        return res.status(404).json({ msg: "Expense not found" });
+      res.status(500).send("Server Error");
     }
-  } catch (err: any) {
-    console.error(err.message);
-    if (err.kind === "ObjectId")
-      return res.status(404).json({ msg: "Expense not found" });
-    res.status(500).send("Server Error");
   }
-});
+);
 
 // @route    GET api/building/expense/:id
 // @desc     Get expenses by building id
 // @access   private
 
-router.get("/building/:id", auth, async (req: Request, res: Response) => {
-  try {
-    const building = await Building.findById(req.params.id);
-    if (!building) {
-      return res.status(404).json({ msg: "Building not found" });
+router.get(
+  "/building/:id",
+  auth as any,
+  async (req: Request, res: Response) => {
+    try {
+      const building = await Building.findById(req.params.id);
+      if (!building) {
+        return res.status(404).json({ msg: "Building not found" });
+      }
+      const decoded = req.decoded as DecodedToken;
+      const perm = decoded.permissions;
+      const isAuthorized =
+        perm &&
+        (perm.DecodedPermissions?.admin ||
+          (perm.DecodedPermissions?.moderator &&
+            decoded &&
+            decoded.building &&
+            decoded.building.id === building.id.toString()));
+      if (!isAuthorized) {
+        return res.status(401).json({ msg: "User not authorized" });
+      }
+      const apartments = await Apartment.find({ building: req.params.id });
+      const apartmentIds = apartments.map((apartment) => apartment._id);
+      const expenses = await Expense.find({ apartment: { $in: apartmentIds } });
+      const expensesWithApartmentNumber = expenses.map((expense) => {
+        const apartment = apartments.find((apt) =>
+          apt._id.equals(expense.apartment)
+        );
+        return {
+          apartment_number: apartment ? apartment.apartment_number : null,
+          ...expense.toObject(),
+        };
+      });
+      return res.json(expensesWithApartmentNumber);
+    } catch (err: any) {
+      console.error(err.message);
+      if (err.kind === "ObjectId") {
+        return res.status(404).json({ msg: "Building not found" });
+      }
+      return res.status(500).json({ msg: "Server Error" });
     }
-    const decoded = req.decoded as DecodedToken;
-    const perm = decoded.permissions;
-    const isAuthorized =
-      perm &&
-      (perm.DecodedPermissions?.admin ||
-        (perm.DecodedPermissions?.moderator &&
-          decoded &&
-          decoded.building &&
-          decoded.building.id === building.id.toString()));
-    if (!isAuthorized) {
-      return res.status(401).json({ msg: "User not authorized" });
-    }
-    const apartments = await Apartment.find({ building: req.params.id });
-    const apartmentIds = apartments.map((apartment) => apartment._id);
-    const expenses = await Expense.find({ apartment: { $in: apartmentIds } });
-    const expensesWithApartmentNumber = expenses.map((expense) => {
-      const apartment = apartments.find((apt) =>
-        apt._id.equals(expense.apartment)
-      );
-      return {
-        apartment_number: apartment ? apartment.apartment_number : null,
-        ...expense.toObject(),
-      };
-    });
-    return res.json(expensesWithApartmentNumber);
-  } catch (err: any) {
-    console.error(err.message);
-    if (err.kind === "ObjectId") {
-      return res.status(404).json({ msg: "Building not found" });
-    }
-    return res.status(500).json({ msg: "Server Error" });
   }
-});
+);
 
 // @route    DELETE api/expenses/:id
 // @desc     Delete an expense

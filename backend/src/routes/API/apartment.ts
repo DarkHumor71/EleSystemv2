@@ -39,7 +39,7 @@ const router = express.Router();
 const BRAIN_CODE = config.get("brainCode") as string;
 
 // GET api/apartment/:id
-router.get("/:id", auth, async (req: Request, res: Response) => {
+router.get("/:id", auth as any, async (req: Request, res: Response) => {
   try {
     const apartment = await Apartment.findById(req.params.id).lean();
     if (!apartment) return res.status(404).json({ msg: "Apartment not found" });
@@ -68,33 +68,38 @@ router.get("/:id", auth, async (req: Request, res: Response) => {
 });
 
 // GET api/apartment/building/:id
-router.get("/building/:id", auth, async (req: Request, res: Response) => {
-  try {
-    const building = await Building.findById(req.params.id).lean();
-    const { permissions, building: userBuilding } = (req as any).decoded || {};
-    if (
-      !building ||
-      (!permissions?.admin &&
-        (!permissions?.moderator ||
-          userBuilding?.id !== building._id.toString()))
-    ) {
-      return res.status(403).json({ msg: "User not authorized" });
+router.get(
+  "/building/:id",
+  auth as any,
+  async (req: Request, res: Response) => {
+    try {
+      const building = await Building.findById(req.params.id).lean();
+      const { permissions, building: userBuilding } =
+        (req as any).decoded || {};
+      if (
+        !building ||
+        (!permissions?.admin &&
+          (!permissions?.moderator ||
+            userBuilding?.id !== building._id.toString()))
+      ) {
+        return res.status(403).json({ msg: "User not authorized" });
+      }
+      const apartments = await Apartment.find({
+        building: building._id,
+        deleted_at: null,
+      })
+        .select("-pin -__v -createdAt -updatedAt -is_moderator")
+        .lean();
+      res.json(apartments);
+    } catch (err: any) {
+      console.error(err.message);
+      res.status(500).send("Server Error");
     }
-    const apartments = await Apartment.find({
-      building: building._id,
-      deleted_at: null,
-    })
-      .select("-pin -__v -createdAt -updatedAt -is_moderator")
-      .lean();
-    res.json(apartments);
-  } catch (err: any) {
-    console.error(err.message);
-    res.status(500).send("Server Error");
   }
-});
+);
 
 // GET api/apartment
-router.get("/", [auth, admin], async (req: Request, res: Response) => {
+router.get("/", [auth, admin as any], async (req: Request, res: Response) => {
   try {
     const apartments = await Apartment.find({ deleted_at: null })
       .select("-pin -__v -createdAt -updatedAt")
@@ -110,7 +115,7 @@ router.get("/", [auth, admin], async (req: Request, res: Response) => {
 router.post(
   "/",
   [
-    auth,
+    auth as any,
     mod,
     check("pin", "PIN must be 4-digit numeric")
       .isLength({ min: 4, max: 4 })

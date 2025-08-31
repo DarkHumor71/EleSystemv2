@@ -11,7 +11,7 @@
 
 import express, { Request, Response } from "express";
 import { check, validationResult } from "express-validator";
-import jwt from "jsonwebtoken";
+import jwt = require("jsonwebtoken");
 import config from "config";
 import auth from "../../middleware/auth";
 import buildingMiddleware from "../../middleware/building";
@@ -21,8 +21,9 @@ import Building from "../../models/Building";
 const router = express.Router();
 
 // GET /api/auth - token to detailed Object
-router.get("/", auth, async (req: Request, res: Response) => {
+router.get("/", auth as any, async (req: Request, res: Response) => {
   try {
+    // Use (req as any).decoded if your middleware attaches decoded to req
     const decoded = (req as any).decoded;
     const building = await Building.findById(decoded.building?.id).select(
       "-password -__v"
@@ -48,7 +49,7 @@ router.get("/", auth, async (req: Request, res: Response) => {
 router.post(
   "/",
   [
-    auth,
+    auth as any,
     buildingMiddleware,
     check("pin", "PIN is required and must be exactly 4 numeric characters")
       .exists()
@@ -81,18 +82,22 @@ router.post(
       const modifiedPayload = { ...decoded };
       const moderator = decoded.permissions.moderator;
       const resident = decoded.permissions.resident;
-      jwt.sign(modifiedPayload, config.get("jwtSecret"), (err, token) => {
-        if (err) {
-          console.error(err);
-          return res.status(500).send("Token generation error");
+      jwt.sign(
+        modifiedPayload,
+        config.get("jwtSecret") as string,
+        (err: Error | null, token: string | undefined) => {
+          if (err) {
+            console.error(err);
+            return res.status(500).send("Token generation error");
+          }
+          res.json({
+            token,
+            moderator,
+            resident,
+            building: decoded.building?.id,
+          });
         }
-        res.json({
-          token,
-          moderator,
-          resident,
-          building: decoded.building?.id,
-        });
-      });
+      );
     } catch (err: any) {
       console.error(err.message);
       res.status(500).send("Server error");
@@ -101,7 +106,7 @@ router.post(
 );
 
 // PUT /api/auth - Update apartment details
-router.put("/", auth, async (req: Request, res: Response) => {
+router.put("/", auth as any, async (req: Request, res: Response) => {
   try {
     const { first_name, last_name, email } = req.body;
     const decoded = (req as any).decoded;

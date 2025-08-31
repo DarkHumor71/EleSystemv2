@@ -2,6 +2,18 @@ import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 import config from "config";
 
+// Import types
+interface DecodedPayload {
+  permissions?: any;
+  apartment?: { id?: string };
+  building?: string;
+  [key: string]: any;
+}
+
+interface AuthRequest extends Request {
+  decoded?: DecodedPayload;
+}
+
 /**
  * Middleware to authenticate requests using a JWT token.
  */

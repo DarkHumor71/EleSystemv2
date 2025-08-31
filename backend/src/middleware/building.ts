@@ -1,5 +1,10 @@
 import { Request, Response, NextFunction } from "express";
 
+// Define the BuildingRequest interface
+interface BuildingRequest extends Request {
+  building?: any;
+}
+
 /**
  * Middleware to validate if a building is attached to the request.
  */

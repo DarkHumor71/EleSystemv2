@@ -42,7 +42,7 @@ const router = express.Router();
 // @route    GET api/building/:id
 // @desc     GET a Building by ID
 // @access   Private
-router.get("/:id", auth, async (req: Request, res: Response) => {
+router.get("/:id", auth as any, async (req: Request, res: Response) => {
   try {
     let building;
     // @ts-ignore
@@ -167,7 +167,7 @@ router.get("/", [auth, admin as any], async (req: Request, res: Response) => {
 router.post(
   "/create",
   [
-    auth,
+    auth as any,
     check("pin", "PIN must be 4-digit numeric")
       .isLength({ min: 4, max: 4 })
       .isNumeric(),
