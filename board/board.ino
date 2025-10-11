@@ -70,12 +70,21 @@ void setup() {
   // Connect to Wi-Fi
   WiFi.begin(ssid, password);
   Serial.print("Connecting to WiFi");
-  while (WiFi.status() != WL_CONNECTED) {
+  int wifiRetryCount = 0;
+  const int maxWifiRetries = 20;
+  while (WiFi.status() != WL_CONNECTED && wifiRetryCount < maxWifiRetries) {
     delay(500);
     Serial.print(".");
+    wifiRetryCount++;
   }
-  Serial.println("\nWiFi connected!");
-  Serial.println(WiFi.localIP());
+  if (WiFi.status() == WL_CONNECTED) {
+    Serial.println("\nWiFi connected!");
+    Serial.println(WiFi.localIP());
+    digitalWrite(ERR, LOW);
+  } else {
+    Serial.println("\nWiFi connection failed!");
+    digitalWrite(ERR, HIGH);
+  }
 
   // Setup pins
   pinMode(PWR, OUTPUT);
@@ -103,56 +112,64 @@ void setup() {
   Serial.println("Elevator system initialized.");
 }
 
-// ========== LOOP ==========
+// ========== LOOP ========== 
 void loop() {
   checkIRSensors();
-  // Perform session verification only once
-  if (!sessionVerified) {
-    HTTPClient http;
-    String url = "http://192.168.1.103:5000/api/apartment/session";
-    http.begin(url);
-    http.addHeader("Content-Type", "application/json");
-    String payload = "{\"brain\":\"P6p8h3uD&JQNWh\",\"mid\":\"" + MID + "\"}";
-
-    int httpResponseCode = http.POST(payload);
-    Serial.print("Session Check Response: ");
-    Serial.println(httpResponseCode);
-
-    String response = http.getString();
-    http.end();
-
-    if (response == "OK" ) {
-      sessionVerified = true;
-      Serial.println("Session Verified");
-    } 
-    if (response != "OK" ) {
-  Serial.println("Session failed. Retrying...");
-  digitalWrite(RDY, LOW);
-  motorElapsedTime = 0.0;  // Reset motor time
-  motorStartTime = 0;
-  delay(1000);
-  return;
-}
-
-  }
-
-  // Main logic runs only if session is verified
+  verifySessionOnce();
   if (sessionVerified) {
     digitalWrite(RDY, HIGH);
+    digitalWrite(ERR, LOW);
+    Serial.println("Session OK. Elevator ready.");
     checkStopButton();
     if (emergencyStopped) {
+      Serial.println("Elevator emergency stopped.");
+      digitalWrite(ERR, HIGH);
       return;  // Skip rest of logic during emergency
     }
-
     checkButtons();
     checkIRSensors();
     handleRunMotor();
     updateMovement();
   } else {
     digitalWrite(RDY, LOW);
+    digitalWrite(ERR, HIGH);
+    Serial.println("Session not verified. Elevator not ready.");
   }
-
   delay(100);  // Control loop frequency
+}
+
+// --- Session verification logic split out for clarity ---
+void verifySessionOnce() {
+  // Only verify once per power cycle
+  if (sessionVerified) return;
+  int sessionRetryCount = 0;
+  const int maxSessionRetries = 5;
+  while (!sessionVerified && sessionRetryCount < maxSessionRetries) {
+    HTTPClient http;
+    String url = "http://192.168.1.103:5000/api/apartment/session";
+    http.begin(url);
+    http.addHeader("Content-Type", "application/json");
+    String payload = "{\"brain\":\"P6p8h3uD&JQNWh\",\"mid\":\"" + MID + "\"}";
+    int httpResponseCode = http.POST(payload);
+    Serial.print("Session Check Response: ");
+    Serial.println(httpResponseCode);
+    String response = http.getString();
+    http.end();
+    if (response == "OK" ) {
+      sessionVerified = true;
+      Serial.println("Session Verified");
+    } else {
+      Serial.println("Session failed. Retrying...");
+      digitalWrite(RDY, LOW);
+      motorElapsedTime = 0.0;  // Reset motor time
+      motorStartTime = 0;
+      delay(1000);
+      sessionRetryCount++;
+    }
+  }
+  if (!sessionVerified) {
+    Serial.println("Session verification failed after retries.");
+  }
 }
 
 
@@ -163,7 +180,10 @@ void sendDataToServer(float value,float power) {
     return;
   }
 
-  while (true) {
+  int dataRetryCount = 0;
+  const int maxDataRetries = 5;
+  bool sent = false;
+  while (!sent && dataRetryCount < maxDataRetries) {
     HTTPClient http;
     String url = "http://192.168.1.103:5000/api/expense/create";
     http.begin(url);
@@ -178,9 +198,17 @@ void sendDataToServer(float value,float power) {
     if (httpResponseCode == 200) {
       Serial.print("Data POST Response: ");
       Serial.println(httpResponseCode);
-      http.end();
-      break;
+      sent = true;
+    } else {
+      Serial.print("Data POST failed, code: ");
+      Serial.println(httpResponseCode);
+      delay(500);
+      dataRetryCount++;
     }
+    http.end();
+  }
+  if (!sent) {
+    Serial.println("Failed to send data after retries.");
   }
 }
 
@@ -228,14 +256,20 @@ void moveDown() {
 
 float getAverageCurrent(int samples = 100) {
   float sum = 0;
+  int validSamples = 0;
   for (int i = 0; i < samples; i++) {
     int val = analogRead(Asens);
     float voltage = (val * Vref) / 1024.0;
     float current = (voltage - zeroCurrentVoltage) / sensitivity;
-    sum += current;
+    // Ignore negative or out-of-range values
+    if (current >= 0 && current < 100.0) {
+      sum += current;
+      validSamples++;
+    }
     delayMicroseconds(500); // optional
   }
-  return sum / samples;
+  if (validSamples == 0) return 0.0;
+  return sum / validSamples;
 }
 
 void updateMovement() {
@@ -332,6 +366,7 @@ void removeFromQueue(int floor) {
 int getNextFloor() {
   // Try in current direction first
   for (int i = 0; i < queueSize; i++) {
+    if (i >= MAX_QUEUE_SIZE) break;
     if ((direction == 1 && floorQueue[i] > currentFloor) ||
         (direction == -1 && floorQueue[i] < currentFloor)) {
       return floorQueue[i];
@@ -341,29 +376,34 @@ int getNextFloor() {
   // Flip direction and try again
   direction *= -1;
   for (int i = 0; i < queueSize; i++) {
+    if (i >= MAX_QUEUE_SIZE) break;
     if ((direction == 1 && floorQueue[i] > currentFloor) ||
         (direction == -1 && floorQueue[i] < currentFloor)) {
       return floorQueue[i];
     }
   }
 
-  // Default: return first in queue
-  return floorQueue[0];
+  // Default: return first in queue if valid
+  if (queueSize > 0 && queueSize <= MAX_QUEUE_SIZE) {
+    return floorQueue[0];
+  }
+  return currentFloor; // fallback if queue is empty or invalid
 }
 
 
 // ========== Button Handling ==========
 void checkButtons() {
-  if (millis() - lastButtonCheck < debounceDelay) return;
-
+  static int lastButtonStates[4] = {LOW, LOW, LOW, LOW};
   for (int i = 0; i < 4; i++) {
-    if (digitalRead(buttonPins[i]) == HIGH) {
+    int currentState = digitalRead(buttonPins[i]);
+    if (currentState == HIGH && lastButtonStates[i] == LOW) {
+      // Button press detected (rising edge)
       Serial.print("Button pressed: Floor ");
       Serial.println(i);
       addToQueue(i);
       lastButtonCheck = millis();
-      break;
     }
+    lastButtonStates[i] = currentState;
   }
 }
 
