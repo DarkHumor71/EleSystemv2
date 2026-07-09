@@ -354,17 +354,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 **Mohammad Youssef** (DarkHumor71) **Ahmad Ayoub** (AhmadAybb) 
 
-## 🙏 Acknowledgments
-
-- React Admin Dashboard template
-- Material-UI component library
-- ESP32 community and libraries
-- KiCad for PCB design tools
 
 ## 📞 Support
 
 For questions, issues, or feature requests, please open an issue on the GitHub repository.
-
----
-
-**Note**: This is a development project. Ensure proper security measures (strong JWT secrets, HTTPS, input validation) before deploying to production.
