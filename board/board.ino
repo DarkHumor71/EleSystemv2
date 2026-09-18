@@ -1,423 +1,338 @@
 #include <WiFi.h>
 #include <HTTPClient.h>
+#include <Wire.h>
+#include <Adafruit_INA228.h>
+#include <freertos/FreeRTOS.h>
+#include <freertos/event_groups.h>
+#include <freertos/queue.h>
+#include <freertos/task.h>
 
-// --- Wi-Fi credentials ---
-const char* ssid = "hotcold1";
-const char* password = "Mirna2016";
-const String MID="ELE1";
+// The control task alone owns the motor, inputs, display, and elevator state.
+// HTTP runs in a separate lower-priority task and cannot block the stop input.
+const char *ssid = "hotcold1";
+const char *password = "Mirna2016";
+const char *MID = "ELE1";
+const char *BRAIN_CODE = "P6p8h3uD&JQNWh";
+const char *SESSION_URL = "http://192.168.1.103:5000/api/apartment/session";
+const char *EXPENSE_URL = "http://192.168.1.103:5000/api/expense/create";
 
-// --- Pin Definitions ---
-const int buttonPins[] = {19, 21, 22, 23};       // Buttons for floors 0, 1, 2, 3
-const int irSensorPins[] = {18, 5, 17, 16};       // IR sensors for floors 0, 1, 2, 3
-const int elevatorMotorUpPin = 13;
-const int elevatorMotorDownPin = 12;
-const int PWR = 32;
-const int ERR = 33;
-const int STP = 14;
+const int buttonPins[] = {33, 34, 14, 25};
+const int irSensorPins[] = {32, 35, 27, 26};
+const int elevatorMotorUpPin = 15;
+const int elevatorMotorDownPin = 13;
+const int PWR = 22;
+const int ERR = 23;
+const int STP = 19;
 const int RDY = 4;
-const int Asens = 34; 
-// --- Display Pins ---
-const int latchPin = 26;
-const int clockPin = 25;
-const int dataPin = 27;
+const int I2C[] = {16, 17};
+const int latchPin = 18;
+const int clockPin = 5;
+const int dataPin = 21;
+const uint8_t NUM[] = {0b00111111, 0b00000110, 0b01011011, 0b01001111};
 
-// --- 7-Segment Display Codes (0–3) ---
-const int NUM[4] = {
-  0b00111111, // 0
-  0b00000110, // 1
-  0b01011011, // 2
-  0b01001111  // 3
+const TickType_t CONTROL_PERIOD = pdMS_TO_TICKS(10);
+const TickType_t NETWORK_RETRY = pdMS_TO_TICKS(1000);
+const EventBits_t SESSION_READY = BIT0;
+const EventBits_t STOP_ACTIVE = BIT1;
+const EventBits_t SENSOR_READY = BIT2;
+const int MAX_QUEUE_SIZE = 10;
+// Set these to the actual shunt resistor and expected peak current on the PCB.
+const float SHUNT_RESISTANCE_OHMS = 0.1f;
+const float MAX_CURRENT_A = 3.2f;
+
+struct ExpenseReport {
+  float seconds;
+  float power;
 };
 
-// --- Queue Variables ---
-const int MAX_QUEUE_SIZE = 10;
+QueueHandle_t expenseQueue;
+QueueHandle_t currentQueue;
+EventGroupHandle_t sessionEvents;
+Adafruit_INA228 currentSensor;
+
 int floorQueue[MAX_QUEUE_SIZE];
 int queueSize = 0;
-
-// --- Elevator State ---
 int currentFloor = 0;
 int targetFloor = 0;
+int direction = -1;
 bool moving = false;
-int direction = -1;  // 1 = up, -1 = down
-bool emergencyStopped = false;
-bool sessionVerified = false;  // Flag to track if the session is verified
-
-// --- Timing & Movement State ---
-unsigned long lastMoveCheckTime = 0;
-unsigned long moveDelay = 10;
-
-bool isMovingUp = false;
-bool isMovingDown = false;
-
-unsigned long lastButtonCheck = 0;
-const unsigned long debounceDelay = 200;
+bool stopLatched = false;
+bool reportFault = false;
 unsigned long motorStartTime = 0;
-float motorElapsedTime = 0.0;
-float time2send = 0.0;
-float voltageSum = 0.0;
-float currentSum = 0.0;
-int sampleCount = 0;
+unsigned long arrivalTime = 0;
+unsigned long lastButtonCheck = 0;
+float motorElapsedTime = 0;
+float currentSum = 0;
+uint32_t sampleCount = 0;
+float totalAvgCurrent = 0;
 
-float totalAvgCurrent = 0.0;
-const float Vref = 5.0;           // ADC reference voltage (5V for most Arduinos)
-const float zeroCurrentVoltage = 2.5; // No-load voltage from ACS712 (typically 2.5V)
-const float sensitivity = 0.185;  // Sensitivity in V/A (0.185 for 5A module)
-
-// ========== SETUP ==========
-void setup() {
-  Serial.begin(115200);
-
-  // Connect to Wi-Fi
-  WiFi.begin(ssid, password);
-  Serial.print("Connecting to WiFi");
-  while (WiFi.status() != WL_CONNECTED) {
-    delay(500);
-    Serial.print(".");
-  }
-  Serial.println("\nWiFi connected!");
-  Serial.println(WiFi.localIP());
-
-  // Setup pins
-  pinMode(PWR, OUTPUT);
-  pinMode(ERR, OUTPUT);
-  digitalWrite(PWR, HIGH);
-  digitalWrite(ERR, LOW);
-
-  pinMode(elevatorMotorUpPin, OUTPUT);
-  pinMode(elevatorMotorDownPin, OUTPUT);
+void setMotor(bool up, bool down) {
   digitalWrite(elevatorMotorUpPin, LOW);
   digitalWrite(elevatorMotorDownPin, LOW);
-
-  pinMode(STP, INPUT);
-  pinMode(RDY,OUTPUT);
-  pinMode(latchPin, OUTPUT);
-  pinMode(clockPin, OUTPUT);
-  pinMode(dataPin, OUTPUT);
-
-  for (int i = 0; i < 4; i++) {
-    pinMode(buttonPins[i], INPUT);
-    pinMode(irSensorPins[i], INPUT);
-  }
-
-  updateDisplay();
-  Serial.println("Elevator system initialized.");
+  if (up) digitalWrite(elevatorMotorUpPin, HIGH);
+  if (down) digitalWrite(elevatorMotorDownPin, HIGH);
 }
 
-// ========== LOOP ==========
-void loop() {
-  checkIRSensors();
-  // Perform session verification only once
-  if (!sessionVerified) {
-    HTTPClient http;
-    String url = "http://192.168.1.103:5000/api/apartment/session";
-    http.begin(url);
-    http.addHeader("Content-Type", "application/json");
-    String payload = "{\"brain\":\"P6p8h3uD&JQNWh\",\"mid\":\"" + MID + "\"}";
-
-    int httpResponseCode = http.POST(payload);
-    Serial.print("Session Check Response: ");
-    Serial.println(httpResponseCode);
-
-    String response = http.getString();
-    http.end();
-
-    if (response == "OK" ) {
-      sessionVerified = true;
-      Serial.println("Session Verified");
-    } 
-    if (response != "OK" ) {
-  Serial.println("Session failed. Retrying...");
-  digitalWrite(RDY, LOW);
-  motorElapsedTime = 0.0;  // Reset motor time
-  motorStartTime = 0;
-  delay(1000);
-  return;
+void updateDisplay() {
+  digitalWrite(latchPin, LOW);
+  shiftOut(dataPin, clockPin, MSBFIRST, NUM[currentFloor]);
+  digitalWrite(latchPin, HIGH);
 }
 
-  }
-
-  // Main logic runs only if session is verified
-  if (sessionVerified) {
-    digitalWrite(RDY, HIGH);
-    checkStopButton();
-    if (emergencyStopped) {
-      return;  // Skip rest of logic during emergency
-    }
-
-    checkButtons();
-    checkIRSensors();
-    handleRunMotor();
-    updateMovement();
-  } else {
-    digitalWrite(RDY, LOW);
-  }
-
-  delay(100);  // Control loop frequency
-}
-
-
-// ========== Wi-Fi Data Sender ==========
-void sendDataToServer(float value,float power) {
-  if (WiFi.status() != WL_CONNECTED) {
-    Serial.println("WiFi not connected!");
-    return;
-  }
-
-  while (true) {
-    HTTPClient http;
-    String url = "http://192.168.1.103:5000/api/expense/create";
-    http.begin(url);
-    http.addHeader("Content-Type", "application/json");
-
-    String payload = 
-      "{\"time\":" + String(value, 3) + 
-      ",\"power\":" + String(power, 2) + 
-      ",\"brain\":\"P6p8h3uD&JQNWh\",\"mid\":\"" + MID + "\"}";
-
-    int httpResponseCode = http.POST(payload);
-    if (httpResponseCode == 200) {
-      Serial.print("Data POST Response: ");
-      Serial.println(httpResponseCode);
-      http.end();
-      break;
-    }
-  }
-}
-
-
-// ========== Elevator Logic ==========
-void handleRunMotor() {
-  digitalWrite(ERR, LOW);
-  digitalWrite(PWR, HIGH);
-
-  if (!moving && queueSize > 0) {
-    targetFloor = getNextFloor();
-    Serial.print("Target Floor: ");
-    Serial.println(targetFloor);
-    moveElevator();
-  }
-}
-
-void moveElevator() {
-  if (targetFloor == currentFloor) {
-    Serial.println("Already at target floor. No movement needed.");
-    moving = false;
-    return;
-  }
-
-  moving = true;
-  if (targetFloor > currentFloor) moveUp();
-  else moveDown();
-}
-
-void moveUp() {
-  Serial.print("Moving UP to floor ");
-  Serial.println(targetFloor);
-  isMovingUp = true;
-  motorStartTime = millis();  // Start timing
-  digitalWrite(elevatorMotorUpPin, HIGH);
-}
-
-void moveDown() {
-  Serial.print("Moving DOWN to floor ");
-  Serial.println(targetFloor);
-  isMovingDown = true;
-  motorStartTime = millis();  // Start timing
-  digitalWrite(elevatorMotorDownPin, HIGH);
-}
-
-float getAverageCurrent(int samples = 100) {
-  float sum = 0;
-  for (int i = 0; i < samples; i++) {
-    int val = analogRead(Asens);
-    float voltage = (val * Vref) / 1024.0;
-    float current = (voltage - zeroCurrentVoltage) / sensitivity;
-    sum += current;
-    delayMicroseconds(500); // optional
-  }
-  return sum / samples;
-}
-
-void updateMovement() {
-  float avgCurrent = getAverageCurrent(100); // 100 samples for smoothing
-currentSum += avgCurrent;
-sampleCount++;
-
-
-  if (millis() - lastMoveCheckTime < moveDelay) return;
-  lastMoveCheckTime = millis();
-
-  if ((isMovingUp || isMovingDown) && digitalRead(irSensorPins[targetFloor]) == HIGH) {
-    if (isMovingUp) {
-      digitalWrite(elevatorMotorUpPin, LOW);
-      isMovingUp = false;
-    }
-    if (isMovingDown) {
-      digitalWrite(elevatorMotorDownPin, LOW);
-      isMovingDown = false;
-    }
-
-    // Add elapsed time
-    if (motorStartTime > 0) {
-      motorElapsedTime += (millis() - motorStartTime) / 1000.0;
-motorStartTime = 0;
-
-    }
-
-    Serial.println("Arrived at floor.");
-    arriveAtFloor();
-  }
-}
-
-
-void arriveAtFloor() {
-
-  currentFloor = targetFloor;
-  moving = false;
-  removeFromQueue(targetFloor);
-  updateDisplay();
-
-  // Check if we're done with the full queue
-  if (queueSize == 0 && motorElapsedTime > 0.0) {
-    time2send += motorElapsedTime; // Reset for next session
-  }
-  if (sampleCount > 0) {
-  float avgCurrent = currentSum / sampleCount;
-  avgCurrent= avgCurrent*10;
-  totalAvgCurrent += avgCurrent;
-
-
-  Serial.print(" Average Current: ");
-  Serial.print(avgCurrent);
-  Serial.println(" mA");
-
-  currentSum = 0;
-  sampleCount = 0;
-}
-
-  delay(2000);
-}
-
-
-// ========== Queue Handling ==========
 void addToQueue(int floor) {
-  if (floor == currentFloor) return;  // Already at this floor
-
-  for (int i = 0; i < queueSize; i++) {
-    if (floorQueue[i] == floor) return;  // Already in queue
-  }
-
-  if (queueSize < MAX_QUEUE_SIZE) {
-    floorQueue[queueSize++] = floor;
-    Serial.print("Added floor ");
-    Serial.println(floor);
-  } else {
-    Serial.println("Queue is full!");
-  }
+  if (floor == currentFloor) return;
+  for (int i = 0; i < queueSize; ++i)
+    if (floorQueue[i] == floor) return;
+  if (queueSize < MAX_QUEUE_SIZE) floorQueue[queueSize++] = floor;
 }
-
 
 void removeFromQueue(int floor) {
-  for (int i = 0; i < queueSize; i++) {
-    if (floorQueue[i] == floor) {
-      for (int j = i; j < queueSize - 1; j++) {
-        floorQueue[j] = floorQueue[j + 1];
-      }
-      queueSize--;
-      break;
-    }
+  for (int i = 0; i < queueSize; ++i) {
+    if (floorQueue[i] != floor) continue;
+    for (int j = i; j < queueSize - 1; ++j) floorQueue[j] = floorQueue[j + 1];
+    --queueSize;
+    return;
   }
 }
 
 int getNextFloor() {
-  // Try in current direction first
-  for (int i = 0; i < queueSize; i++) {
-    if ((direction == 1 && floorQueue[i] > currentFloor) ||
-        (direction == -1 && floorQueue[i] < currentFloor)) {
-      return floorQueue[i];
-    }
+  for (int pass = 0; pass < 2; ++pass) {
+    for (int i = 0; i < queueSize; ++i)
+      if ((direction == 1 && floorQueue[i] > currentFloor) ||
+          (direction == -1 && floorQueue[i] < currentFloor)) return floorQueue[i];
+    direction = -direction;
   }
-
-  // Flip direction and try again
-  direction *= -1;
-  for (int i = 0; i < queueSize; i++) {
-    if ((direction == 1 && floorQueue[i] > currentFloor) ||
-        (direction == -1 && floorQueue[i] < currentFloor)) {
-      return floorQueue[i];
-    }
-  }
-
-  // Default: return first in queue
   return floorQueue[0];
 }
 
-
-// ========== Button Handling ==========
-void checkButtons() {
-  if (millis() - lastButtonCheck < debounceDelay) return;
-
-  for (int i = 0; i < 4; i++) {
-    if (digitalRead(buttonPins[i]) == HIGH) {
-      Serial.print("Button pressed: Floor ");
-      Serial.println(i);
-      addToQueue(i);
-      lastButtonCheck = millis();
-      break;
-    }
+void finishMotorLeg(unsigned long now) {
+  if (motorStartTime != 0) {
+    motorElapsedTime += (now - motorStartTime) / 1000.0f;
+    motorStartTime = 0;
+  }
+  if (sampleCount != 0) {
+    // Preserve the project's existing current-to-power estimate.
+    totalAvgCurrent += (currentSum / sampleCount) * 10.0f;
+    currentSum = 0;
+    sampleCount = 0;
   }
 }
 
-// ========== IR Sensor ==========
-void checkIRSensors() {
-  for (int i = 0; i < 4; i++) {
-    if (digitalRead(irSensorPins[i]) == HIGH) {
-      if (currentFloor != i) {
-        Serial.print("IR sensor triggered. Now at floor ");
-        Serial.println(i);
+void handleStop(unsigned long now) {
+  setMotor(false, false);
+  digitalWrite(RDY, LOW);
+  digitalWrite(ERR, HIGH);
+  const bool hadSession = xEventGroupGetBits(sessionEvents) & SESSION_READY;
+  xEventGroupSetBits(sessionEvents, STOP_ACTIVE);
+  xEventGroupClearBits(sessionEvents, SESSION_READY);
+  if (stopLatched) return;
+
+  stopLatched = true;
+  finishMotorLeg(now);
+  moving = false;
+  queueSize = 0;
+  arrivalTime = 0;
+  if (hadSession) {
+    ExpenseReport report = {motorElapsedTime, totalAvgCurrent * 22.2f};
+    // A full queue is a latched fault: do not silently discard an expense.
+    if (xQueueSend(expenseQueue, &report, 0) != pdTRUE) reportFault = true;
+  }
+  motorElapsedTime = 0;
+  totalAvgCurrent = 0;
+  Serial.println("Emergency stop triggered");
+}
+
+void controlTask(void *) {
+  TickType_t wake = xTaskGetTickCount();
+  for (;;) {
+    const unsigned long now = millis();
+    if (digitalRead(STP) == HIGH) {
+      handleStop(now);
+      vTaskDelayUntil(&wake, CONTROL_PERIOD);
+      continue;
+    }
+    stopLatched = false;
+    xEventGroupClearBits(sessionEvents, STOP_ACTIVE);
+    const bool authorized = !reportFault &&
+      (xEventGroupGetBits(sessionEvents) & (SESSION_READY | SENSOR_READY)) ==
+      (SESSION_READY | SENSOR_READY);
+    digitalWrite(RDY, authorized ? HIGH : LOW);
+    if (!authorized) {
+      setMotor(false, false);
+      if (moving) finishMotorLeg(now);
+      moving = false;
+      queueSize = 0;
+      vTaskDelayUntil(&wake, CONTROL_PERIOD);
+      continue;
+    }
+    digitalWrite(ERR, LOW);
+
+    if (now - lastButtonCheck >= 200) {
+      for (int i = 0; i < 4; ++i) {
+        if (digitalRead(buttonPins[i]) == HIGH) {
+          addToQueue(i);
+          lastButtonCheck = now;
+          break;
+        }
+      }
+    }
+    for (int i = 0; i < 4; ++i) {
+      if (digitalRead(irSensorPins[i]) != HIGH) continue;
+      if (moving && i == targetFloor) {
+        setMotor(false, false);
+        finishMotorLeg(now);
+        moving = false;
+        currentFloor = i;
+        removeFromQueue(i);
+        arrivalTime = now;
+        updateDisplay();
+      } else if (!moving && currentFloor != i) {
         currentFloor = i;
         updateDisplay();
       }
       break;
     }
+
+    if (moving) {
+      // Sensor I2C stays in another task, so a slow transaction cannot hold
+      // the motor task away from STOP.
+      float currentAmps;
+      if (xQueueReceive(currentQueue, &currentAmps, 0) == pdTRUE) {
+        currentSum += currentAmps;
+        ++sampleCount;
+      }
+    } else if (queueSize > 0 && (arrivalTime == 0 || now - arrivalTime >= 2000)) {
+      targetFloor = getNextFloor();
+      if (targetFloor == currentFloor) {
+        removeFromQueue(targetFloor);
+      } else {
+        moving = true;
+        motorStartTime = now;
+        setMotor(targetFloor > currentFloor, targetFloor < currentFloor);
+      }
+    }
+    vTaskDelayUntil(&wake, CONTROL_PERIOD);
   }
 }
 
-// ========== Display ==========
-void updateDisplay() {
-  Serial.print("Display: Floor ");
-  Serial.println(currentFloor);
-  changeNumber(currentFloor);
+void sensorTask(void *) {
+  Wire.begin(I2C[0], I2C[1]);
+  Wire.setTimeOut(20);
+  for (;;) {
+    if (!currentSensor.begin(INA228_I2CADDR_DEFAULT, &Wire)) {
+      xEventGroupClearBits(sessionEvents, SENSOR_READY);
+      Serial.println("INA228 not found");
+      vTaskDelay(NETWORK_RETRY);
+      continue;
+    }
+    currentSensor.setShunt(SHUNT_RESISTANCE_OHMS, MAX_CURRENT_A);
+    xEventGroupSetBits(sessionEvents, SENSOR_READY);
+    for (;;) {
+      const float currentAmps = currentSensor.getCurrent_mA() / 1000.0f;
+      xQueueOverwrite(currentQueue, &currentAmps);
+      vTaskDelay(CONTROL_PERIOD);
+    }
+  }
 }
 
-void changeNumber(int floor) {
-  digitalWrite(latchPin, LOW);
-  shiftOut(dataPin, clockPin, MSBFIRST, NUM[floor]);
-  digitalWrite(latchPin, HIGH);
+bool postJson(const char *url, const String &payload) {
+  HTTPClient http;
+  http.setTimeout(2000);
+  if (!http.begin(url)) return false;
+  http.addHeader("Content-Type", "application/json");
+  const int status = http.POST(payload);
+  const bool success = status == 200 && http.getString() == "OK";
+  http.end();
+  return success;
 }
-void checkStopButton() {
 
-  if (digitalRead(STP) == HIGH) {
-
-  Serial.println("EMERGENCY STOP TRIGGERED!");
-  digitalWrite(elevatorMotorUpPin, LOW);
-  digitalWrite(elevatorMotorDownPin, LOW);
-  isMovingUp = false;
-  isMovingDown = false;
-  moving = false;
-  digitalWrite(ERR, HIGH);
-  queueSize = 0;
-  emergencyStopped = true;
-
-  // Record motor time if applicable
-  if (motorStartTime > 0) {
-    motorElapsedTime += (millis() - motorStartTime) / 1000.0;
-    motorStartTime = 0;
+void networkTask(void *) {
+  ExpenseReport pending = {};
+  bool havePending = false;
+  for (;;) {
+    // Expense creation consumes the current backend session.
+    if (!havePending && xQueueReceive(expenseQueue, &pending, 0) == pdTRUE) {
+      havePending = true;
+      xEventGroupClearBits(sessionEvents, SESSION_READY);
+    }
+    if (WiFi.status() != WL_CONNECTED) {
+      WiFi.reconnect();
+      vTaskDelay(NETWORK_RETRY);
+      continue;
+    }
+    if (havePending) {
+      const String payload = String("{\"time\":") + String(pending.seconds, 3) +
+        ",\"power\":" + String(pending.power, 2) +
+        ",\"brain\":\"" + BRAIN_CODE + "\",\"mid\":\"" + MID + "\"}";
+      if (postJson(EXPENSE_URL, payload)) {
+        havePending = false;
+        Serial.println("Expense submitted");
+      } else {
+        vTaskDelay(NETWORK_RETRY);
+      }
+      continue;
+    }
+    if (!(xEventGroupGetBits(sessionEvents) & SESSION_READY)) {
+      const String payload = String("{\"brain\":\"") + BRAIN_CODE +
+        "\",\"mid\":\"" + MID + "\"}";
+      if (postJson(SESSION_URL, payload)) {
+        // The stop may have arrived during the HTTP request.
+        if (uxQueueMessagesWaiting(expenseQueue) == 0 &&
+            !(xEventGroupGetBits(sessionEvents) & STOP_ACTIVE))
+          xEventGroupSetBits(sessionEvents, SESSION_READY);
+        else
+          vTaskDelay(NETWORK_RETRY);
+      } else {
+        vTaskDelay(NETWORK_RETRY);
+      }
+    } else {
+      vTaskDelay(pdMS_TO_TICKS(50));
+    }
   }
-float power = totalAvgCurrent*22.2;
-  sendDataToServer(time2send,power);
-  emergencyStopped= false;
-  sessionVerified = false;
-  totalAvgCurrent = 0.0;
-  time2send = 0.0;
+}
+
+void setup() {
+  Serial.begin(115200);
+  pinMode(PWR, OUTPUT);
+  pinMode(ERR, OUTPUT);
+  pinMode(RDY, OUTPUT);
+  pinMode(elevatorMotorUpPin, OUTPUT);
+  pinMode(elevatorMotorDownPin, OUTPUT);
+  pinMode(STP, INPUT);
+  pinMode(latchPin, OUTPUT);
+  pinMode(clockPin, OUTPUT);
+  pinMode(dataPin, OUTPUT);
+  for (int i = 0; i < 4; ++i) {
+    pinMode(buttonPins[i], INPUT);
+    pinMode(irSensorPins[i], INPUT);
   }
+  setMotor(false, false);
+  digitalWrite(PWR, HIGH);
+  digitalWrite(ERR, LOW);
+  digitalWrite(RDY, LOW);
+  updateDisplay();
+
+  expenseQueue = xQueueCreate(1, sizeof(ExpenseReport));
+  currentQueue = xQueueCreate(1, sizeof(float));
+  sessionEvents = xEventGroupCreate();
+  if (!expenseQueue || !currentQueue || !sessionEvents ||
+      xTaskCreate(controlTask, "elevator", 4096, nullptr, 4, nullptr) != pdPASS) {
+    Serial.println("Failed to start elevator task");
+    digitalWrite(ERR, HIGH);
+    return;
+  }
+  WiFi.mode(WIFI_STA);
+  WiFi.begin(ssid, password);
+  if (xTaskCreate(sensorTask, "ina228", 4096, nullptr, 2, nullptr) != pdPASS) {
+    Serial.println("Failed to start sensor task");
+    digitalWrite(ERR, HIGH);
+  }
+  if (xTaskCreate(networkTask, "network", 8192, nullptr, 1, nullptr) != pdPASS) {
+    Serial.println("Failed to start network task");
+    digitalWrite(ERR, HIGH);
+  }
+}
+
+void loop() {
+  vTaskDelay(pdMS_TO_TICKS(1000));
 }

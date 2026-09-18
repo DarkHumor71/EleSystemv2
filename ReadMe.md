@@ -300,6 +300,27 @@ Middleware components:
 - QR code scanning with 5-second cooldown
 - HTTP validation with backend server
 
+### FreeRTOS controller firmware
+
+`board/board.ino` targets the ESP32 Arduino core, which includes FreeRTOS.
+The elevator task runs every 10 ms at priority 4 and owns the buttons, floor
+sensors, display, motor outputs, and emergency stop. A priority 1 network task
+handles Wi-Fi, session verification, and expense uploads. An event group gates
+motor operation on a verified session; a one-item FreeRTOS queue transfers an
+expense report after the stop input is pressed. Upload failures are retried
+without blocking motor shutdown. A full report queue latches a fault and
+prevents another run.
+
+The revised schematic uses an INA228 current monitor on I²C (SDA GPIO 16,
+SCL GPIO 17). A third FreeRTOS task reads it and sends current samples through
+a one-item queue; the motor task stays responsive if I²C is slow. Install the
+`Adafruit INA228` Arduino library and its dependencies before building.
+Set `SHUNT_RESISTANCE_OHMS` and `MAX_CURRENT_A` in `board/board.ino` to
+match the assembled shunt and motor. The current values are provisional, so
+expense measurements need calibration on hardware. The controller will not
+enable its ready output until the INA228 initializes. The camera sketch
+already uses a FreeRTOS QR scanning task.
+
 ## 🎨 Frontend Theming
 
 The dashboard supports light and dark modes with customizable Material-UI themes. Theme configuration is in `client/src/theme.js`.
